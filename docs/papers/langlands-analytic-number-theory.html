@@ -1,0 +1,820 @@
+<h1 data-number="1" id="sec:intro"><span class="header-section-number">1</span> Introduction</h1>
+<h2 data-number="1.1" id="the-principal-open-problem"><span class="header-section-number">1.1</span> The principal open problem</h2>
+<p>In the synthesis paper concluding our prior series <span class="citation" data-cites="Long2026Synthesis"></span>, which builds on Riemann’s foundational 1859 paper <span class="citation" data-cites="RiemannHypothesisOriginal"></span>, we surveyed six topics where homotopy type theory (HoTT) interfaces — or fails to interface — with mainstream twenty-first century mathematics. Topics 1, 3, 4, 5, and 6 (cohesive geometry, <span class="math inline">\(\infty\)</span>-toposes, derived algebraic geometry, motives, and condensed algebra) admit varying degrees of HoTT formulation. Topic 2, <em>analytic number theory</em>, does not. We wrote:</p>
+<blockquote>
+<p><em>Algebraic number theory and parts of arithmetic geometry — schemes, sheaves, étale cohomology — admit <span class="math inline">\((\infty,1)\)</span>-topos and condensed mathematics treatments that connect cleanly to univalent foundations. But <span class="math inline">\(\zeta(s)=0\)</span> as a HoTT-native statement, with <span class="math inline">\(\zeta\)</span> a HoTT-native object, remains unrealised. We frame this as the principal open question for the synthesis.</em></p>
+</blockquote>
+<p>This paper develops that question.</p>
+<h2 data-number="1.2" id="why-zetas0-is-hard-in-hott"><span class="header-section-number">1.2</span> Why <span class="math inline">\(\zeta(s)=0\)</span> is hard in HoTT</h2>
+<p>A HoTT-native statement of <span class="math inline">\(\zeta(s)=0\)</span> requires four ingredients, each of which is non-trivial:</p>
+<ol>
+<li><p>A HoTT-native object <span class="math inline">\(\mathbb{C}_{\mathsf{c}}:\mathcal{U}\)</span> of complex numbers, complete with the notion of meromorphicity. Constructive Cauchy reals <span class="citation" data-cites="HoTTBook Booij2020"></span> exist, but a univalent algebraic closure that is well-behaved with respect to univalence requires care: classical algebraic closures are unique-up-to-isomorphism, while a HoTT-native one is unique up-to-equivalence in the sense of univalence <span class="citation" data-cites="Voevodsky2014"></span>.</p></li>
+<li><p>A HoTT-native notion of <em>holomorphic function</em> <span class="math inline">\(\mathsf{Holo}:(\mathbb{C}_{\mathsf{c}}\to \mathbb{C}_{\mathsf{c}}) \to \mathcal{U}\)</span>. The classical definition uses a metric limit (Newton quotient) which is constructive but not synthetic. A more native approach uses cohesive HoTT <span class="citation" data-cites="Shulman2018Cohesive"></span>: holomorphicity becomes a modal predicate.</p></li>
+<li><p>A HoTT-native definition of <span class="math inline">\(\zeta:\mathbb{C}_{\mathsf{c}}\setminus \{1\} \to \mathbb{C}_{\mathsf{c}}\)</span> that agrees on <span class="math inline">\(\mathrm{Re}(s)&gt;1\)</span> with <span class="math inline">\(\sum_{n\geq 1} n^{-s}\)</span> and analytically continues elsewhere. This requires either a higher inductive-inductive construction (HIIT) or an internal universal property of meromorphic extensions.</p></li>
+<li><p>A HoTT-native interpretation of the proposition <span class="math display">\[\Pi(s:\mathbb{C}_{\mathsf{c}}).\, \zeta(s) = 0 \to \neg\,\mathsf{trivialZero}(s) \to \mathrm{Re}(s) = 1/2.\]</span> Even getting to this statement is a research project.</p></li>
+</ol>
+<p>By contrast, in classical foundations Loeffler and Stoll <span class="citation" data-cites="LoefflerStoll2025"></span> have just (March 2025) formalized in Lean 4 / Mathlib the entire infrastructure: <span class="math inline">\(\zeta\)</span>, the analytic continuation, the functional equation, the Basel problem, non-vanishing on <span class="math inline">\(\mathrm{Re}(s) \geq 1\)</span>, Dirichlet’s theorem on primes in arithmetic progressions, and the formal statement of the Riemann hypothesis. Their work runs to roughly 3300 lines of Lean for the analytic continuation alone. We have nothing comparable in any HoTT proof assistant.</p>
+<h2 data-number="1.3" id="what-this-paper-does-and-does-not-do"><span class="header-section-number">1.3</span> What this paper does (and does not do)</h2>
+<p>This paper:</p>
+<ul>
+<li><p>Identifies and motivates the <em>prerequisite chain</em> for a HoTT-native <span class="math inline">\(\zeta\)</span>. (<a href="#sec:prereq" data-reference-type="ref+Label" data-reference="sec:prereq">2</a>)</p></li>
+<li><p>Proposes <em>three candidate</em> HoTT-native definitions of <span class="math inline">\(\zeta\)</span>, analyses their tradeoffs, and conjecturally proves their pairwise equivalence. (<a href="#sec:zeta" data-reference-type="ref+Label" data-reference="sec:zeta">3</a>)</p></li>
+<li><p>Places the picture in the broader geometric Langlands landscape via <span class="math inline">\((\infty,1)\)</span>-toposes and Lurie’s higher topos theory <span class="citation" data-cites="Lurie2009HTT Gaitsgory2024GLC"></span>. (<a href="#sec:langlands" data-reference-type="ref+Label" data-reference="sec:langlands">4</a>)</p></li>
+<li><p>Compares HoTT and Clausen–Scholze condensed mathematics, identifying where they overlap and where the bridge is missing. (<a href="#sec:condensed" data-reference-type="ref+Label" data-reference="sec:condensed">5</a>)</p></li>
+<li><p>Compares with the Loeffler–Stoll 2025 Lean formalization, both as a benchmark and as a <em>translation target</em>. (<a href="#sec:loefflerstoll" data-reference-type="ref+Label" data-reference="sec:loefflerstoll">6</a>)</p></li>
+<li><p>Provides a six-sub-problem roadmap that, if solved, would yield a HoTT-native proof that <span class="math inline">\(\zeta(2) = \pi^2/6\)</span>. (<a href="#sec:roadmap" data-reference-type="ref+Label" data-reference="sec:roadmap">7</a>)</p></li>
+<li><p>Re-states the Riemann hypothesis as a HoTT proposition and discusses its modal-logical structure. (<a href="#sec:rh" data-reference-type="ref+Label" data-reference="sec:rh">8</a>)</p></li>
+</ul>
+<p>This paper does <em>not</em>:</p>
+<ul>
+<li><p>Prove the Riemann hypothesis.</p></li>
+<li><p>Provide a complete HoTT formalization of <span class="math inline">\(\zeta\)</span>.</p></li>
+<li><p>Claim that HoTT methods will, in principle, prove RH; we are agnostic on this question.</p></li>
+</ul>
+<p>The companion code repository contains a Haskell implementation of partial zeta sums, Dirichlet series operations, the formal Euler product identity (modulo a convergence axiom), and a Lean 4 sketch indexed against Loeffler–Stoll’s Mathlib code.</p>
+<h2 data-number="1.4" id="algebraic-vs.-analytic-number-theory"><span class="header-section-number">1.4</span> Algebraic vs. analytic number theory</h2>
+<p>A clarifying distinction. <em>Algebraic number theory</em> studies <span class="math inline">\(\mathcal{O}_K\)</span>, the ring of integers of a number field <span class="math inline">\(K/\mathbb{Q}\)</span>, its ideals, class group, units, and reductions modulo primes. The objects are discrete-finite or, at worst, countable; their morphisms are algebraic; and the topology is the Zariski or étale one. HoTT formalisation is straightforward in principle: rings are sets with operations satisfying identities, and ideals are subsingletons of the underlying set.</p>
+<p><em>Analytic number theory</em> studies <span class="math inline">\(\zeta(s)\)</span>, Dirichlet <span class="math inline">\(L\)</span>-functions <span class="math inline">\(L(s,\chi)\)</span>, and automorphic <span class="math inline">\(L\)</span>-functions <span class="math inline">\(L(s,\pi)\)</span>, where <span class="math inline">\(\pi\)</span> is an automorphic representation of <span class="math inline">\(GL(n,\mathbb{A}_\mathbb{Q})\)</span>. The objects are holomorphic / meromorphic functions of complex variables; morphisms are analytic transformations; and the topology is the Euclidean (or condensed) topology on <span class="math inline">\(\mathbb{C}\)</span>. HoTT formalisation is presently absent.</p>
+<p>The Langlands programme <span class="citation" data-cites="Langlands1970 GelbartLanglands1979"></span> unifies these worlds: it asserts a precise correspondence between automorphic representations and Galois representations, transforming questions about zeros of <span class="math inline">\(L\)</span>-functions into questions about Galois cohomology. Geometric Langlands <span class="citation" data-cites="Gaitsgory2024GLC"></span> is the function-field analogue and was proven in 2024 in five papers using <span class="math inline">\((\infty,1)\)</span>-categorical methods throughout.</p>
+<h2 data-number="1.5" id="outline"><span class="header-section-number">1.5</span> Outline</h2>
+<p><a href="#sec:prereq" data-reference-type="ref+Label" data-reference="sec:prereq">2</a> traces the prerequisite chain. <a href="#sec:zeta" data-reference-type="ref+Label" data-reference="sec:zeta">3</a> defines <span class="math inline">\(\zeta\)</span> as a candidate HoTT object. <a href="#sec:langlands" data-reference-type="ref+Label" data-reference="sec:langlands">4</a> treats geometric Langlands in <span class="math inline">\((\infty,1)\)</span>-topoi. <a href="#sec:condensed" data-reference-type="ref+Label" data-reference="sec:condensed">5</a> compares condensed mathematics and HoTT. <a href="#sec:loefflerstoll" data-reference-type="ref+Label" data-reference="sec:loefflerstoll">6</a> compares with Loeffler–Stoll Lean. <a href="#sec:roadmap" data-reference-type="ref+Label" data-reference="sec:roadmap">7</a> gives the six-sub-problem roadmap. <a href="#sec:rh" data-reference-type="ref+Label" data-reference="sec:rh">8</a> discusses RH as a HoTT statement. <a href="#sec:conclusion" data-reference-type="ref+Label" data-reference="sec:conclusion">10</a> concludes.</p>
+<h1 data-number="2" id="sec:prereq"><span class="header-section-number">2</span> The Prerequisite Chain</h1>
+<p>We trace, with care, the dependency chain culminating in a HoTT-native <span class="math inline">\(\zeta\)</span>.</p>
+<h2 data-number="2.1" id="hott-native-real-numbers-mathbbr_mathsfc"><span class="header-section-number">2.1</span> HoTT-native real numbers <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span></h2>
+<div id="def:Rc" class="definition">
+<p><strong>Definition 1</strong> (Cauchy reals, after the HoTT Book <span class="citation" data-cites="HoTTBook"></span>).  The type <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> of <em>Cauchy reals</em> is the higher inductive-inductive type defined simultaneously with a relation <span class="math inline">\(\sim_\epsilon : \mathbb{R}_{\mathsf{c}}\to \mathbb{R}_{\mathsf{c}}\to \mathcal{U}\)</span> indexed by <span class="math inline">\(\epsilon : \mathbb{Q}^+\)</span>, by the constructors: <span class="math display">\[\begin{align}
+\mathsf{rat} &amp;: \mathbb{Q}\to \mathbb{R}_{\mathsf{c}}\\
+\mathsf{lim} &amp;: \Pi(x:\mathbb{Q}^+ \to \mathbb{R}_{\mathsf{c}}).\, \mathsf{IsCauchy}(x) \to \mathbb{R}_{\mathsf{c}}\\
+\mathsf{eq} &amp;: \Pi(u,v:\mathbb{R}_{\mathsf{c}}).\, (\Pi(\epsilon:\mathbb{Q}^+).\, u \sim_\epsilon v) \to u = v
+\end{align}\]</span> together with the path constructors for the closeness relation <span class="math inline">\(\sim_\epsilon\)</span> <span class="citation" data-cites="HoTTBook"></span>.</p>
+</div>
+<div class="remark">
+<p><em>Remark 2</em>.  <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> is a set in the sense of HoTT (its identity types are propositions), because of the explicit equality constructor <span class="math inline">\(\mathsf{eq}\)</span>. This is in contrast to a non-Cauchy approach where <span class="math inline">\(\mathbb{R}\)</span> might inherit higher structure from its construction.</p>
+</div>
+<div id="thm:RcArchimedean" class="theorem">
+<p><strong>Theorem 3</strong> (<span class="citation" data-cites="HoTTBook"></span>, Theorem 11.3.32).  <em><span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> is an Archimedean ordered field with decidable order <span class="math inline">\(&lt;\)</span> on rationals but undecidable equality on <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> in general.</em></p>
+</div>
+<h2 data-number="2.2" id="hott-native-complex-numbers-mathbbc_mathsfc"><span class="header-section-number">2.2</span> HoTT-native complex numbers <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span></h2>
+<p>There are at least three approaches:</p>
+<h4 data-number="2.2.0.1" id="pairs."><span class="header-section-number">2.2.0.1</span> Pairs.</h4>
+<p><span class="math inline">\(\mathbb{C}_{\mathsf{c}}:= \mathbb{R}_{\mathsf{c}}\times \mathbb{R}_{\mathsf{c}}\)</span> with multiplication <span class="math inline">\((a,b)(c,d) := (ac-bd, ad+bc)\)</span>. Simple, but does not capture the <em>universal property</em> that <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span> should be an algebraic closure of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>.</p>
+<h4 data-number="2.2.0.2" id="algebraic-closure-of-mathbbr_mathsfc."><span class="header-section-number">2.2.0.2</span> Algebraic closure of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>.</h4>
+<div id="def:UAC" class="definition">
+<p><strong>Definition 4</strong> (Univalent algebraic closure).  A type <span class="math inline">\(\overline{\mathbb{R}_{\mathsf{c}}}\)</span> together with an embedding <span class="math inline">\(\iota:\mathbb{R}_{\mathsf{c}}\to \overline{\mathbb{R}_{\mathsf{c}}}\)</span> is a <em>univalent algebraic closure</em> of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> if it is the propositional truncation of the type <span class="math display">\[\sum_{F:\mathsf{Field}}\, \sum_{\iota:\mathbb{R}_{\mathsf{c}}\to F} \mathsf{IsAlgClosure}(\mathbb{R}_{\mathsf{c}},F,\iota),\]</span> where <span class="math inline">\(\mathsf{IsAlgClosure}\)</span> is the conjunction of (i) every non-zero polynomial in <span class="math inline">\(F[X]\)</span> has a root, and (ii) every element of <span class="math inline">\(F\)</span> is algebraic over <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> via <span class="math inline">\(\iota\)</span>.</p>
+</div>
+<div id="rem:UACplain" class="remark">
+<p><em>Remark 5</em> (Plain-language gloss).  In essence, <a href="#def:UAC" data-reference-type="ref+Label" data-reference="def:UAC">4</a> defines the algebraic closure not as one specific construction, but as the abstract object satisfying the universal property of being an algebraically closed field containing <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>. Univalence ensures that any two such objects are propositionally equal as types in <span class="math inline">\(\mathcal{U}\)</span>. The propositional truncation <span class="math inline">\(\|\cdot\|_{-1}\)</span> at the top of the <span class="math inline">\(\Sigma\)</span>-type collapses the choice-of-witness data to a proposition, reflecting the classical dictum that the algebraic closure is unique up to non-canonical isomorphism.</p>
+</div>
+<div id="prop:UACUnique" class="proposition">
+<p><strong>Proposition 6</strong>.  <em>Univalent algebraic closures of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> are unique up to equivalence: if <span class="math inline">\((\overline{\mathbb{R}_{\mathsf{c}}}_1,\iota_1)\)</span> and <span class="math inline">\((\overline{\mathbb{R}_{\mathsf{c}}}_2,\iota_2)\)</span> are two such, there is an equivalence <span class="math inline">\(e:\overline{\mathbb{R}_{\mathsf{c}}}_1 \simeq \overline{\mathbb{R}_{\mathsf{c}}}_2\)</span> with <span class="math inline">\(e \circ \iota_1 = \iota_2\)</span>, and by univalence <span class="math inline">\(\overline{\mathbb{R}_{\mathsf{c}}}_1 = \overline{\mathbb{R}_{\mathsf{c}}}_2\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Classical algebraic-closure uniqueness uses Zorn’s lemma. In HoTT, we use a constructive variant: one shows that any two algebraic closures are isomorphic via an inductive construction, and that the choice of isomorphism is contractible up to the action of <span class="math inline">\(\mathsf{Gal}(\overline{\mathbb{R}_{\mathsf{c}}}/\mathbb{R}_{\mathsf{c}})\)</span>. The propositional truncation in <a href="#def:UAC" data-reference-type="ref+Label" data-reference="def:UAC">4</a> ensures the existential is a proposition; uniqueness follows. Full proof requires choice or constructive algebraic-closure arguments <span class="citation" data-cites="Mines1988"></span>. ◻</p>
+</div>
+<h4 data-number="2.2.0.3" id="quotient-construction."><span class="header-section-number">2.2.0.3</span> Quotient construction.</h4>
+<p><span class="math inline">\(\mathbb{C}_{\mathsf{c}}:= \mathbb{R}_{\mathsf{c}}[X]/(X^2 + 1)\)</span>. Concretely realisable via Schwartz / set-quotient.</p>
+<p>In what follows, we treat <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span> axiomatically: a propositional Univalent Algebraic Closure of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>, equipped with a continuous structure inherited from <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\times \mathbb{R}_{\mathsf{c}}\)</span>.</p>
+<h2 data-number="2.3" id="holomorphic-functions-in-hott"><span class="header-section-number">2.3</span> Holomorphic functions in HoTT</h2>
+<p>The classical definition of holomorphicity is: <span class="math display">\[f:\mathbb{C}\to \mathbb{C}\text{ is holomorphic at } z \quad\text{iff}\quad
+\lim_{h \to 0} \frac{f(z+h) - f(z)}{h} \text{ exists.}\]</span> This translates straightforwardly to <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>- and <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span>-limits, but is not HoTT-native in the sense of using only <span class="math inline">\(\mathcal{U}\)</span>, <span class="math inline">\(=\)</span>, and the universe-polymorphic constructors.</p>
+<div id="def:holo" class="definition">
+<p><strong>Definition 7</strong> (Constructive holomorphicity).  <span class="math inline">\(f:\mathbb{C}_{\mathsf{c}}\to \mathbb{C}_{\mathsf{c}}\)</span> is <em>holomorphic</em> at <span class="math inline">\(z:\mathbb{C}_{\mathsf{c}}\)</span> if there exists <span class="math inline">\(f&#39;(z):\mathbb{C}_{\mathsf{c}}\)</span> such that <span class="math display">\[\Pi(\epsilon:\mathbb{Q}^+).\,
+\Sigma(\delta:\mathbb{Q}^+).\,
+\Pi(h:\mathbb{C}_{\mathsf{c}}).\, 0 &lt; |h| &lt; \delta \to
+\left|\,\frac{f(z+h)-f(z)}{h} - f&#39;(z)\,\right| &lt; \epsilon.\]</span></p>
+</div>
+<div id="rem:synth" class="remark">
+<p><em>Remark 8</em> (Synthetic alternative).  In <em>cohesive HoTT</em> <span class="citation" data-cites="Shulman2018Cohesive"></span>, the universe carries shape and flat modalities <span class="math inline">\(\mathsf{S}, \flat\)</span>. Holomorphicity becomes a synthetic predicate: <span class="math inline">\(f\)</span> is holomorphic iff <span class="math inline">\(f\)</span> commutes with the differential cohesion operator. This is closer to “HoTT-native” but requires fixing a model where <span class="math inline">\(\mathsf{S}\)</span> is interpreted as the geometric <span class="math inline">\(\mathbb{C}^\infty\)</span>-shape.</p>
+</div>
+<h2 data-number="2.4" id="dirichlet-series"><span class="header-section-number">2.4</span> Dirichlet series</h2>
+<div id="def:Dirichlet" class="definition">
+<p><strong>Definition 9</strong> (Dirichlet series).  A <em>Dirichlet series</em> is a function <span class="math inline">\(a:\mathbb{N}_{&gt;0} \to \mathbb{C}_{\mathsf{c}}\)</span> together with the formal expression <span class="math display">\[D_a(s) := \sum_{n=1}^{\infty} \frac{a(n)}{n^s}, \qquad s:\mathbb{C}_{\mathsf{c}}.\]</span> The <em>abscissa of absolute convergence</em> is <span class="math inline">\(\sigma_a := \inf\{\sigma:\mathbb{R}_{\mathsf{c}}\mid \sum_n |a(n)| n^{-\sigma} \text{ converges}\}\)</span>.</p>
+</div>
+<div id="prop:DirichletAlgebra" class="proposition">
+<p><strong>Proposition 10</strong> (HoTT-native; sketched).  <em>The set of Dirichlet series with <span class="math inline">\(\sigma_a &lt; +\infty\)</span> forms a commutative ring under termwise addition and Dirichlet convolution <span class="math inline">\((a*b)(n) := \sum_{d \mid n} a(d) b(n/d)\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Closed-under-addition is clear. For convolution, the abscissa of <span class="math inline">\(a*b\)</span> is bounded by <span class="math inline">\(\max(\sigma_a, \sigma_b) + \log_2(\text{divisor sum})\)</span>, which is finite when both <span class="math inline">\(\sigma_a, \sigma_b\)</span> are. The full proof in HoTT uses the absolute-convergence variant of Fubini for <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>-valued double sums <span class="citation" data-cites="Booij2020"></span>. ◻</p>
+</div>
+<h2 data-number="2.5" id="putting-it-together"><span class="header-section-number">2.5</span> Putting it together</h2>
+<figure id="fig:chain" data-latex-placement="htbp">
+
+<figcaption>The prerequisite chain. Each arrow represents a non-trivial HoTT-native construction. The final arrow (<span class="math inline">\(\mathsf{Dir} \to \zeta\)</span>) is the analytic continuation, and is the place at which the chain currently breaks in pure HoTT.</figcaption>
+</figure>
+<p>The chain in <a href="#fig:chain" data-reference-type="ref+Label" data-reference="fig:chain">1</a> terminates at <span class="math inline">\(\zeta\)</span>, but the rightmost arrow — analytic continuation from a Dirichlet series convergent on <span class="math inline">\(\mathrm{Re}(s)&gt;1\)</span> to a meromorphic function on <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\setminus \{1\}\)</span> — has no canonical HoTT-native realisation. This is the central technical gap of the present paper.</p>
+<h2 data-number="2.6" id="subsec:obstacles"><span class="header-section-number">2.6</span> Detailed account of analytic-continuation obstacles</h2>
+<p>To clarify why the rightmost arrow is hard, we list the obstacles in ascending order of severity.</p>
+<ol>
+<li><p><strong>Unique factorisation of meromorphic extension.</strong> In classical complex analysis, the identity theorem (<a href="#thm:Identity" data-reference-type="ref+Label" data-reference="thm:Identity">19</a>) guarantees uniqueness of analytic continuation. In HoTT, “connected open” needs a precise definition, and the proof that the agreement locus is clopen requires constructive analogues of Bolzano–Weierstrass.</p></li>
+<li><p><strong>Existence of meromorphic extension.</strong> Classical proofs of analytic continuation of <span class="math inline">\(\zeta\)</span> use one of:</p>
+<ul>
+<li><p><em>Hurwitz zeta</em> method: define <span class="math inline">\(\zeta(s,a) = \sum_{n \geq 0}(n+a)^{-s}\)</span> and continue via the integral representation. This requires Mellin transform.</p></li>
+<li><p><em>Theta-function</em> method: <span class="math inline">\(\theta(t) := \sum_{n \in \mathbb{Z}} e^{-\pi n^2 t}\)</span> satisfies modular invariance, and Mellin transforming gives <span class="math inline">\(\zeta\)</span>.</p></li>
+<li><p><em>Contour integral</em> method: integrate <span class="math inline">\(\frac{x^{s-1}}{e^x - 1}\)</span> around a Hankel contour.</p></li>
+</ul>
+<p>Each requires a substantial fragment of HoTT-native analysis: integration theory, modular transformation laws, residue calculus.</p></li>
+<li><p><strong>Computation in HoTT.</strong> Even given the existence and uniqueness, <em>computing</em> <span class="math inline">\(\zeta\)</span> at, say, <span class="math inline">\(s = -1\)</span> to obtain <span class="math inline">\(\zeta(-1) = -1/12\)</span> requires either (i) symbolic manipulation of the analytic continuation, or (ii) numerical methods. HoTT proof assistants like Cubical Agda do not currently support efficient arbitrary-precision real arithmetic.</p></li>
+<li><p><strong>Naturality.</strong> Classical proofs treat <span class="math inline">\(\zeta\)</span> as one specific function. A fully-categorified HoTT-native account would treat <span class="math inline">\(\zeta\)</span> as part of a family — Dirichlet <span class="math inline">\(L\)</span>-functions, Hurwitz zeta, Hecke <span class="math inline">\(L\)</span>-functions, automorphic <span class="math inline">\(L\)</span>-functions — with naturality with respect to characters and lifts. This expands the existence obstacle by a constant factor of the size of the family.</p></li>
+</ol>
+<h2 data-number="2.7" id="subsec:CauchyEx"><span class="header-section-number">2.7</span> HoTT-native Cauchy reals: explicit example</h2>
+<p>To make the discussion concrete, we sketch how <span class="math inline">\(\sqrt{2}:\mathbb{R}_{\mathsf{c}}\)</span> is a HoTT-native object.</p>
+<div id="ex:sqrt2" class="example">
+<p><strong>Example 11</strong> (<span class="math inline">\(\sqrt{2}\)</span> as Cauchy real).  Define <span class="math inline">\(a:\mathbb{Q}^+ \to \mathbb{Q}\)</span> by Newton iteration: <span class="math inline">\(a(\epsilon) =\)</span> the <span class="math inline">\(n\)</span>-th Newton iterate of <span class="math inline">\(x_{n+1} := (x_n + 2/x_n)/2\)</span>, where <span class="math inline">\(n\)</span> is large enough that <span class="math inline">\(|a(\epsilon)^2 - 2| &lt; \epsilon\)</span>. Then <span class="math inline">\(a\)</span> is a Cauchy modulus and <span class="math inline">\(\mathsf{lim}(a, \mathsf{IsCauchy}_a):\mathbb{R}_{\mathsf{c}}\)</span> is <span class="math inline">\(\sqrt{2}\)</span>. Equality <span class="math inline">\((\sqrt{2})^2 = 2\)</span> in <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> follows from the equality constructor <span class="math inline">\(\mathsf{eq}\)</span>.</p>
+</div>
+<div id="ex:euler" class="example">
+<p><strong>Example 12</strong> (<span class="math inline">\(e\)</span> as Cauchy real).  <span class="math inline">\(e := \mathsf{lim}((\epsilon \mapsto \sum_{k=0}^{N(\epsilon)} 1/k!),
+\mathsf{IsCauchy}_e):\mathbb{R}_{\mathsf{c}}\)</span>, where <span class="math inline">\(N(\epsilon)\)</span> is chosen so the tail <span class="math inline">\(\sum_{k&gt;N} 1/k! &lt; \epsilon\)</span>. By Stirling, <span class="math inline">\(N(\epsilon) = O(\log(1/\epsilon)/
+\log\log(1/\epsilon))\)</span>.</p>
+</div>
+<div id="ex:pi" class="example">
+<p><strong>Example 13</strong> (<span class="math inline">\(\pi\)</span> as Cauchy real).  We define <span class="math display">\[\pi \;:=\; \mathsf{lim}\!\bigl(
+   \epsilon \mapsto \text{Machin formula at depth $N(\epsilon)$},\;
+   \mathsf{IsCauchy}_\pi\bigr).\]</span> Machin’s formula <span class="math inline">\(\pi/4 = 4\arctan(1/5) - \arctan(1/239)\)</span> converges geometrically with ratios <span class="math inline">\(1/25\)</span> and <span class="math inline">\(1/239^2\)</span>, so <span class="math inline">\(N(\epsilon) = O(\log(1/\epsilon))\)</span>.</p>
+</div>
+<p>These three examples illustrate that named real-number constants in HoTT require an algorithmic Cauchy modulus, not just an existential statement.</p>
+<h1 data-number="3" id="sec:zeta"><span class="header-section-number">3</span> The Riemann Zeta Function as a HoTT Object</h1>
+<p>We now propose three approaches to defining <span class="math inline">\(\zeta\)</span> inside HoTT.</p>
+<h2 data-number="3.1" id="approach-1-zeta-as-a-higher-inductive-inductive-type"><span class="header-section-number">3.1</span> Approach 1: <span class="math inline">\(\zeta\)</span> as a higher inductive-inductive type</h2>
+<p>Inspired by the construction of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> as a HIIT, we sketch a <em>specification pattern</em> for what a HoTT-native <span class="math inline">\(\zeta\)</span> should satisfy. We emphasise that what follows is a <em>wish-list of constructors</em>, not a self-contained HIIT definition; both consistency and existence of such a HIIT are open questions.</p>
+<p>First, define the convergent partial-sum function on the half-plane of absolute convergence: <span class="math display">\[\begin{equation}
+\label{eq:zetaSeries}
+\zeta_{\mathrm{series}} : \Pi(s:\mathbb{C}_{\mathsf{c}}).\, \mathrm{Re}(s) &gt; 1 \to \mathbb{C}_{\mathsf{c}}, \qquad
+\zeta_{\mathrm{series}}(s) := \sum_{n=1}^{\infty} n^{-s}.
+\end{equation}\]</span> This map is well-defined because <span class="math inline">\(\mathrm{Re}(s) &gt; 1\)</span> ensures absolute convergence of the series in <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span>, and the limit is the (HoTT-native) limit constructor of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> applied component-wise.</p>
+<div id="def:ZetaHIIT" class="definition">
+<p><strong>Definition 14</strong> (Specification of zeta as HIIT, candidate).  A pair <span class="math inline">\((\zeta:\mathbb{C}_{\mathsf{c}}\setminus \{1\} \to \mathbb{C}_{\mathsf{c}}, P:\mathsf{Holo}(\zeta))\)</span> is a <em>HIIT-realisation of zeta</em> if it is generated by: <span class="math display">\[\begin{align}
+\zeta_{\mathrm{Re}&gt;1} &amp;: \Pi(s:\mathbb{C}_{\mathsf{c}}).\, \mathrm{Re}(s) &gt; 1 \to \mathbb{C}_{\mathsf{c}}, \notag \\
+\zeta_{\mathrm{Re}&gt;1}(s) &amp;= \zeta_{\mathrm{series}}(s) \quad
+   \text{(equality with the series of \cref{eq:zetaSeries})} \\
+\mathsf{cont} &amp;: \Pi(s:\mathbb{C}_{\mathsf{c}}).\, s \neq 1 \to \mathbb{C}_{\mathsf{c}}\\
+\mathsf{agree} &amp;: \Pi(s:\mathbb{C}_{\mathsf{c}}).\, \Pi(p:\mathrm{Re}(s) &gt; 1).\,
+   \mathsf{cont}(s, \mathrm{ne1}_p) = \zeta_{\mathrm{Re}&gt;1}(s, p) \\
+\mathsf{holo} &amp;: \mathsf{Holo}(\mathsf{cont})
+\end{align}\]</span> together with <em>additional path-constructors</em> (intentionally left schematic) enforcing the functional equation <span class="math inline">\(\zeta(1-s) = 2(2\pi)^{-s}\Gamma(s)\cos(\pi s/2)\zeta(s)\)</span>.</p>
+<p>We use the language of a <code>definition</code> only for the specification; we make no claim of consistency.</p>
+</div>
+<div id="rem:ZetaHIITissues" class="remark">
+<p><em>Remark 15</em>.  This is a <em>specification</em>, not a finished HIIT, for two reasons:</p>
+<ol>
+<li><p>The <span class="math inline">\(\mathsf{holo}\)</span> constructor demands a holomorphic extension, but no such extension is canonically given by the constructors themselves. Consistency therefore reduces to a separate <em>existence-of-extension</em> lemma — which is exactly the analytic-continuation gap of <a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>.</p></li>
+<li><p>The functional-equation path-constructors are intentionally schematic. Their precise form would involve HoTT-native <span class="math inline">\(\Gamma\)</span>, <span class="math inline">\(\cos\)</span>, and the modular-transformation identity for <span class="math inline">\(\theta\)</span>, none of which are presently formalised. We do not know what their definitive shape should be, and indicate this rather than papering over it.</p></li>
+</ol>
+<p>The specification is therefore a <em>target pattern</em>, not a finished construction. The remaining two approaches (<a href="#def:ZetaEuler" data-reference-type="ref+Label" data-reference="def:ZetaEuler">16</a> and <a href="#def:ZetaUP" data-reference-type="ref+Label" data-reference="def:ZetaUP">20</a>) are more conservative.</p>
+</div>
+<h2 data-number="3.2" id="approach-2-zeta-as-analytic-limit-of-euler-product"><span class="header-section-number">3.2</span> Approach 2: <span class="math inline">\(\zeta\)</span> as analytic limit of Euler product</h2>
+<p>Recall the Euler product (<span class="citation" data-cites="Euler1737"></span>): <span class="math display">\[\zeta(s) = \prod_{p \text{ prime}} \frac{1}{1 - p^{-s}}, \qquad \mathrm{Re}(s) &gt; 1.\]</span></p>
+<div id="def:ZetaEuler" class="definition">
+<p><strong>Definition 16</strong> (Zeta via Euler product).  On the half-plane <span class="math inline">\(H_1 := \{s:\mathbb{C}_{\mathsf{c}}\mid \mathrm{Re}(s) &gt; 1\}\)</span>, define <span class="math display">\[\zeta_E(s) := \prod_{p \in \mathbb{P}} (1 - p^{-s})^{-1}\]</span> where <span class="math inline">\(\mathbb{P}\)</span> is the type of primes. Extend by analytic continuation (separately proven) to <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\setminus \{1\}\)</span>.</p>
+</div>
+<div id="prop:Euler" class="proposition">
+<p><strong>Proposition 17</strong> (Euler product, modulo convergence).  <em>On <span class="math inline">\(H_1\)</span>, <span class="math inline">\(\zeta_E(s) = \sum_{n=1}^{\infty} n^{-s}\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch in HoTT.</em> By unique factorisation in <span class="math inline">\(\mathbb{N}_{&gt;0}\)</span> (a HoTT-formalisable theorem), each <span class="math inline">\(n \geq 1\)</span> corresponds bijectively to a finite-support function <span class="math inline">\(\mathbb{P}
+\to \mathbb{N}\)</span> via <span class="math inline">\(n = \prod_p p^{e_p(n)}\)</span>. Expanding the Euler product: <span class="math display">\[\prod_p (1 - p^{-s})^{-1}
+  = \prod_p \sum_{k \geq 0} p^{-ks}
+  = \sum_{(e_p)\in \mathbb{N}^{(\mathbb{P})}} \prod_p p^{-e_p s}
+  = \sum_{n \geq 1} n^{-s}.\]</span> The middle equality uses absolute convergence of the product on <span class="math inline">\(H_1\)</span>, which is a HoTT-statement requiring <a href="#prop:DirichletAlgebra" data-reference-type="ref+Label" data-reference="prop:DirichletAlgebra">10</a>. ◻</p>
+</div>
+<h2 data-number="3.3" id="approach-3-zeta-via-universal-property-of-meromorphic-continuation"><span class="header-section-number">3.3</span> Approach 3: <span class="math inline">\(\zeta\)</span> via universal property of meromorphic continuation</h2>
+<div id="def:MeromCont" class="definition">
+<p><strong>Definition 18</strong> (Meromorphic continuation, universal).  Given a holomorphic <span class="math inline">\(f:U \to \mathbb{C}_{\mathsf{c}}\)</span> on an open <span class="math inline">\(U \subseteq \mathbb{C}_{\mathsf{c}}\)</span>, a <em>meromorphic continuation</em> of <span class="math inline">\(f\)</span> to <span class="math inline">\(V \supseteq U\)</span> is a meromorphic <span class="math inline">\(\tilde f:V \to \mathbb{C}_{\mathsf{c}}\)</span> with <span class="math inline">\(\tilde f|_U = f\)</span>, such that for any other meromorphic continuation <span class="math inline">\(g:V \to \mathbb{C}_{\mathsf{c}}\)</span>, <span class="math inline">\(\tilde f = g\)</span> as meromorphic functions. (Existence requires connectedness; uniqueness uses the identity theorem.)</p>
+</div>
+<div id="thm:Identity" class="theorem">
+<p><strong>Theorem 19</strong> (Identity theorem, HoTT version).  <em>Suppose <span class="math inline">\(f, g:V \to \mathbb{C}_{\mathsf{c}}\)</span> are holomorphic on a connected open <span class="math inline">\(V \subseteq \mathbb{C}_{\mathsf{c}}\)</span>, and the type <span class="math inline">\(\sum_{z:V} f(z) = g(z)\)</span> has an accumulation point in <span class="math inline">\(V\)</span>. Then <span class="math inline">\(\Pi(z:V).\, f(z) = g(z)\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Standard: the locus of agreement is open (by power series), closed (by continuity), and non-empty, hence equal to <span class="math inline">\(V\)</span> since <span class="math inline">\(V\)</span> is connected. HoTT-native version: “connected” becomes “<span class="math inline">\(\|V\|_{-1}\)</span> is a singleton” and “open” is interpreted appropriately in cohesive HoTT. ◻</p>
+</div>
+<div id="def:ZetaUP" class="definition">
+<p><strong>Definition 20</strong> (Zeta via universal property).  <span class="math inline">\(\zeta:\mathbb{C}_{\mathsf{c}}\setminus \{1\} \to \mathbb{C}_{\mathsf{c}}\)</span> is the unique (up to identity, by <a href="#thm:Identity" data-reference-type="ref+Label" data-reference="thm:Identity">19</a>) meromorphic continuation of <span class="math inline">\(s \mapsto \sum n^{-s}\)</span> from <span class="math inline">\(H_1\)</span> to <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\setminus \{1\}\)</span> with a simple pole of residue <span class="math inline">\(1\)</span> at <span class="math inline">\(s=1\)</span>.</p>
+</div>
+<h2 data-number="3.4" id="equivalence-of-the-three-definitions"><span class="header-section-number">3.4</span> Equivalence of the three definitions</h2>
+<div id="thm:ZetaEquiv" class="theorem">
+<p><strong>Theorem 21</strong> (Conjectural equivalence).  <em>Conditional on the existence of HoTT-native analytic continuation, the three definitions <a href="#def:ZetaHIIT" data-reference-type="ref+Label" data-reference="def:ZetaHIIT">14</a>, <a href="#def:ZetaEuler" data-reference-type="ref+Label" data-reference="def:ZetaEuler">16</a>, <a href="#def:ZetaUP" data-reference-type="ref+Label" data-reference="def:ZetaUP">20</a> are pairwise equivalent: there is a propositional equality between any two.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> <a href="#def:ZetaEuler" data-reference-type="ref+Label" data-reference="def:ZetaEuler">16</a> agrees with the partial-sum definition on <span class="math inline">\(H_1\)</span> by <a href="#prop:Euler" data-reference-type="ref+Label" data-reference="prop:Euler">17</a>. <a href="#def:ZetaUP" data-reference-type="ref+Label" data-reference="def:ZetaUP">20</a> agrees with the partial-sum definition on <span class="math inline">\(H_1\)</span> by definition. By <a href="#thm:Identity" data-reference-type="ref+Label" data-reference="thm:Identity">19</a>, any two meromorphic continuations of the same function agree everywhere. <a href="#def:ZetaHIIT" data-reference-type="ref+Label" data-reference="def:ZetaHIIT">14</a> imposes both the partial-sum agreement and the holomorphicity constraint, hence its result is identified with the universal-property zeta. The catch: each step requires HoTT-native analytic continuation, which is exactly the gap. ◻</p>
+</div>
+<h2 data-number="3.5" id="the-functional-equation"><span class="header-section-number">3.5</span> The functional equation</h2>
+<div id="thm:FE" class="theorem">
+<p><strong>Theorem 22</strong> (Functional equation, conjectured HoTT-native).  <em>For all <span class="math inline">\(s : \mathbb{C}_{\mathsf{c}}\setminus \{0,1\}\)</span>, <span class="math display">\[\zeta(1-s) = 2 (2\pi)^{-s} \Gamma(s) \cos(\pi s / 2) \zeta(s).\]</span></em></p>
+</div>
+<div class="proof">
+<p><em>Strategy.</em> Riemann’s original proof uses the theta-function identity <span class="math inline">\(\theta(t) = t^{-1/2}\theta(1/t)\)</span> and the Mellin transform. Translating to HoTT requires:</p>
+<ul>
+<li><p>HoTT-native theta function <span class="math inline">\(\theta:\mathbb{R}_{\mathsf{c}}^+ \to \mathbb{R}_{\mathsf{c}}\)</span>, defined by <span class="math inline">\(\theta(t) := \sum_{n \in \mathbb{Z}} e^{-\pi n^2 t}\)</span>, plus the modular identity.</p></li>
+<li><p>HoTT-native Mellin transform <span class="math inline">\(\mathcal{M}:\mathsf{Holo}(\mathbb{R}_{\mathsf{c}}^+,\mathbb{R}_{\mathsf{c}}) \to \mathsf{Holo}(\mathbb{C}_{\mathsf{c}},\mathbb{C}_{\mathsf{c}})\)</span>.</p></li>
+<li><p>HoTT-native contour-integral lemmas.</p></li>
+</ul>
+<p>None of these are presently formalized in HoTT. They are all formalized in classical Lean 4 / Mathlib (Loeffler–Stoll, 2025). ◻</p>
+</div>
+<h2 data-number="3.6" id="the-critical-strip"><span class="header-section-number">3.6</span> The critical strip</h2>
+<div class="definition">
+<p><strong>Definition 23</strong> (Critical strip).  <span class="math inline">\(S := \{s : \mathbb{C}_{\mathsf{c}}\mid 0 &lt; \mathrm{Re}(s) &lt; 1\}\)</span>.</p>
+</div>
+<div class="definition">
+<p><strong>Definition 24</strong> (Trivial zeros).  A zero <span class="math inline">\(s_0\)</span> of <span class="math inline">\(\zeta\)</span> is <em>trivial</em> if <span class="math inline">\(s_0 \in \{-2,-4,-6,\ldots\}\)</span>.</p>
+</div>
+<div id="conj:RH" class="conjecture">
+<p><strong>Conjecture 25</strong> (Riemann hypothesis, HoTT statement).  <em><span class="math display">\[\Pi(s:\mathbb{C}_{\mathsf{c}}).\, \zeta(s) = 0 \to \neg\,\mathsf{trivialZero}(s) \to \mathrm{Re}(s) = 1/2.\]</span></em></p>
+</div>
+<p>We will analyse this statement modal-logically in <a href="#sec:rh" data-reference-type="ref+Label" data-reference="sec:rh">8</a>.</p>
+<h2 data-number="3.7" id="subsec:Basel"><span class="header-section-number">3.7</span> Worked example: <span class="math inline">\(\zeta(2) = \pi^2/6\)</span></h2>
+<p>To illustrate what HoTT-native machinery is needed, we trace one of the oldest results — the Basel problem.</p>
+<div id="thm:Basel" class="theorem">
+<p><strong>Theorem 26</strong> (Basel problem).  <em><span class="math inline">\(\zeta(2) = \pi^2/6\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch of HoTT-native proof, modulo missing infrastructure.</em> There are several classical approaches; we outline two.</p>
+<p><strong>Approach (i): Fourier series of <span class="math inline">\(x^2\)</span>.</strong> Expand <span class="math inline">\(x^2\)</span> on <span class="math inline">\([-\pi,\pi]\)</span> as a Fourier series: <span class="math display">\[x^2 = \frac{\pi^2}{3} + 4\sum_{n=1}^{\infty} \frac{(-1)^n \cos(nx)}{n^2}.\]</span> Setting <span class="math inline">\(x = \pi\)</span> yields <span class="math inline">\(\pi^2 = \pi^2/3 + 4\zeta(2)\)</span>, hence <span class="math inline">\(\zeta(2) = \pi^2/6\)</span>. The HoTT-native version requires:</p>
+<ul>
+<li><p>HoTT-native Fourier series with pointwise convergence on smooth functions.</p></li>
+<li><p>HoTT-native trigonometric functions (definable as power series, hence HIIT <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>-valued).</p></li>
+<li><p>Pointwise evaluation at the boundary requires Abel-style limits.</p></li>
+</ul>
+<p><strong>Approach (ii): Euler’s product expansion of <span class="math inline">\(\sin\)</span>.</strong> Use <span class="math display">\[\frac{\sin(\pi z)}{\pi z} = \prod_{n=1}^{\infty}\left(1 - \frac{z^2}{n^2}\right).\]</span> Equating Taylor coefficients of <span class="math inline">\(z^2\)</span> on both sides: <span class="math inline">\(-\pi^2/6 = -\sum 1/n^2\)</span>, so <span class="math inline">\(\zeta(2) = \pi^2/6\)</span>. HoTT-native version requires:</p>
+<ul>
+<li><p>Infinite-product convergence theory in HoTT.</p></li>
+<li><p>Term-by-term Taylor expansion of the product (Abel-Mertens-style manipulation).</p></li>
+<li><p>Product-to-sum identity, valid on absolute convergence.</p></li>
+</ul>
+<p>Either approach requires roughly the same prerequisite chain: <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:3" data-reference-type="ref+Label" data-reference="prob:3">43</a>, plus some elementary measure / convergence theory. <a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a> is not needed for this specific theorem because <span class="math inline">\(s=2\)</span> is in the half-plane of absolute convergence. ◻</p>
+</div>
+<div id="rem:zetatwo" class="remark">
+<p><em>Remark 27</em>.  <a href="#thm:Basel" data-reference-type="ref+Label" data-reference="thm:Basel">26</a> is a <em>lower-bound</em> HoTT goal: it does not require analytic continuation or the functional equation. We propose it as the <em>minimum viable target</em> for HoTT-native analytic NT — the analogue of “hello, world” for our roadmap.</p>
+</div>
+<h1 data-number="4" id="sec:langlands"><span class="header-section-number">4</span> Geometric Langlands in <span class="math inline">\((\infty,1)\)</span>-Topoi</h1>
+<h2 data-number="4.1" id="brief-history"><span class="header-section-number">4.1</span> Brief history</h2>
+<p>The Langlands programme <span class="citation" data-cites="Langlands1970"></span> predicts a correspondence <span class="math display">\[\bigl\{ \text{automorphic reps of } GL(n,\mathbb{A}_F) \bigr\}
+\;\longleftrightarrow\;
+\bigl\{ \text{$n$-dim Galois reps of } \mathrm{Gal}(\overline{F}/F) \bigr\}\]</span> for a global field <span class="math inline">\(F\)</span>. The number-field case (<span class="math inline">\(F\)</span> a number field) is analytic in nature; the function-field case (<span class="math inline">\(F = \mathbb{F}_q(X)\)</span> for a curve <span class="math inline">\(X\)</span>) is geometric, hence the name <em>geometric Langlands</em>.</p>
+<p>Geometric Langlands has a categorical formulation due to Beilinson–Drinfeld <span class="citation" data-cites="BeilinsonDrinfeld2004"></span> and Frenkel–Gaitsgory: the conjecture is the existence of an equivalence <span class="math display">\[\mathsf{D}\text{-mod}(\mathsf{Bun}_G(X)) \,\simeq\, \mathsf{QCoh}(\mathsf{LocSys}_{G^\vee}(X))\]</span> of <span class="math inline">\((\infty,1)\)</span>-categories, where <span class="math inline">\(G\)</span> is a reductive group, <span class="math inline">\(\mathsf{Bun}_G\)</span> its moduli stack of <span class="math inline">\(G\)</span>-bundles, <span class="math inline">\(G^\vee\)</span> the Langlands dual, and <span class="math inline">\(\mathsf{LocSys}\)</span> the de Rham moduli of local systems. This was <strong>proven</strong> in 2024 by Gaitsgory, Raskin, Rozenblyum, Arinkin, Beraldo, Chen, Cheng, Faergeman, Lin, Lysenko in five papers <span class="citation" data-cites="Gaitsgory2024GLC"></span>, awarded the 2025 Breakthrough Prize.</p>
+<h2 data-number="4.2" id="infty1-categories-vs.-hott"><span class="header-section-number">4.2</span> <span class="math inline">\((\infty,1)\)</span>-categories vs. HoTT</h2>
+<p>By Lurie’s higher topos theory <span class="citation" data-cites="Lurie2009HTT"></span> and higher algebra <span class="citation" data-cites="LurieHA"></span>, <span class="math inline">\((\infty,1)\)</span>-categories admit a model in simplicial sets (quasi-categories). Cisinski et al. <span class="citation" data-cites="CisinskiKKNS2025"></span> have begun a programme of <em>type-theoretic foundations of <span class="math inline">\((\infty,1)\)</span>-category theory</em> in which <span class="math inline">\((\infty,1)\)</span>-categories are types satisfying a Segal condition.</p>
+<p>By Shulman’s theorem <span class="citation" data-cites="Shulman2019InfTopos"></span>, every <span class="math inline">\((\infty,1)\)</span>-topos <span class="math inline">\(\mathcal{X}\)</span> admits HoTT as its internal language. Hence, in principle, the Gaitsgory equivalence is statable in HoTT <em>internally to a fixed <span class="math inline">\((\infty,1)\)</span>-topos</em>.</p>
+<div id="rem:internal" class="remark">
+<p><em>Remark 28</em>.  The catch is that the equivalence relates two <em>different</em> topoi: <span class="math inline">\(\mathsf{D}\text{-mod}(\mathsf{Bun}_G)\)</span> is internal to a derived geometric topos; <span class="math inline">\(\mathsf{QCoh}(\mathsf{LocSys}_{G^\vee})\)</span> is internal to a different derived geometric topos. A HoTT statement requires either an ambient 2-topos / very-large-universe setup (in the spirit of Riehl–Verity directed type theory) or an external HoTT statement comparing two HoTT internal languages.</p>
+</div>
+<h2 data-number="4.3" id="geometric-vs.-analytic-langlands"><span class="header-section-number">4.3</span> Geometric vs. analytic Langlands</h2>
+<p>The 2024 proof is <em>geometric</em>: it lives in the world of moduli stacks over <span class="math inline">\(\mathbb{F}_q\)</span>-curves or, in characteristic 0, over <span class="math inline">\(\mathbb{C}\)</span>-curves with the de Rham stack (cf. <span class="citation" data-cites="ClausenScholzeComplex"></span> for the complex-analytic side). It says nothing directly about <span class="math inline">\(\zeta\)</span> or about analytic number theory.</p>
+<p>The <em>analytic</em> Langlands programme (Etingof–Frenkel–Kazhdan <span class="citation" data-cites="EFK2025AnalyticLanglands"></span>) attempts a Hilbert-space variant: the <span class="math inline">\(L^2\)</span>-spectrum of certain operators on <span class="math inline">\(\mathsf{Bun}_G(\mathbb{C}\text{-curve})\)</span> should match a spectral side built from <span class="math inline">\(\mathsf{LocSys}_{G^\vee}\)</span>. This is the program closer to <span class="math inline">\(\zeta(s) = 0\)</span>, but it is much less developed than the geometric version.</p>
+<h2 data-number="4.4" id="implication-for-hott-native-analytic-nt"><span class="header-section-number">4.4</span> Implication for HoTT-native analytic NT</h2>
+<p>If a HoTT-native analytic Langlands programme could be developed, then <span class="math inline">\(\zeta(s) = 0\)</span> would translate to a statement about the spectrum of an operator on <span class="math inline">\(\mathsf{Bun}_G(\mathbb{Q})\)</span>, which is at least <em>syntactically</em> a HoTT statement modulo standard moduli-stack constructions. We do not develop this direction in detail; we flag it as a concrete research direction.</p>
+<h2 data-number="4.5" id="subsec:GL1"><span class="header-section-number">4.5</span> Detailed example: <span class="math inline">\(GL(1)\)</span> Langlands and Hecke characters</h2>
+<p>The simplest case of Langlands is <span class="math inline">\(G = GL(1)\)</span>, and even this case shows where HoTT-native infrastructure is needed.</p>
+<div class="example">
+<p><strong>Example 29</strong> (<span class="math inline">\(GL(1)\)</span> over <span class="math inline">\(\mathbb{Q}\)</span>).  Automorphic representations of <span class="math inline">\(GL(1, \mathbb{A}_\mathbb{Q})\)</span> are continuous characters <span class="math inline">\(\chi: \mathbb{A}_\mathbb{Q}^\times / \mathbb{Q}^\times \to \mathbb{C}^\times\)</span>. By class-field theory, these correspond to characters of <span class="math inline">\(\mathrm{Gal}^{\mathrm{ab}}
+(\overline{\mathbb{Q}}/\mathbb{Q})\)</span>, i.e., characters of the idele class group. The <span class="math inline">\(L\)</span>-function attached to <span class="math inline">\(\chi\)</span> is <span class="math display">\[L(s,\chi) = \prod_p \frac{1}{1 - \chi(p) p^{-s}}.\]</span> For <span class="math inline">\(\chi = 1\)</span> trivial, this is <span class="math inline">\(\zeta(s)\)</span>. The Langlands correspondence identifies <span class="math inline">\(L(s,\chi)\)</span> with the Artin <span class="math inline">\(L\)</span>-function of the corresponding Galois character.</p>
+</div>
+<div class="remark">
+<p><em>Remark 30</em> (HoTT formulation of Hecke characters).  A HoTT formulation requires:</p>
+<ul>
+<li><p>HoTT-native ideles <span class="math inline">\(\mathbb{A}_\mathbb{Q}^\times\)</span> as a restricted product over places. This is a HoTT-native colimit over a directed system of finite-place subgroups; HoTT-native completion at each place requires HoTT <span class="math inline">\(p\)</span>-adic numbers <span class="citation" data-cites="HoTTBook"></span>.</p></li>
+<li><p>HoTT-native continuous group homomorphisms.</p></li>
+<li><p>HoTT-native <span class="math inline">\(L\)</span>-function attached to character.</p></li>
+</ul>
+<p>None of these are presently available, but each is plausibly a few thousand lines of HoTT code.</p>
+</div>
+<h2 data-number="4.6" id="subsec:GLCInternal"><span class="header-section-number">4.6</span> Geometric Langlands as an internal HoTT statement</h2>
+<p>We give a more precise version of the Gaitsgory equivalence as a HoTT internal statement. Let <span class="math inline">\(\mathcal{X}\)</span> be the <span class="math inline">\((\infty,1)\)</span>-topos of derived algebraic stacks over <span class="math inline">\(\mathbb{C}\)</span>. By Shulman <span class="citation" data-cites="Shulman2019InfTopos"></span>, <span class="math inline">\(\mathcal{X}\)</span> has an internal language extending HoTT (after fixing a universe-of-types issue).</p>
+<div id="conj:GLCHoTT" class="conjecture">
+<p><strong>Conjecture 31</strong> (Gaitsgory equivalence in HoTT, schematic).  <em>In the internal language of <span class="math inline">\(\mathcal{X}\)</span>, fix a smooth projective curve <span class="math inline">\(X:\mathcal{X}\)</span> over <span class="math inline">\(\mathbb{C}\)</span> and a reductive group <span class="math inline">\(G:\mathcal{X}\)</span>. Define: <span class="math display">\[\begin{align*}
+\mathsf{Bun}_G(X) &amp;:\mathcal{U}\quad \text{(moduli stack of $G$-bundles)}, \\
+\mathsf{LocSys}_{G^\vee}(X) &amp;:\mathcal{U}\quad \text{(moduli stack of $G^\vee$-local systems)}, \\
+\mathsf{D}\text{-mod}(\mathsf{Bun}_G) &amp;:\mathcal{U}\quad \text{(category of D-modules)}, \\
+\mathsf{QCoh}(\mathsf{LocSys}_{G^\vee}) &amp;:\mathcal{U}\quad \text{(category of quasi-coherent sheaves)}.
+\end{align*}\]</span> There is a HoTT-internal equivalence of <span class="math inline">\(\infty\)</span>-categories: <span class="math display">\[\mathsf{D}\text{-mod}(\mathsf{Bun}_G(X)) \simeq \mathsf{QCoh}(\mathsf{LocSys}_{G^\vee}(X)).\]</span></em></p>
+</div>
+<p>This is conjectural in the sense that we have not verified all the type-theoretic encodings; the underlying mathematical content is theorem (Gaitsgory et al. 2024).</p>
+<div id="rem:univalence-glc" class="remark">
+<p><em>Remark 32</em>.  Univalence enters when one asks: <em>which</em> equivalence? The Gaitsgory–Drinfeld equivalence comes equipped with a Hecke-eigensheaf property; under univalence, this distinguishes one canonical equivalence up to a contractible space of choices.</p>
+</div>
+<h2 data-number="4.7" id="physical-interpretation-4d-mathcaln4-super-yangmills"><span class="header-section-number">4.7</span> Physical interpretation: 4d <span class="math inline">\(\mathcal{N}=4\)</span> super-Yang–Mills</h2>
+<p>Kapustin and Witten <span class="citation" data-cites="KapustinWitten2007"></span> interpreted geometric Langlands as electric–magnetic duality (S-duality) of 4d <span class="math inline">\(\mathcal{N}=4\)</span> super-Yang–Mills compactified on a Riemann surface. This physical perspective suggests:</p>
+<ul>
+<li><p>A HoTT-native treatment of 4d <span class="math inline">\(\mathcal{N}=4\)</span> super-Yang–Mills via synthetic differential cohesive HoTT <span class="citation" data-cites="Schreiber2013"></span>.</p></li>
+<li><p>S-duality as an automorphism of the underlying type; eigenvalues of S-duality giving the spectrum.</p></li>
+<li><p>Connection to the synthesis paper’s QFT formulation.</p></li>
+</ul>
+<p>We flag this as a research direction; we do not develop it further here.</p>
+<h1 data-number="5" id="sec:condensed"><span class="header-section-number">5</span> Condensed Mathematics and HoTT</h1>
+<h2 data-number="5.1" id="pyknotic-condensed-sets"><span class="header-section-number">5.1</span> Pyknotic / condensed sets</h2>
+<p>Clausen and Scholze <span class="citation" data-cites="Scholze2019Condensed ClausenScholze2024Analytic"></span> defined the <em>condensed sets</em> as sheaves on the site of profinite sets with finite jointly-surjective covers. Pyknotic sets, due to Barwick–Haine, are an essentially equivalent variant. The category <span class="math inline">\(\mathsf{Cond}\)</span> is a topos, and <span class="math inline">\(\mathsf{Cond}(\mathrm{Ab})\)</span> — condensed abelian groups — has <em>much better homological properties</em> than topological abelian groups.</p>
+<p>The crucial example: <span class="math inline">\(\mathbb{C}\)</span> becomes a <em>condensed ring</em> which is analytic-friendly in a way that <span class="math inline">\(\mathbb{C}\)</span>-as-topological-ring is not. The 6-functor formalism of analytic stacks (Clausen–Scholze 2024) gives a geometric foundation for analytic-number-theoretic objects.</p>
+<h2 data-number="5.2" id="why-this-matters-for-zeta"><span class="header-section-number">5.2</span> Why this matters for <span class="math inline">\(\zeta\)</span></h2>
+<p>The condensed approach gives a uniform setting in which:</p>
+<ul>
+<li><p>Smooth manifolds, complex-analytic spaces, schemes, formal schemes, adic spaces, and rigid spaces all live as condensed objects.</p></li>
+<li><p>Cohomology operations (six functors: <span class="math inline">\(f^*, f_*, f_!, f^!, \otimes,
+\mathrm{Hom}\)</span>) all exist with clean adjunction structure.</p></li>
+<li><p><span class="math inline">\(\zeta\)</span>, viewed as a meromorphic function on <span class="math inline">\(\mathbb{C}\)</span>, becomes an object in <span class="math inline">\(\mathsf{Cond}(\mathrm{Ab})\)</span>-modules over a suitable condensed analytic stack.</p></li>
+</ul>
+<h2 data-number="5.3" id="bridging-to-hott"><span class="header-section-number">5.3</span> Bridging to HoTT</h2>
+<div id="prob:bridge" class="problem">
+<p><strong>Problem 33</strong> (Bridging condensed mathematics and HoTT).  Construct an <span class="math inline">\((\infty,1)\)</span>-topos <span class="math inline">\(\mathcal{X}\)</span> with an internal language extending HoTT, in which:</p>
+<ul>
+<li><p>Condensed sets embed fully faithfully.</p></li>
+<li><p>Solid abelian groups (in the sense of Clausen–Scholze) are an internal type.</p></li>
+<li><p>Holomorphic / meromorphic functions on <span class="math inline">\(\mathbb{C}\)</span> correspond to morphisms of condensed analytic stacks.</p></li>
+</ul>
+</div>
+<p><a href="#prob:bridge" data-reference-type="ref+Label" data-reference="prob:bridge">33</a> is open; preliminary work by Mahmoudvand–Riehl and others has explored the syntactic side, but no complete bridge exists.</p>
+<h2 data-number="5.4" id="solid-abelian-groups-in-hott-sketch"><span class="header-section-number">5.4</span> Solid abelian groups in HoTT, sketch</h2>
+<div class="definition">
+<p><strong>Definition 34</strong> (Solid abelian group, condensed).  A condensed abelian group <span class="math inline">\(A\)</span> is <em>solid</em> if for every profinite set <span class="math inline">\(S\)</span> and every continuous <span class="math inline">\(S \to A\)</span> which is null on the closure of zero, the induced map factors through <span class="math inline">\(A\)</span> uniquely.</p>
+</div>
+<p>A HoTT-native version would replace “profinite set” with a HoTT-internal type (e.g., a limit of finite types in <span class="math inline">\(\mathcal{U}\)</span>) and “continuous” with the appropriate cohesive-HoTT modality. We sketch a candidate:</p>
+<div id="def:HoTTSolid" class="definition">
+<p><strong>Definition 35</strong> (HoTT-solid abelian group, candidate).  Working in cohesive HoTT, an abelian group <span class="math inline">\(A:\mathcal{U}\)</span> is <em>HoTT-solid</em> if <span class="math inline">\(\mathsf{S}(A) \simeq A\)</span> and the map <span class="math inline">\(\flat A \to A\)</span> is an equivalence.</p>
+</div>
+<div class="remark">
+<p><em>Remark 36</em>.  <a href="#def:HoTTSolid" data-reference-type="ref+Label" data-reference="def:HoTTSolid">35</a> is speculative; it has not been verified to match the condensed definition. It is offered as a starting point for future work.</p>
+</div>
+<h2 data-number="5.5" id="subsec:sixfunctor"><span class="header-section-number">5.5</span> Six-functor formalism in HoTT</h2>
+<p>The Clausen–Scholze 6-functor formalism for analytic stacks <span class="citation" data-cites="ClausenScholze2024SixFunctor ClausenScholze2025AnalyticStacks"></span> is expressed in <span class="math inline">\((\infty,1)\)</span>-categorical language as follows. Given a category <span class="math inline">\(\mathcal{C}\)</span> of geometric objects (analytic stacks) with two classes of morphisms “proper” <span class="math inline">\(\mathsf{P}\)</span> and “open” <span class="math inline">\(\mathsf{O}\)</span>, a 6-functor formalism consists of:</p>
+<ul>
+<li><p>A symmetric monoidal <span class="math inline">\((\infty,1)\)</span>-category <span class="math inline">\(\mathcal{D}(X)\)</span> for each <span class="math inline">\(X \in \mathcal{C}\)</span>, of <span class="math inline">\(\infty\)</span>-sheaves on <span class="math inline">\(X\)</span>.</p></li>
+<li><p>For each morphism <span class="math inline">\(f: X \to Y\)</span> in <span class="math inline">\(\mathcal{C}\)</span>, an adjunction <span class="math inline">\(f^* \dashv f_*: \mathcal{D}(Y) \rightleftarrows \mathcal{D}(X)\)</span>.</p></li>
+<li><p>For each <span class="math inline">\(f\)</span> in <span class="math inline">\(\mathsf{P} \cup \mathsf{O}\)</span>, an additional pair <span class="math inline">\(f_! \dashv f^!: \mathcal{D}(X) \rightleftarrows \mathcal{D}(Y)\)</span>.</p></li>
+<li><p>Coherent base change, projection formula, and proper / open recollement.</p></li>
+</ul>
+<div id="prob:sixfunc" class="problem">
+<p><strong>Problem 37</strong> (6-functors in HoTT).  Express the 6-functor formalism in HoTT internal language. The natural setting: <span class="math inline">\((\infty,1)\)</span>-topoi indexed over a directed type / <span class="math inline">\((\infty,2)\)</span>-base <span class="citation" data-cites="Riehl2021Elements"></span>.</p>
+</div>
+<p>A successful resolution of <a href="#prob:sixfunc" data-reference-type="ref+Label" data-reference="prob:sixfunc">37</a> would, indirectly, give a HoTT framework for analytic objects (including <span class="math inline">\(\zeta\)</span> as a section of a suitable line bundle).</p>
+<h2 data-number="5.6" id="subsec:solidp"><span class="header-section-number">5.6</span> Solid modules over <span class="math inline">\(\mathbb{Z}\)</span> and <span class="math inline">\(p\)</span>-adic interaction</h2>
+<p>In condensed mathematics, the category of solid abelian groups <span class="math inline">\(\mathrm{Solid}_{\mathbb{Z}}\)</span> contains <span class="math inline">\(p\)</span>-adic objects naturally: <span class="math display">\[\mathbb{Z}_p \in \mathrm{Solid}_{\mathbb{Z}}, \qquad \mathbb{Q}_p \in \mathrm{Solid}_{\mathbb{Z}}, \qquad
+\mathbb{C}_p \in \mathrm{Solid}_{\mathbb{Z}}.\]</span> For <span class="math inline">\(\mathbb{Z}_p\)</span>, the topology comes from the profinite structure <span class="math inline">\(\mathbb{Z}_p = \varprojlim_n \mathbb{Z}/p^n\)</span>. For <span class="math inline">\(\mathbb{C}_p\)</span>, completing the algebraic closure of <span class="math inline">\(\mathbb{Q}_p\)</span> uses metric completion plus algebraic closure plus completion again — this is awkward classically and equally awkward in HoTT.</p>
+<div id="conj:padicZeta" class="conjecture">
+<p><strong>Conjecture 38</strong> (<span class="math inline">\(p\)</span>-adic zeta function in HoTT).  <em>A HoTT-native realisation of the Kubota–Leopoldt <span class="math inline">\(p\)</span>-adic zeta function <span class="math inline">\(\zeta_p:\mathbb{Z}_p \setminus \{1\} \to \mathbb{Q}_p\)</span> is plausibly easier than the archimedean <span class="math inline">\(\zeta\)</span>, because the <span class="math inline">\(p\)</span>-adic case avoids analytic continuation and uses interpolation of values <span class="math inline">\(\zeta(1-n)\)</span> for <span class="math inline">\(n \geq 1\)</span>.</em></p>
+</div>
+<div id="rem:padicEasier" class="remark">
+<p><em>Remark 39</em>.  <a href="#conj:padicZeta" data-reference-type="ref+Label" data-reference="conj:padicZeta">38</a> is a research suggestion: <em>start with the <span class="math inline">\(p\)</span>-adic case</em>. Loeffler–Stoll formalize the archimedean case; the <span class="math inline">\(p\)</span>-adic case has not yet been comprehensively formalized in any proof assistant. HoTT could be the first.</p>
+</div>
+<h1 data-number="6" id="sec:loefflerstoll"><span class="header-section-number">6</span> Comparison with Loeffler–Stoll Lean Formalization</h1>
+<h2 data-number="6.1" id="what-loefflerstoll-have"><span class="header-section-number">6.1</span> What Loeffler–Stoll have</h2>
+<p>The 2025 paper <span class="citation" data-cites="LoefflerStoll2025"></span> formalizes in Lean 4 / Mathlib:</p>
+<ol>
+<li><p>The Riemann zeta function <span class="math inline">\(\zeta\)</span> via Hurwitz zeta and analytic continuation, <span class="math inline">\(\sim\)</span> 3300 lines.</p></li>
+<li><p>Dirichlet <span class="math inline">\(L\)</span>-functions <span class="math inline">\(L(s,\chi)\)</span> for primitive characters <span class="math inline">\(\chi\)</span>.</p></li>
+<li><p>The Euler product <span class="math inline">\(\zeta(s) = \prod_p (1-p^{-s})^{-1}\)</span> on <span class="math inline">\(\mathrm{Re}(s)&gt;1\)</span>.</p></li>
+<li><p>Analytic continuation via Mellin / theta-function method.</p></li>
+<li><p>The functional equation <span class="math inline">\(\zeta(1-s) = 2(2\pi)^{-s}\Gamma(s)
+\cos(\pi s/2)\zeta(s)\)</span>.</p></li>
+<li><p>Basel: <span class="math inline">\(\zeta(2) = \pi^2/6\)</span>.</p></li>
+<li><p>Non-vanishing on <span class="math inline">\(\mathrm{Re}(s) \geq 1\)</span>.</p></li>
+<li><p>Dirichlet’s theorem on primes in APs.</p></li>
+<li><p>Formal statement of the Riemann hypothesis:</p>
+<pre><code>def RiemannHypothesis : Prop :=
+  ∀ s : ℂ, riemannZeta s = 0 → ¬ trivialZero s → s.re = 1 / 2</code></pre></li>
+</ol>
+<p>This is roughly <span class="math inline">\(10^4\)</span> lines total across the relevant Mathlib files.</p>
+<h2 data-number="6.2" id="what-lean-mathlib-provides-that-hott-lacks"><span class="header-section-number">6.2</span> What Lean / Mathlib provides that HoTT lacks</h2>
+<ul>
+<li><p>Classical <span class="math inline">\(\mathbb{C}\)</span> as a complete normed field, with Cauchy integrals.</p></li>
+<li><p>Mathlib’s <code>Complex.differentiable</code>, <code>HolomorphicAt</code>, <code>ContourIntegral</code>.</p></li>
+<li><p>Mellin transforms, Gamma function, Riemann zeta function (<code>ZetaFunction</code> in Mathlib).</p></li>
+<li><p>All of measure theory, including Lebesgue integration on <span class="math inline">\(\mathbb{C}\)</span>.</p></li>
+</ul>
+<h2 data-number="6.3" id="what-hott-could-offer"><span class="header-section-number">6.3</span> What HoTT could offer</h2>
+<ul>
+<li><p><em>Univalence</em>: the multiple definitions of <span class="math inline">\(\zeta\)</span> (<a href="#def:ZetaHIIT" data-reference-type="ref+Label" data-reference="def:ZetaHIIT">14</a>, <a href="#def:ZetaEuler" data-reference-type="ref+Label" data-reference="def:ZetaEuler">16</a>, <a href="#def:ZetaUP" data-reference-type="ref+Label" data-reference="def:ZetaUP">20</a>) become <em>propositionally equal</em> via univalence, not merely equal up to some isomorphism.</p></li>
+<li><p><em>Higher inductive types</em>: the Riemann surface of <span class="math inline">\(\zeta\)</span> (or of <span class="math inline">\(L\)</span>-functions) is naturally a HIT, capturing branch-cut data syntactically.</p></li>
+<li><p><em>Internal <span class="math inline">\((\infty,1)\)</span>-topos language</em>: the Langlands functor and its adjoints can be expressed in the same language as the underlying analytic objects.</p></li>
+</ul>
+<h2 data-number="6.4" id="strategy-hott-as-classical-foundation-transport"><span class="header-section-number">6.4</span> Strategy: HoTT as classical-foundation transport</h2>
+<p>A pragmatic approach: <em>transport</em> the Loeffler–Stoll Lean formalization to HoTT <em>not</em> by re-doing all the analysis, but by treating <span class="math inline">\(\mathbb{C}\)</span> axiomatically as a HoTT type with the same operations and properties as Mathlib’s <span class="math inline">\(\mathbb{C}\)</span>. We sketch this in <a href="#sec:roadmap" data-reference-type="ref+Label" data-reference="sec:roadmap">7</a>.</p>
+<h2 data-number="6.5" id="subsec:LSsigs"><span class="header-section-number">6.5</span> Code-level comparison: signature against signature</h2>
+<p>To make the comparison tangible, we present the key Lean signatures from Loeffler–Stoll alongside conjectured HoTT analogues.</p>
+<h4 data-number="6.5.0.1" id="the-zeta-function-itself."><span class="header-section-number">6.5.0.1</span> The zeta function itself.</h4>
+<p>In Mathlib (Loeffler–Stoll):</p>
+<pre><code>noncomputable def riemannZeta : ℂ → ℂ</code></pre>
+<p>In HoTT (proposed): <span class="math display">\[\zeta : \mathbb{C}_{\mathsf{c}}\setminus \{1\} \to \mathbb{C}_{\mathsf{c}}\quad \text{(with explicit pole at $s=1$)}.\]</span> Here Lean uses “noncomputable” to encode that <span class="math inline">\(\zeta\)</span> is defined by non-effective analytic continuation. HoTT, lacking a built-in concept of “noncomputable”, must encode this via a propositional truncation.</p>
+<h4 data-number="6.5.0.2" id="the-functional-equation."><span class="header-section-number">6.5.0.2</span> The functional equation.</h4>
+<p>In Mathlib:</p>
+<pre><code>theorem riemannZeta_one_sub : ∀ (s : ℂ), s ≠ 0 → s ≠ 1 →
+  riemannZeta (1 - s) = 2 * (2 * π) ^ (-s) * Gamma s
+                      * cos (π * s / 2) * riemannZeta s</code></pre>
+<p>HoTT analogue (proposed): exactly the corresponding <span class="math inline">\(\Pi\)</span>-statement, modulo the conditional <span class="math inline">\(s \neq 0 \wedge s \neq 1\)</span>.</p>
+<h4 data-number="6.5.0.3" id="non-vanishing-on-mathrmres-geq-1."><span class="header-section-number">6.5.0.3</span> Non-vanishing on <span class="math inline">\(\mathrm{Re}(s) \geq 1\)</span>.</h4>
+<p>In Mathlib:</p>
+<pre><code>theorem riemannZeta_ne_zero_of_one_le_re :
+  ∀ (s : ℂ), 1 ≤ s.re → s ≠ 1 → riemannZeta s ≠ 0</code></pre>
+<p>HoTT analogue: same statement; the proof uses the Euler product (no analytic continuation), so should be tractable HoTT-natively.</p>
+<h4 data-number="6.5.0.4" id="riemann-hypothesis."><span class="header-section-number">6.5.0.4</span> Riemann hypothesis.</h4>
+<p>In Mathlib:</p>
+<pre><code>def RiemannHypothesis : Prop :=
+  ∀ s : ℂ, riemannZeta s = 0 → ¬ trivialZero s → s.re = 1 / 2</code></pre>
+<p>HoTT analogue: <a href="#conj:RH" data-reference-type="ref+Label" data-reference="conj:RH">25</a>.</p>
+<h2 data-number="6.6" id="subsec:LSquant"><span class="header-section-number">6.6</span> Quantitative comparison</h2>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Theorem</th>
+<th style="text-align: center;">Lean lines (Loeffler–Stoll)</th>
+<th style="text-align: center;">Est. HoTT complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\zeta\)</span> definition</td>
+<td style="text-align: center;">200</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\)</span>–<span class="math inline">\(3\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Analytic continuation</td>
+<td style="text-align: center;">3300</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\)</span>–<span class="math inline">\(3\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Functional equation</td>
+<td style="text-align: center;">800</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\)</span>–<span class="math inline">\(3\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Euler product</td>
+<td style="text-align: center;">200</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\zeta\)</span> non-vanishing on <span class="math inline">\(\mathrm{Re}(s) \geq 1\)</span></td>
+<td style="text-align: center;">600</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Dirichlet <span class="math inline">\(L\)</span>-functions</td>
+<td style="text-align: center;">1500</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Dirichlet’s theorem</td>
+<td style="text-align: center;">800</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\times\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Total</td>
+<td style="text-align: center;"><span class="math inline">\(\sim\)</span>7400 lines</td>
+<td style="text-align: center;"><span class="math inline">\(\sim 2\)</span>–<span class="math inline">\(3\times\)</span> overhead</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="remark">
+<p><em>Remark 40</em> (Caveat about line-count estimates).  The right-hand column is highly speculative; we present it as a <em>complexity factor</em> rather than absolute counts. The factor reflects the rough overhead of HoTT-native analysis (no classical Mathlib measure theory, no built-in Lebesgue integration, manual constructive analysis) plus an honest correction for the immaturity of HoTT analysis libraries. Actual numbers will diverge from these estimates by easily <span class="math inline">\(\pm 50\%\)</span> as HoTT analysis libraries mature. The estimates are calibrated against <span class="citation" data-cites="Booij2020"></span> for HoTT-native analysis benchmarks.</p>
+</div>
+<h1 data-number="7" id="sec:roadmap"><span class="header-section-number">7</span> Six Sub-Problems for HoTT-Native <span class="math inline">\(\zeta\)</span></h1>
+<p>We propose six concrete sub-problems whose collective resolution would yield a HoTT-native proof of <span class="math inline">\(\zeta(2) = \pi^2/6\)</span> and a formal HoTT statement of the Riemann hypothesis.</p>
+<h2 class="unnumbered" id="sub-problem-1-hott-native-mathbbc_mathsfc-with-full-algebraic-closure-axiom">Sub-problem 1: HoTT-native <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span> with full algebraic-closure axiom</h2>
+<div id="prob:1" class="problem">
+<p><strong>Problem 41</strong>.  Construct a HoTT type <span class="math inline">\(\mathbb{C}_{\mathsf{c}}:\mathcal{U}\)</span> that is provably an algebraic closure of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>, with the universal property of <a href="#def:UAC" data-reference-type="ref+Label" data-reference="def:UAC">4</a>, and verify that it admits the standard topology and metric structure.</p>
+</div>
+<p><strong>Status:</strong> partially done in HoTT Book setting; algebraic closure not yet done.</p>
+<h2 class="unnumbered" id="sub-problem-2-hott-native-holomorphic-functions">Sub-problem 2: HoTT-native holomorphic functions</h2>
+<div id="prob:2" class="problem">
+<p><strong>Problem 42</strong>.  Define <a href="#def:holo" data-reference-type="ref+Label" data-reference="def:holo">7</a> formally; prove the Cauchy-Riemann equations, the Cauchy integral formula, and the identity theorem (<a href="#thm:Identity" data-reference-type="ref+Label" data-reference="thm:Identity">19</a>).</p>
+</div>
+<p><strong>Status:</strong> possible by direct constructive analysis. Estimated effort: <span class="math inline">\(\sim\)</span>5000 lines of Agda or Cubical Agda.</p>
+<h2 class="unnumbered" id="sub-problem-3-hott-native-dirichlet-series-machinery">Sub-problem 3: HoTT-native Dirichlet series machinery</h2>
+<div id="prob:3" class="problem">
+<p><strong>Problem 43</strong>.  Formalize <a href="#def:Dirichlet" data-reference-type="ref+Label" data-reference="def:Dirichlet">9</a>, prove <a href="#prop:DirichletAlgebra" data-reference-type="ref+Label" data-reference="prop:DirichletAlgebra">10</a>, and construct the basic operations: shift, multiplication, logarithm, derivative.</p>
+</div>
+<p><strong>Status:</strong> our companion Haskell code provides a finite-precision prototype; HoTT formalisation pending.</p>
+<h2 class="unnumbered" id="sub-problem-4-hott-native-analytic-continuation">Sub-problem 4: HoTT-native analytic continuation</h2>
+<div id="prob:4" class="problem">
+<p><strong>Problem 44</strong>.  Formalize the analytic-continuation theorem: a holomorphic function on a connected open admitting a power-series at one boundary point extends holomorphically to a neighbourhood of that point. Apply to <span class="math inline">\(\zeta\)</span> to obtain <a href="#def:ZetaUP" data-reference-type="ref+Label" data-reference="def:ZetaUP">20</a>.</p>
+</div>
+<p><strong>Status:</strong> this is the key technical bottleneck.</p>
+<h2 class="unnumbered" id="sub-problem-5-hott-native-functional-equation">Sub-problem 5: HoTT-native functional equation</h2>
+<div id="prob:5" class="problem">
+<p><strong>Problem 45</strong>.  Prove the functional equation <a href="#thm:FE" data-reference-type="ref+Label" data-reference="thm:FE">22</a> in HoTT, using either (a) the Mellin-transform / theta-function method, or (b) Riemann’s contour integral method, or (c) a synthetic cohesive-HoTT proof using analytic-stack duality.</p>
+</div>
+<p><strong>Status:</strong> requires <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a> first.</p>
+<h2 class="unnumbered" id="sub-problem-6-hott-native-formal-rh-statement">Sub-problem 6: HoTT-native formal RH statement</h2>
+<div id="prob:6" class="problem">
+<p><strong>Problem 46</strong>.  Write down a HoTT proposition <span class="math inline">\(\mathrm{RH}:\mathsf{Prop}\)</span> such that <span class="math inline">\(\mathrm{RH}\)</span> inhabits if and only if every non-trivial zero of <span class="math inline">\(\zeta\)</span> has real part <span class="math inline">\(1/2\)</span>. Verify this is the same statement as the classical RH, modulo the ambient model.</p>
+</div>
+<p><strong>Status:</strong> doable now (<a href="#conj:RH" data-reference-type="ref+Label" data-reference="conj:RH">25</a>), modulo <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>.</p>
+<h2 data-number="7.1" id="composition-diagram"><span class="header-section-number">7.1</span> Composition diagram</h2>
+<figure id="fig:roadmap" data-latex-placement="htbp">
+
+<figcaption>Dependency graph for the six sub-problems.</figcaption>
+</figure>
+<h2 data-number="7.2" id="estimated-effort-and-milestones"><span class="header-section-number">7.2</span> Estimated effort and milestones</h2>
+<ul>
+<li><p><a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>: <span class="math inline">\(\sim\)</span>1000 lines, 1–2 graduate-student-years.</p></li>
+<li><p><a href="#prob:2" data-reference-type="ref+Label" data-reference="prob:2">42</a>: <span class="math inline">\(\sim\)</span>5000 lines, 2–3 g-s-y.</p></li>
+<li><p><a href="#prob:3" data-reference-type="ref+Label" data-reference="prob:3">43</a>: <span class="math inline">\(\sim\)</span>1500 lines, 1 g-s-y.</p></li>
+<li><p><a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>: <span class="math inline">\(\sim\)</span>3000 lines, 2–3 g-s-y; key conceptual work.</p></li>
+<li><p><a href="#prob:5" data-reference-type="ref+Label" data-reference="prob:5">45</a>: <span class="math inline">\(\sim\)</span>5000 lines, 2 g-s-y.</p></li>
+<li><p><a href="#prob:6" data-reference-type="ref+Label" data-reference="prob:6">46</a>: <span class="math inline">\(\sim\)</span>200 lines, weeks. The hard part is the infrastructure, not the statement.</p></li>
+</ul>
+<p>Total: <span class="math inline">\(\sim\)</span>15000 lines, 8–12 graduate-student-years. Comparable to the total effort behind Loeffler–Stoll plus its Mathlib dependencies.</p>
+<h1 data-number="8" id="sec:rh"><span class="header-section-number">8</span> Open Conjectures: Riemann Hypothesis as a HoTT Statement</h1>
+<h2 data-number="8.1" id="modal-logical-status-of-rh-in-hott"><span class="header-section-number">8.1</span> Modal-logical status of RH in HoTT</h2>
+<p><a href="#conj:RH" data-reference-type="ref+Label" data-reference="conj:RH">25</a> states <span class="math inline">\(\Pi(s:\mathbb{C}_{\mathsf{c}}).\, P(s) \to Q(s)\)</span>, where <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> are propositions. By the propositional structure, <span class="math inline">\(\mathrm{RH}\)</span> is itself a proposition (in HoTT-Set sense, an <span class="math inline">\((-1)\)</span>-truncated type).</p>
+<p>In particular, <span class="math inline">\(\mathrm{RH}\)</span> is either inhabited or empty; we cannot have “two non-equivalent proofs” of RH. This is in contrast to a structural statement like “the type of complex numbers admits an algebraic structure” which has no such uniqueness.</p>
+<h2 data-number="8.2" id="decidability-and-constructivity"><span class="header-section-number">8.2</span> Decidability and constructivity</h2>
+<div id="rem:decidability" class="remark">
+<p><em>Remark 47</em>.  <span class="math inline">\(\mathrm{RH}\)</span> is <em>not</em> decidable in HoTT: we have no algorithm producing an inhabitant or refutation. This is consistent with constructivity, since <span class="math inline">\(\mathrm{RH}\)</span> is a <span class="math inline">\(\Pi\)</span>-statement over an uncountable type.</p>
+</div>
+<div id="rem:LEM" class="remark">
+<p><em>Remark 48</em>.  Under classical logic (<span class="math inline">\(\mathrm{LEM}\)</span>), <span class="math inline">\(\mathrm{RH} \vee \neg\,\mathrm{RH}\)</span> is inhabited; this is a consequence of <span class="math inline">\(\mathrm{LEM}\)</span>, not a constructive theorem.</p>
+</div>
+<h2 data-number="8.3" id="connections-to-the-langlands-programme"><span class="header-section-number">8.3</span> Connections to the Langlands programme</h2>
+<p>The Riemann hypothesis is a special case of the Generalized Riemann Hypothesis (GRH): all non-trivial zeros of all <span class="math inline">\(L\)</span>-functions <span class="math inline">\(L(s,\chi)\)</span> attached to primitive Dirichlet characters <span class="math inline">\(\chi\)</span> lie on <span class="math inline">\(\mathrm{Re}(s) = 1/2\)</span>. The Langlands programme conjecturally extends this to automorphic <span class="math inline">\(L\)</span>-functions <span class="math inline">\(L(s,\pi)\)</span>.</p>
+<div id="conj:GRH" class="conjecture">
+<p><strong>Conjecture 49</strong> (GRH for automorphic <span class="math inline">\(L\)</span>-functions, HoTT statement).  <em><span class="math display">\[\Pi(\pi).\, \Pi(s:\mathbb{C}_{\mathsf{c}}).\, L(s,\pi) = 0 \to
+\neg\,\mathsf{trivialZero}_\pi(s) \to \mathrm{Re}(s) = 1/2.\]</span></em></p>
+</div>
+<p>In a HoTT framework where automorphic representations are types in a suitable <span class="math inline">\((\infty,1)\)</span>-topos, <a href="#conj:GRH" data-reference-type="ref+Label" data-reference="conj:GRH">49</a> is a <span class="math inline">\(\Pi\Pi\Pi\)</span>-statement — syntactically clean, semantically deep.</p>
+<h2 data-number="8.4" id="the-von-koch-theorem-in-hott"><span class="header-section-number">8.4</span> The von Koch theorem in HoTT</h2>
+<div id="thm:vonKoch" class="theorem">
+<p><strong>Theorem 50</strong> (von Koch, expected HoTT version).  <em>Conditional on <a href="#conj:RH" data-reference-type="ref+Label" data-reference="conj:RH">25</a>, the prime-counting function <span class="math inline">\(\pi(x)\)</span> satisfies <span class="math display">\[|\pi(x) - \mathrm{Li}(x)| \in O(\sqrt{x} \log x).\]</span></em></p>
+</div>
+<p>This connects the analytic statement <span class="math inline">\(\mathrm{RH}\)</span> to a discrete one. A HoTT-native proof would proceed via the explicit formula for <span class="math inline">\(\pi(x)\)</span> in terms of zeros of <span class="math inline">\(\zeta\)</span>, all of which lives downstream of <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:6" data-reference-type="ref+Label" data-reference="prob:6">46</a>.</p>
+<h2 data-number="8.5" id="what-if-rh-is-independent-of-hott-set-theory"><span class="header-section-number">8.5</span> What if RH is independent of HoTT-set theory?</h2>
+<p>A speculative possibility: <span class="math inline">\(\mathrm{RH}\)</span> might be independent of (some extension of) HoTT, similar to the way the continuum hypothesis is independent of ZFC. In that case, HoTT might admit two consistent extensions: <span class="math inline">\(\mathrm{HoTT} + \mathrm{RH}\)</span> and <span class="math inline">\(\mathrm{HoTT} + \neg\,\mathrm{RH}\)</span>. This is purely speculative and reflects no current consensus; it is offered only as a contrast with the classical view that RH “simply has a truth value”.</p>
+<h2 data-number="8.6" id="subsec:zerofree"><span class="header-section-number">8.6</span> Density theorems and zero-free regions</h2>
+<p>Classical analytic number theory has many results about the distribution of zeros of <span class="math inline">\(\zeta\)</span> short of RH:</p>
+<ul>
+<li><p><strong>Hadamard / de la Vallée-Poussin (1896):</strong> <span class="math inline">\(\zeta(s) \neq 0\)</span> on <span class="math inline">\(\mathrm{Re}(s) = 1\)</span>. Formalized in Lean by Loeffler–Stoll.</p></li>
+<li><p><strong>Vinogradov-Korobov:</strong> explicit zero-free region <span class="math display">\[\mathrm{Re}(s) &gt; 1 - \frac{C}{(\log|t|)^{2/3}\,(\log\log|t|)^{1/3}}.\]</span></p></li>
+<li><p><strong>Selberg’s density theorem:</strong> the proportion of zeros within distance <span class="math inline">\(\delta\)</span> of the critical line is <span class="math inline">\(\geq 1 - O(\delta^{-1})\)</span>.</p></li>
+<li><p><strong>Levinson–Conrey:</strong> at least <span class="math inline">\(40\%\)</span> of zeros are on the critical line.</p></li>
+</ul>
+<p>Each of these is, in principle, a HoTT-native theorem once we have <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:5" data-reference-type="ref+Label" data-reference="prob:5">45</a>. In particular, the <span class="math inline">\(\mathrm{Re}(s) = 1\)</span> non-vanishing requires only the Euler product and basic inequalities — no analytic continuation. This is the natural <em>second</em> target after <a href="#thm:Basel" data-reference-type="ref+Label" data-reference="thm:Basel">26</a>.</p>
+<h2 data-number="8.7" id="subsec:effective"><span class="header-section-number">8.7</span> Effective vs. ineffective HoTT statements</h2>
+<p>A subtle point about HoTT: <em>some</em> statements about <span class="math inline">\(\zeta\)</span> are naturally effective (algorithmic), while others are not.</p>
+<div class="example">
+<p><strong>Example 51</strong> (Effective: <span class="math inline">\(\zeta\)</span> on the line <span class="math inline">\(\mathrm{Re}(s) &gt; 1\)</span>).  The map <span class="math inline">\(s \mapsto \sum_{n \leq N} n^{-s}\)</span> for large <span class="math inline">\(N\)</span> provides an <span class="math inline">\(\epsilon\)</span>-approximation to <span class="math inline">\(\zeta(s)\)</span> with explicit <span class="math inline">\(N(\epsilon, s)\)</span> bounds. This is HoTT-native, computable, and compatible with <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> Cauchy moduli.</p>
+</div>
+<div class="example">
+<p><strong>Example 52</strong> (Ineffective: <span class="math inline">\(\zeta\)</span> in the critical strip).  For <span class="math inline">\(0 &lt; \mathrm{Re}(s) &lt; 1\)</span>, the Dirichlet series diverges. Computing <span class="math inline">\(\zeta(s)\)</span> requires the Riemann–Siegel formula or similar, which involves contour integration. HoTT-native version would require <a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>.</p>
+</div>
+<div class="example">
+<p><strong>Example 53</strong> (Ineffective: trivial zero locations).  The trivial zeros at <span class="math inline">\(s = -2, -4, -6, \ldots\)</span> are <em>deduced</em> from the functional equation; their existence requires <a href="#prob:5" data-reference-type="ref+Label" data-reference="prob:5">45</a>.</p>
+</div>
+<p>These distinctions matter for HoTT formalization: parts of the theory are algorithmic-friendly (Cubical Agda can compute them), other parts are not.</p>
+<h1 data-number="9" id="sec:discussion"><span class="header-section-number">9</span> Discussion</h1>
+<h2 data-number="9.1" id="why-is-analytic-nt-specifically-hard"><span class="header-section-number">9.1</span> Why is analytic NT specifically hard?</h2>
+<p>Algebraic objects (rings, modules, groups, schemes) are <em>small</em>: their data fit on a finite page or in a computer’s memory. Analytic objects (<span class="math inline">\(\mathbb{R}\)</span>, <span class="math inline">\(\mathbb{C}\)</span>, holomorphic functions, contour integrals) are <em>large</em> in two senses:</p>
+<ul>
+<li><p>Type-theoretic size: <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> is uncountable, so any property of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> is in some sense a <span class="math inline">\(\Pi\)</span>-statement over an uncountable type.</p></li>
+<li><p>Logical complexity: <span class="math inline">\(\zeta\)</span> involves nested quantifiers over reals, limits of limits, integrals, and analytic continuations.</p></li>
+</ul>
+<p>HoTT, like any type theory, is well-suited to data of small or medium complexity; encoding heavy analysis requires either substantial primitive infrastructure or a transport from a classical foundation.</p>
+<h2 data-number="9.2" id="comparison-lean-mathlibs-effectiveness"><span class="header-section-number">9.2</span> Comparison: Lean Mathlib’s effectiveness</h2>
+<p>Lean Mathlib’s success at formalizing analytic NT (Loeffler–Stoll 2025) relies on:</p>
+<ol>
+<li><p>Classical logic everywhere.</p></li>
+<li><p>A large prebuilt library of measure theory, integration, and complex analysis.</p></li>
+<li><p>Decidability assumptions where appropriate.</p></li>
+<li><p>Set-theoretic ambient foundations (Lean 4 type theory is ZFC-equivalent in strength).</p></li>
+</ol>
+<p>HoTT can match (1)–(3) at extra cost; (4) is a deeper foundational issue.</p>
+<h2 data-number="9.3" id="the-role-of-cohesive-differential-hott"><span class="header-section-number">9.3</span> The role of cohesive / differential HoTT</h2>
+<p><em>Differential cohesive HoTT</em> <span class="citation" data-cites="Schreiber2013 Wellen2018"></span> extends HoTT with shape, flat, and sharp modalities. In this setting, smooth / holomorphic / meromorphic become synthetic. Examples like <span class="citation" data-cites="ScreiberShulman2014QFT"></span> show that synthetic differential geometry is viable in HoTT.</p>
+<p>A natural research direction is to lift the Loeffler–Stoll work into <em>differential cohesive HoTT</em>, treating <span class="math inline">\(\mathbb{C}\)</span> as a <span class="math inline">\(\mathsf{S}\)</span>-modal type and <span class="math inline">\(\zeta\)</span> as a synthetic meromorphic function. This is a substantial project but appears feasible.</p>
+<h2 data-number="9.4" id="limitations-of-this-paper"><span class="header-section-number">9.4</span> Limitations of this paper</h2>
+<ul>
+<li><p>We do not give a working HoTT formalization; we give a research roadmap and partial Haskell prototypes.</p></li>
+<li><p>We do not prove the conjectures of <a href="#thm:ZetaEquiv" data-reference-type="ref+Label" data-reference="thm:ZetaEquiv">21</a> or <a href="#thm:FE" data-reference-type="ref+Label" data-reference="thm:FE">22</a>; we sketch proofs that depend on currently-unavailable HoTT-native infrastructure.</p></li>
+<li><p>Our proposed bridge (<a href="#prob:bridge" data-reference-type="ref+Label" data-reference="prob:bridge">33</a>) between condensed mathematics and HoTT is open; we have not constructed the bridging <span class="math inline">\((\infty,1)\)</span>-topos.</p></li>
+</ul>
+<h2 data-number="9.5" id="future-directions"><span class="header-section-number">9.5</span> Future directions</h2>
+<ol>
+<li><p>Implement <a href="#prob:1" data-reference-type="ref+Label" data-reference="prob:1">41</a>–<a href="#prob:3" data-reference-type="ref+Label" data-reference="prob:3">43</a> in Cubical Agda.</p></li>
+<li><p>Develop the cohesive-HoTT bridge for analytic continuation (<a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>).</p></li>
+<li><p>Translate Loeffler–Stoll Lean to HoTT-axiomatised classical <span class="math inline">\(\mathbb{C}\)</span> as a first benchmark.</p></li>
+<li><p>Use the synthesis from <span class="citation" data-cites="Long2026Synthesis"></span> to attack <a href="#conj:GRH" data-reference-type="ref+Label" data-reference="conj:GRH">49</a> via geometric Langlands in <span class="math inline">\((\infty,1)\)</span>-topoi.</p></li>
+<li><p>Explore the analytic Langlands programme of EFK <span class="citation" data-cites="EFK2025AnalyticLanglands"></span> in HoTT.</p></li>
+</ol>
+<h2 data-number="9.6" id="connection-with-directed-type-theory"><span class="header-section-number">9.6</span> Connection with directed type theory</h2>
+<p>A recent development is <em>directed type theory</em> (DTT) of Riehl, Shulman, Verity, North <span class="citation" data-cites="Riehl2021Elements"></span>. DTT extends HoTT with a notion of directed morphism — paths that are not invertible. This gives a potential synthetic foundation for <span class="math inline">\((\infty,1)\)</span>-categories.</p>
+<p>Why is DTT relevant to analytic NT?</p>
+<ul>
+<li><p>Automorphic representations are functors, not equivalences. DTT captures functorial structure natively.</p></li>
+<li><p>Hecke operators on <span class="math inline">\(L\)</span>-functions act as endomorphisms, not automorphisms; DTT distinguishes these.</p></li>
+<li><p>The Langlands functor <span class="math inline">\(\sigma:\mathsf{Aut}(GL_n) \to \mathsf{Galois}\)</span> is a functor between <span class="math inline">\(\infty\)</span>-categories of representations; DTT gives a type-theoretic home.</p></li>
+</ul>
+<h2 data-number="9.7" id="connection-with-synthetic-algebraic-geometry"><span class="header-section-number">9.7</span> Connection with synthetic algebraic geometry</h2>
+<p><em>Synthetic algebraic geometry</em> <span class="citation" data-cites="CherubiniRijke2024"></span> works inside HoTT internally to a Zariski (or étale) topos, and develops algebraic geometry without external schemes. The relevant facts:</p>
+<ul>
+<li><p>Schemes become types satisfying a Zariski-locality condition.</p></li>
+<li><p>Sheaf cohomology is internal cohomology.</p></li>
+<li><p>Group schemes, including reductive groups for Langlands, become types in the internal language.</p></li>
+</ul>
+<p>A natural research line: use synthetic AG <em>plus</em> cohesion to define analytic moduli stacks, and develop <span class="math inline">\(\zeta\)</span> as an internal object.</p>
+<h2 data-number="9.8" id="the-role-of-computer-checked-proofs"><span class="header-section-number">9.8</span> The role of computer-checked proofs</h2>
+<p>A practical question: <em>should</em> we even attempt HoTT formalisation of analytic NT, given that classical Lean Mathlib is so much more advanced?</p>
+<p>Three answers:</p>
+<ol>
+<li><p><em>Foundational interest:</em> HoTT and Lean differ at the foundation level. Univalence simplifies certain isomorphism / equivalence arguments. A HoTT formalisation would be qualitatively different.</p></li>
+<li><p><em>Internal-language gain:</em> working inside an <span class="math inline">\((\infty,1)\)</span>-topos gives access to the topos’s internal logic. For instance, condensed mathematics has its own internal language (the Solid topos), distinct from classical set theory; HoTT might bridge these.</p></li>
+<li><p><em>Educational value:</em> a HoTT formalisation forces clarity about what data <span class="math inline">\(\zeta\)</span> “really is”. The exercise of distinguishing the three candidate definitions and identifying their pairwise equivalences is foundationally illuminating.</p></li>
+</ol>
+<h1 data-number="10" id="sec:conclusion"><span class="header-section-number">10</span> Conclusion</h1>
+<p>We have formulated, with technical care, the principal open problem of our prior synthesis: HoTT-native analytic number theory. The Riemann zeta function does not yet exist as a HoTT-native object; the statement <span class="math inline">\(\zeta(s)=0\)</span> is not yet a HoTT-native proposition. Closing this gap requires the prerequisite chain of <a href="#sec:prereq" data-reference-type="ref+Label" data-reference="sec:prereq">2</a>, the candidate definitions of <a href="#sec:zeta" data-reference-type="ref+Label" data-reference="sec:zeta">3</a>, the <span class="math inline">\((\infty,1)\)</span>-topos perspective of <a href="#sec:langlands" data-reference-type="ref+Label" data-reference="sec:langlands">4</a>–<a href="#sec:condensed" data-reference-type="ref+Label" data-reference="sec:condensed">5</a>, the comparison with Loeffler–Stoll Lean of <a href="#sec:loefflerstoll" data-reference-type="ref+Label" data-reference="sec:loefflerstoll">6</a>, and the six concrete sub-problems of <a href="#sec:roadmap" data-reference-type="ref+Label" data-reference="sec:roadmap">7</a>.</p>
+<p>We do not solve the principal open problem. We formulate it precisely, show it is not vacuous, and provide enough structure for future workers to take concrete steps. The roadmap of <a href="#sec:roadmap" data-reference-type="ref+Label" data-reference="sec:roadmap">7</a> estimates 8–12 graduate-student-years to deliver a HoTT-native analogue of Loeffler–Stoll 2025. This is significant, but tractable; the much harder Riemann hypothesis itself remains untouched.</p>
+<p>The dialogue between HoTT and analytic number theory is just beginning. Geometric Langlands has been proven (2024) using <span class="math inline">\((\infty,1)\)</span>-categorical machinery that overlaps with HoTT’s intended models. Condensed mathematics provides a uniform setting for analytic objects. These two streams will, we conjecture, converge on a HoTT-native analytic number theory in the coming decade. This paper aims to map the territory.</p>
+<h1 data-number="11" id="app:axioms"><span class="header-section-number">11</span> Appendix: HoTT axioms for analytic NT</h1>
+<p>For reference, we collect the HoTT axioms / definitions that any HoTT-native analytic NT should respect. We work in MLTT with one universe <span class="math inline">\(\mathcal{U}\)</span> and the following axioms.</p>
+<h2 class="unnumbered" id="a.1-univalence">A.1 Univalence</h2>
+<p><span class="math display">\[\begin{equation}
+\label{eq:univ}
+\mathsf{ua}: \Pi(A,B:\mathcal{U}).\, (A \simeq B) \simeq (A = B).
+\end{equation}\]</span></p>
+<p>This is the standard univalence axiom of <span class="citation" data-cites="HoTTBook"></span>. It implies function extensionality and propositional extensionality.</p>
+<h2 class="unnumbered" id="a.2-higher-inductive-types">A.2 Higher inductive types</h2>
+<p>We assume HITs of the form needed in this paper:</p>
+<ul>
+<li><p>Cauchy reals <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> as a HIIT (<a href="#def:Rc" data-reference-type="ref+Label" data-reference="def:Rc">1</a>).</p></li>
+<li><p>Set quotients <span class="math inline">\(A/{\sim}\)</span> for relations <span class="math inline">\(\sim\)</span> on <span class="math inline">\(A\)</span>.</p></li>
+<li><p>Propositional truncation <span class="math inline">\(\|A\|_{-1}\)</span>.</p></li>
+<li><p><span class="math inline">\(n\)</span>-truncations <span class="math inline">\(\|A\|_n\)</span>.</p></li>
+</ul>
+<h2 class="unnumbered" id="a.3-cohesion-optional">A.3 Cohesion (optional)</h2>
+<p>For synthetic-analytic statements, cohesive HoTT <span class="citation" data-cites="Shulman2018Cohesive"></span> adds:</p>
+<ul>
+<li><p>Shape modality <span class="math inline">\(\mathsf{S}:\mathcal{U} \to \mathcal{U}\)</span> (left adjoint to <span class="math inline">\(\flat\)</span>).</p></li>
+<li><p>Flat modality <span class="math inline">\(\flat:\mathcal{U} \to \mathcal{U}\)</span> (right adjoint to <span class="math inline">\(\mathsf{S}\)</span>).</p></li>
+<li><p>Sharp modality <span class="math inline">\(\sharp:\mathcal{U} \to \mathcal{U}\)</span>.</p></li>
+</ul>
+<p>These satisfy the cohesive triple-adjunction <span class="math inline">\(\mathsf{S}\dashv \flat \dashv \sharp\)</span> and natural-transformation laws between them.</p>
+<h2 class="unnumbered" id="a.4-choice-optional-classical">A.4 Choice (optional, classical)</h2>
+<p>For some classical analytic-NT results we may need: <span class="math display">\[\begin{equation}
+\label{eq:choice}
+\mathrm{AC} : \Pi(A:\mathcal{U}).\, \Pi(B:A \to \mathcal{U}).\,
+   (\Pi(a:A).\, \|B(a)\|_{-1}) \to \|\Pi(a:A).\, B(a)\|_{-1}.
+\end{equation}\]</span></p>
+<p>Equivalent to set-theoretic AC for sets. Required for classical existence of algebraic closures, classical functional equation proofs.</p>
+<h2 class="unnumbered" id="a.5-excluded-middle-optional-classical">A.5 Excluded middle (optional, classical)</h2>
+<p><span class="math display">\[\begin{equation}
+\label{eq:lem}
+\mathrm{LEM} : \Pi(P:\mathsf{Prop}).\, P + \neg P.
+\end{equation}\]</span></p>
+<p>Required for the statement of <span class="math inline">\(\mathrm{RH} \vee \neg\,\mathrm{RH}\)</span> as “there is a fact of the matter”.</p>
+<h1 data-number="12" id="app:code"><span class="header-section-number">12</span> Appendix: Companion code overview</h1>
+<p>The companion repository at <code>src/langlands-analytic-number-theory/</code> contains:</p>
+<ul>
+<li><p><code>Main.hs</code> — driver illustrating partial <span class="math inline">\(\zeta\)</span> sums and Dirichlet series operations.</p></li>
+<li><p><code>Zeta.hs</code> — partial zeta computations with explicit truncation.</p></li>
+<li><p><code>Dirichlet.hs</code> — Dirichlet series machinery, Dirichlet convolution, multiplicative functions.</p></li>
+<li><p><code>Properties.hs</code> — QuickCheck properties for the algebraic laws on Dirichlet series.</p></li>
+<li><p><code>Proofs.hs</code> — equational proofs of the Euler product identity, modulo a finite-truncation axiom.</p></li>
+</ul>
+<p>The Lean component at <code>lean/langlands-analytic-number-theory/</code> contains:</p>
+<ul>
+<li><p><code>Zeta.lean</code> — a Lean 4 / Mathlib sketch indexed against Loeffler–Stoll, marking which lemmas would translate cleanly to HoTT.</p></li>
+</ul>
+<p>These are illustrative prototypes, not formal verifications. Their purpose is to make the prerequisite chain (<a href="#sec:prereq" data-reference-type="ref+Label" data-reference="sec:prereq">2</a>) and the candidate definitions (<a href="#sec:zeta" data-reference-type="ref+Label" data-reference="sec:zeta">3</a>) executable, so that future HoTT-native work has computational benchmarks.</p>
+<h1 data-number="13" id="app:cont"><span class="header-section-number">13</span> Appendix: Worked sub-roadmap for sub-problem 4</h1>
+<p>We sketch a plausible HoTT proof strategy for analytic continuation of <span class="math inline">\(\zeta\)</span>, addressing <a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a> in more detail.</p>
+<h2 class="unnumbered" id="c.1-the-hurwitz-integral-representation">C.1 The Hurwitz integral representation</h2>
+<p>Classical analytic continuation of <span class="math inline">\(\zeta\)</span> via the Hurwitz integral representation <span class="citation" data-cites="Hurwitz1882"></span>: <span class="math display">\[\zeta(s) = \frac{1}{\Gamma(s)} \int_0^\infty \frac{x^{s-1}}{e^x - 1}\, dx,
+\qquad \mathrm{Re}(s) &gt; 1.\]</span> The integrand is integrable for <span class="math inline">\(\mathrm{Re}(s) &gt; 1\)</span> near <span class="math inline">\(0\)</span> and is exponentially small at <span class="math inline">\(\infty\)</span>. To analytically continue, one deforms the contour: <span class="math display">\[\zeta(s) = \frac{\Gamma(1-s)}{2\pi i}\,\oint_C \frac{(-x)^{s-1}}{e^x - 1}\,dx,\]</span> where <span class="math inline">\(C\)</span> is the Hankel contour: from <span class="math inline">\(+\infty\)</span> along <span class="math inline">\(\mathbb{R}^+\)</span>, around <span class="math inline">\(0\)</span> counterclockwise, back to <span class="math inline">\(+\infty\)</span>.</p>
+<h2 class="unnumbered" id="c.2-what-hott-needs">C.2 What HoTT needs</h2>
+<p>To carry out the contour-integral proof in HoTT we need:</p>
+<ol>
+<li><p>HoTT-native <span class="math inline">\(\Gamma\)</span> function: <span class="math inline">\(\Gamma(s) := \int_0^\infty t^{s-1}
+e^{-t}\, dt\)</span> extended via the functional equation <span class="math inline">\(\Gamma(s+1) = s\Gamma(s)\)</span> to all <span class="math inline">\(\mathbb{C}_{\mathsf{c}}\setminus \{0,-1,-2,\ldots\}\)</span>.</p></li>
+<li><p>HoTT-native contour integration: a path <span class="math inline">\(\gamma:[0,1] \to \mathbb{C}_{\mathsf{c}}\)</span> and an integral <span class="math inline">\(\int_\gamma f(z)\, dz\)</span>, satisfying linearity, change-of-variables, and Cauchy’s theorem.</p></li>
+<li><p>HoTT-native version of Cauchy’s theorem: holomorphic functions integrate to zero around closed contours.</p></li>
+<li><p>HoTT-native deformation lemma: integral over homotopic contours agree.</p></li>
+<li><p>HoTT-native passage from real integral to contour integral (Mellin-Barnes type).</p></li>
+</ol>
+<h2 class="unnumbered" id="c.3-estimated-effort">C.3 Estimated effort</h2>
+<p>Each item above is a self-contained HoTT formalisation problem of moderate size. Cumulatively, this is the heart of <a href="#prob:4" data-reference-type="ref+Label" data-reference="prob:4">44</a>, and we estimate it at <span class="math inline">\(\sim 3000\)</span> lines of Cubical Agda.</p>
+<h2 class="unnumbered" id="c.4-alternative-strategies">C.4 Alternative strategies</h2>
+<ul>
+<li><p><em>Riemann’s theta-function method</em>: <span class="math inline">\(\zeta(s)\)</span> via Mellin transform of <span class="math inline">\(\theta(t) := \sum_{n \in \mathbb{Z}} e^{-\pi n^2 t}\)</span>. Requires the modular transformation <span class="math inline">\(\theta(t) = t^{-1/2}\theta(1/t)\)</span>.</p></li>
+<li><p><em>Hardy’s symmetric form</em>: <span class="math inline">\(\xi(s) := \frac{s(s-1)}{2}\pi^{-s/2}
+\Gamma(s/2)\zeta(s)\)</span>, satisfying <span class="math inline">\(\xi(s) = \xi(1-s)\)</span>. Cleaner but uses the same infrastructure.</p></li>
+<li><p><em>Cohesive synthetic approach</em>: Inside differential cohesive HoTT <span class="citation" data-cites="Schreiber2013"></span>, define <span class="math inline">\(\zeta\)</span> via the synthetic functional integral. Speculative.</p></li>
+</ul>
+<h1 data-number="14" id="app:glossary"><span class="header-section-number">14</span> Appendix: A glossary of HoTT-native synonyms</h1>
+<p>For readers more familiar with classical analytic NT than with HoTT, we provide a short translation glossary:</p>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Classical</th>
+<th style="text-align: left;">HoTT-native</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{R}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span> (Cauchy reals)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{C}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\mathbb{C}_{\mathsf{c}}\)</span> (univalent algebraic closure of <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(f:\mathbb{C}\to \mathbb{C}\)</span> holomorphic</td>
+<td style="text-align: left;"><span class="math inline">\(f\)</span> admits constructive Newton quotient</td>
+</tr>
+<tr>
+<td style="text-align: left;">“unique up to isomorphism”</td>
+<td style="text-align: left;">propositionally equal under univalence</td>
+</tr>
+<tr>
+<td style="text-align: left;">“the algebraic closure”</td>
+<td style="text-align: left;">“a univalent algebraic closure”</td>
+</tr>
+<tr>
+<td style="text-align: left;">ZFC’s choice</td>
+<td style="text-align: left;">propositional choice axiom (optional)</td>
+</tr>
+<tr>
+<td style="text-align: left;">LEM</td>
+<td style="text-align: left;"><span class="math inline">\(\Pi(P:\mathsf{Prop}).\, P + \neg P\)</span> (optional)</td>
+</tr>
+<tr>
+<td style="text-align: left;">quotient set</td>
+<td style="text-align: left;">set quotient <span class="math inline">\(A/{\sim}\)</span> via HIT</td>
+</tr>
+<tr>
+<td style="text-align: left;">limit of sequences</td>
+<td style="text-align: left;">limit constructor of HIIT <span class="math inline">\(\mathbb{R}_{\mathsf{c}}\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">“open subset”</td>
+<td style="text-align: left;">“cohesive open” or “(-1)-truncated open”</td>
+</tr>
+<tr>
+<td style="text-align: left;">“connected”</td>
+<td style="text-align: left;">propositional truncation of <span class="math inline">\(A\)</span> is contractible</td>
+</tr>
+<tr>
+<td style="text-align: left;">sheaf cohomology</td>
+<td style="text-align: left;">internal cohomology of cohesive HoTT</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\infty\)</span>-category</td>
+<td style="text-align: left;">type with Segal condition</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\infty\)</span>-topos</td>
+<td style="text-align: left;">univalent universe in cohesive HoTT</td>
+</tr>
+<tr>
+<td style="text-align: left;">“functor”</td>
+<td style="text-align: left;">morphism in directed type theory</td>
+</tr>
+<tr>
+<td style="text-align: left;">“natural transformation”</td>
+<td style="text-align: left;">2-cell in directed type theory</td>
+</tr>
+<tr>
+<td style="text-align: left;">condensed set</td>
+<td style="text-align: left;">sheaf on profinite types in cohesive HoTT (open)</td>
+</tr>
+<tr>
+<td style="text-align: left;">analytic stack</td>
+<td style="text-align: left;">6-functor formalism in cohesive HoTT (open)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\zeta\)</span> classically</td>
+<td style="text-align: left;">no HoTT-native definition yet</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The bottom row is the principal open problem of this paper.</p>
+<div class="thebibliography">
+<p><span>99</span></p>
+<p>Univalent Foundations Program. <em>Homotopy Type Theory: Univalent Foundations of Mathematics</em>. Institute for Advanced Study, 2013. <a href="https://homotopytypetheory.org/book" class="uri">https://homotopytypetheory.org/book</a></p>
+<p>M. Long and the YonedaAI Collaboration. <em>Synthesis: Six Open Problems at the Interface of HoTT and Twenty-First Century Mathematics</em>. YonedaAI Research Collective, 2026.</p>
+<p>V. Voevodsky. <em>Univalent foundations of mathematics</em>. ICM Talk, 2014.</p>
+<p>A. Booij. <em>Analysis in univalent type theory</em>. PhD thesis, University of Birmingham, 2020.</p>
+<p>R. Mines, F. Richman, W. Ruitenburg. <em>A Course in Constructive Algebra</em>. Springer Universitext, 1988.</p>
+<p>M. Shulman. <em>Brouwer’s fixed-point theorem in real-cohesive homotopy type theory</em>. Mathematical Structures in Computer Science, 28:856–941, 2018.</p>
+<p>M. Shulman. <em>All <span class="math inline">\((\infty,1)\)</span>-toposes have strict univalent universes</em>. arXiv:1904.07004, 2019.</p>
+<p>J. Lurie. <em>Higher Topos Theory</em>. Annals of Mathematics Studies 170, Princeton University Press, 2009.</p>
+<p>J. Lurie. <em>Higher Algebra</em>. Manuscript, 2017. <a href="https://www.math.ias.edu/~lurie/papers/HA.pdf" class="uri">https://www.math.ias.edu/~lurie/papers/HA.pdf</a></p>
+<p>D. Gaitsgory et al. <em>Proof of the geometric Langlands conjecture I–V</em>. arXiv:2405.03599 and sequels, 2024. <a href="https://www.mpim-bonn.mpg.de/gaitsgde/GLC/" class="uri">https://www.mpim-bonn.mpg.de/gaitsgde/GLC/</a></p>
+<p>A. Beilinson, V. Drinfeld. <em>Chiral Algebras</em>. American Mathematical Society Colloquium Publications 51, 2004.</p>
+<p>D. Loeffler, M. Stoll. <em>Formalizing zeta and L-functions in Lean</em>. arXiv:2503.00959. Annals of Formalized Mathematics, vol. 1, 2025.</p>
+<p>P. Scholze. <em>Lectures on condensed mathematics</em>. Lecture notes, University of Bonn, 2019. <a href="https://www.math.uni-bonn.de/people/scholze/Condensed.pdf" class="uri">https://www.math.uni-bonn.de/people/scholze/Condensed.pdf</a></p>
+<p>D. Clausen, P. Scholze. <em>Analytic stacks</em>. Lecture series, MPIM Bonn, 2023–2024.</p>
+<p>D. Clausen, P. Scholze. <em>Six-functor formalisms in analytic geometry</em>. arXiv:2507.08566, 2025.</p>
+<p>D. Clausen, P. Scholze. <em>Analytic stacks (continued)</em>. arXiv:2512.14612, 2025.</p>
+<p>D. Clausen, P. Scholze. <em>Condensed mathematics and complex geometry</em>. <a href="https://people.mpim-bonn.mpg.de/scholze/Complex.pdf" class="uri">https://people.mpim-bonn.mpg.de/scholze/Complex.pdf</a>, 2022.</p>
+<p>P. Etingof, E. Frenkel, D. Kazhdan. <em>An analytic version of the Langlands correspondence over the function field</em>. arXiv:2103.01509 and follow-ups, 2021–2025.</p>
+<p>D.-C. Cisinski et al. <em>Type-theoretic foundations of <span class="math inline">\((\infty,1)\)</span>-categories</em>. Manuscript / arXiv preprints, 2025.</p>
+<p>R. P. Langlands. <em>Problems in the theory of automorphic forms</em>. Lecture Notes in Mathematics 170, Springer, 1970.</p>
+<p>S. Gelbart. <em>An elementary introduction to the Langlands program</em>. Bull. AMS, 10(2):177–219, 1984.</p>
+<p>U. Schreiber. <em>Differential cohomology in a cohesive infinity-topos</em>. arXiv:1310.7930, 2013.</p>
+<p>F. Wellen. <em>Cartan geometry in modal homotopy type theory</em>. PhD thesis, Karlsruhe Institute of Technology, 2018.</p>
+<p>U. Schreiber, M. Shulman. <em>Quantum gauge field theory in cohesive homotopy type theory</em>. EPTCS 158, 2014.</p>
+<p>L. Euler. <em>Variae observationes circa series infinitas</em>. Commentarii academiae scientiarum Petropolitanae 9, 1737.</p>
+<p>B. Riemann. <em>Über die Anzahl der Primzahlen unter einer gegebenen Größe</em>. Monatsberichte der Königlich Preußischen Akademie der Wissenschaften zu Berlin, 1859.</p>
+<p>A. Kapustin, E. Witten. <em>Electric-magnetic duality and the geometric Langlands program</em>. Communications in Number Theory and Physics, 1(1):1–236, 2007.</p>
+<p>E. Riehl, D. Verity. <em>Elements of <span class="math inline">\(\infty\)</span>-Category Theory</em>. Cambridge Studies in Advanced Mathematics 194, Cambridge University Press, 2022.</p>
+<p>F. Cherubini, E. Rijke et al. <em>Synthetic algebraic geometry in homotopy type theory</em>. Manuscript, <a href="https://github.com/felixwellen/synthetic-zariski" class="uri">https://github.com/felixwellen/synthetic-zariski</a>, 2024.</p>
+<p>A. Hurwitz. <em>Einige Eigenschaften der Dirichlet’schen Funktionen <span class="math inline">\(F(s)\)</span></em>. Zeitschrift für Mathematik und Physik, 27:86–101, 1882.</p>
+</div>

@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "coalgebraic-transcendentals",
+    "part": "I",
+    "title": "Final Coalgebras and Transcendental Numbers in HoTT:\\\\\nA Coinductive Characterisation of $\\pi$ and $e$",
+    "abstract": "The univalent presentation of the real numbers admits two profoundly different formulations: an inductive one, in which $ $ is built as a higher inductive--inductive type (HIIT) of Cauchy sequences modulo a path-constructor for the equivalence relation (Booij; HoTT Book 11.3); and a coinductive one,...",
+    "pages": 22,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/coalgebraic-transcendentals.pdf",
+    "htmlPath": "/papers/coalgebraic-transcendentals",
+    "imagePath": "/images/coalgebraic-transcendentals.png"
+  },
+  {
+    "slug": "cubical-hiit-cauchy",
+    "part": "II",
+    "title": "Cubical Higher Inductive--Inductive Types\\\\\n       and the Cauchy Reals\\\\\n\\large A Cubical Agda Completion of the Book HoTT Construction",
+    "abstract": "The Cauchy reals $ $ admit a higher inductive--inductive presentation in Book HoTT (HoTT Book 11.3, Booij 2020), and this presentation underwrites the unique-existence definitions of $ $ and $e$ used throughout the Univalent Correspondence series (Paper~V 8). However, the construction is given in Bo...",
+    "pages": 25,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/cubical-hiit-cauchy.pdf",
+    "htmlPath": "/papers/cubical-hiit-cauchy",
+    "imagePath": "/images/cubical-hiit-cauchy.png"
+  },
+  {
+    "slug": "etcs-izf-folds",
+    "part": "III",
+    "title": "ETCS, IZF, and FOLDS:\\\\\nComparative Structural Foundations and the Univalence Boundary",
+    "abstract": "We undertake a three-way structural comparison of three foundational systems: Lawvere's Elementary Theory of the Category of Sets (ETCS, 1964), Friedman's Intuitionistic Zermelo--Fraenkel set theory (IZF), and Makkai's First-Order Logic with Dependent Sorts (FOLDS, 1995); and we measure each against...",
+    "pages": 25,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/etcs-izf-folds.pdf",
+    "htmlPath": "/papers/etcs-izf-folds",
+    "imagePath": "/images/etcs-izf-folds.png"
+  },
+  {
+    "slug": "infinity-nno",
+    "part": "IV",
+    "title": "Higher-Categorical Natural Numbers Objects:\\\\\nContractibility, $\\infty$-Toposes, and Lurie's NNO",
+    "abstract": "The natural numbers object (NNO) of an elementary topos is, classically, an object equipped with a global element $0$ and an endomorphism $s$ such that the resulting pointed dynamical system is initial. In a $1$-topos any two NNOs are connected by a unique isomorphism, and the automorphism group of ...",
+    "pages": 25,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/infinity-nno.pdf",
+    "htmlPath": "/papers/infinity-nno",
+    "imagePath": "/images/infinity-nno.png"
+  },
+  {
+    "slug": "directed-univalence",
+    "part": "V",
+    "title": "Directed Univalence: From Riehl--Shulman to a Complete Principle",
+    "abstract": "Voevodsky's univalence axiom equates path identification with type-equivalence and lies at the heart of homotopy type theory (HoTT). Its directed analogue --- which would equate hom-types in the universe with functions between types --- has been pursued since the introduction of simplicial type theo...",
+    "pages": 20,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/directed-univalence.pdf",
+    "htmlPath": "/papers/directed-univalence",
+    "imagePath": "/images/directed-univalence.png"
+  },
+  {
+    "slug": "langlands-analytic-number-theory",
+    "part": "VI",
+    "title": "Toward HoTT-Native Analytic Number Theory:\\\\\nRiemann Zeta, Langlands, and the $\\zeta(s)=0$ Question",
+    "abstract": "We address what the synthesis of our prior series of papers identified as the principal open problem in homotopy type theory's interface with contemporary mathematics: the absence of a HoTT-native formulation of analytic number theory. Algebraic number theory and arithmetic geometry, through the len...",
+    "pages": 33,
+    "hasHaskell": true,
+    "hasLean": true,
+    "pdfPath": "/pdf/langlands-analytic-number-theory.pdf",
+    "htmlPath": "/papers/langlands-analytic-number-theory",
+    "imagePath": "/images/langlands-analytic-number-theory.png"
+  },
+  {
+    "slug": "synthesis",
+    "part": "VII",
+    "title": "Toward HoTT-Native Analytic Number Theory:\\\\\nA Unified Synthesis of Six Open Problems",
+    "abstract": "This paper synthesises six independent investigations into a single research programme directed at what our prior series identified as the principal open problem in homotopy type theory's interface with contemporary mathematics: a HoTT-native formulation of analytic number theory, with the Riemann z...",
+    "pages": 26,
+    "hasHaskell": false,
+    "hasLean": false,
+    "pdfPath": "/pdf/synthesis.pdf",
+    "htmlPath": "/papers/synthesis",
+    "imagePath": "/images/synthesis.png"
+  }
+]

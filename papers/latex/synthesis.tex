@@ -1,0 +1,1635 @@
+\documentclass[12pt]{article}
+
+% --- Core math (load first) ---
+\usepackage{amsmath, amssymb, amsfonts, amsthm}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+
+% --- Page layout ---
+\usepackage[margin=1in]{geometry}
+
+% --- Graphics ---
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% --- Diagrams ---
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc, positioning, arrows.meta, decorations.markings}
+
+% --- Tables ---
+\usepackage{tabularx, array, booktabs}
+
+% --- Lists ---
+\usepackage{enumitem}
+
+% --- Listings ---
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=flexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+
+% --- URLs ---
+\usepackage{xurl}
+\Urlmuskip=0mu plus 1mu
+
+% --- References ---
+\usepackage{hyperref}
+\usepackage{cleveref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+% --- Microtype for nicer line breaking ---
+\usepackage[final]{microtype}
+\setlength{\emergencystretch}{2em}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{principle}[theorem]{Principle}
+\newtheorem{problem}[theorem]{Open Problem}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% --- Macros ---
+\newcommand{\Type}{\mathcal{U}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Rc}{\R_{c}}
+\newcommand{\Cc}{\C_{c}}
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Cat}{\mathbf{Cat}}
+\newcommand{\Grpd}{\mathbf{Grpd}}
+\newcommand{\Top}{\mathbf{Top}}
+\newcommand{\Spc}{\mathcal{S}}
+\newcommand{\Id}{\mathsf{Id}}
+\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\zero}{\mathsf{zero}}
+\newcommand{\suc}{\mathsf{succ}}
+\newcommand{\transport}{\mathsf{transport}}
+\newcommand{\ua}{\mathsf{ua}}
+\newcommand{\dua}{\mathsf{dua}}
+\newcommand{\idtoeqv}{\mathsf{idtoeqv}}
+\newcommand{\eqv}{\simeq}
+\newcommand{\op}{\mathrm{op}}
+\newcommand{\id}{\mathrm{id}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Map}{Map}
+\DeclareMathOperator{\Nat}{Nat}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\colim}{colim}
+\newcommand{\PtEndo}{\mathbf{PtEndo}}
+\newcommand{\NNO}{\mathrm{NNO}}
+\newcommand{\isContr}{\mathsf{isContr}}
+\newcommand{\isProp}{\mathsf{isProp}}
+\newcommand{\isSet}{\mathsf{isSet}}
+\newcommand{\isEquiv}{\mathsf{isEquiv}}
+\newcommand{\isSegal}{\mathsf{isSegal}}
+\newcommand{\isRezk}{\mathsf{isRezk}}
+\newcommand{\HoTT}{\mathsf{HoTT}}
+\newcommand{\STT}{\mathbf{STT}}
+\newcommand{\Path}{\mathsf{Path}}
+\newcommand{\holo}{\mathsf{Holo}}
+\newcommand{\HIIT}{\mathsf{HIIT}}
+\newcommand{\bisim}{\mathrel{\sim}}
+\newcommand{\rat}{\mathsf{rat}}
+\newcommand{\hlim}{\mathsf{lim}}
+\newcommand{\Stream}{\mathsf{Stream}}
+\newcommand{\out}{\mathsf{out}}
+\newcommand{\corec}{\mathsf{corec}}
+\newcommand{\unfold}{\mathsf{unfold}}
+\newcommand{\hd}{\mathsf{hd}}
+\newcommand{\tl}{\mathsf{tl}}
+\newcommand{\funtohom}{\mathsf{funtohom}}
+\newcommand{\Aut}{\mathsf{Aut}}
+\newcommand{\Cauchy}{\mathsf{Cauchy}}
+\newcommand{\Prop}{\mathsf{Prop}}
+\newcommand{\esh}{\mathsf{S}}
+% Re-declare \flat / \sharp inside math contexts (use \flatm / \sharpm
+% to avoid clashing with the LaTeX accents).
+\newcommand{\flatm}{\flat}
+\newcommand{\sharpm}{\sharp}
+% (We intentionally retain the standard \zeta from amssymb.)
+
+% --- GrokRxiv sidebar (first page only) ---
+\definecolor{grokgray}{RGB}{110,110,110}
+\AddToHook{shipout/background}{%
+  \ifnum\value{page}=1
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[
+        rotate=90,
+        anchor=south,
+        font=\Large\sffamily\bfseries\color{grokgray},
+        inner sep=0pt
+      ] at ([xshift=38pt, yshift=0.52\paperheight]current page.south west)
+      {GrokRxiv:2026.05.synthesis\quad
+       [\,math.LO/math.NT/math.CT\,]\quad
+       04 May 2026};
+    \end{tikzpicture}%
+  \fi
+}
+
+% --- Title block ---
+\title{Toward HoTT-Native Analytic Number Theory:\\
+A Unified Synthesis of Six Open Problems}
+
+\author{Matthew Long \\
+\textit{The YonedaAI Collaboration} \\
+\textit{YonedaAI Research Collective} \\
+Chicago, IL \\
+\texttt{research@yonedaai.com} $\cdot$ \url{https://yonedaai.com}}
+
+\date{4 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper synthesises six independent investigations into a single research
+programme directed at what our prior series identified as the principal open
+problem in homotopy type theory's interface with contemporary mathematics: a
+HoTT-native formulation of analytic number theory, with the Riemann zeta
+function $\zeta$ a HoTT-native object and $\zeta(s) = 0$ a HoTT-native
+proposition. The six component papers (Parts I--VI) address, respectively,
+final-coalgebra characterisations of transcendentals (Part I), cubical
+higher inductive--inductive types and the Cauchy reals (Part II),
+alternative structural foundations ETCS, IZF, FOLDS (Part III), the
+higher-categorical theory of natural numbers objects in $(\infty,1)$-toposes
+(Part IV), Riehl--Shulman directed univalence (Part V), and the
+Langlands--zeta roadmap itself (Part VI). We extract five cross-cutting
+themes that unify the parts: (i) the inductive--coinductive duality
+exhibited by Parts I and II; (ii) structural versus material foundations,
+and the univalence boundary between them, in Part III; (iii) coherence and
+contractibility as the bridge from 1-categorical universal properties to
+$(\infty,1)$-categorical ones, in Part IV; (iv) the symmetric--directed
+contrast between ordinary and simplicial univalence, in Parts II and V; and
+(v) the $\zeta$-prerequisite chain that Part VI assembles from the others.
+We give a unified mathematical framework based on a single triple
+$(\Type,\,\zeta,\,\ua_{?})$ in which each part contributes one component or
+qualifier, and we conclude with a six-sub-problem roadmap inheriting from
+Part VI but reformulated as compositional gates: each sub-problem invokes
+exactly the apparatus assembled in the preceding parts. We argue that the
+prior Univalent Correspondence series (Papers~I--VII on naive set theory
+through structuralism) sets up the type-theoretic infrastructure, and that
+this series (Parts~I--VI) addresses the open problems flagged at the end of
+the prior synthesis. The paper is approximately twenty-five pages,
+arxiv-style, with a unified reference list.
+\end{abstract}
+
+\tableofcontents
+
+%==============================================================
+\section{Introduction}\label{sec:intro}
+%==============================================================
+
+\subsection{The unifying perspective}
+
+This paper unifies six standalone research papers, each addressing one of
+six open problems flagged at the end of the synthesis paper of our prior
+series, the \emph{Univalent Correspondence}. The prior series was a
+six-paper survey of how the natural number 58 is described from six
+foundational perspectives --- naive (Paper~I), set-theoretic (Paper~II),
+universal-property (Paper~III), Yoneda (Paper~IV), HoTT (Paper~V), and
+categorical/structural (Paper~VI) --- culminating in a synthesis (Paper~VII)
+that demonstrated, under the univalence axiom, that the four formal
+descriptions III--VI literally name the same object. The prior synthesis
+ended by listing six concrete open problems whose resolution would extend
+that picture from the natural numbers to the structures of contemporary
+analytic mathematics. The present paper unifies, under a single perspective,
+the six standalone papers that take up those problems.
+
+The \emph{single perspective} is the one identified by the prior synthesis
+as the \emph{principal} open problem: the absence of a HoTT-native
+formulation of analytic number theory, and in particular the absence of a
+HoTT-native object $\zeta : \Cc \to \Cc$ together with a HoTT-native
+proposition $\zeta(s) = 0$ that one could conjecturally inhabit. We organise
+all six papers as steps toward that goal. Some of them are direct
+prerequisites (Part~II provides a cubical Cauchy-real construction on
+which any analytic-NT programme must rest); some address infrastructural
+prerequisites of the prerequisites (Part~IV ensures that the
+$(\infty,1)$-categorical natural-numbers object behaves correctly inside
+the ambient $\infty$-topos); some open up parallel apparatus that may
+ultimately be necessary (Part~I's coalgebraic transcendentals and Part~V's
+directed univalence); some clarify the foundational landscape against
+which everything is assembled (Part~III's comparison of ETCS, IZF, FOLDS).
+Part~VI is the centerpiece: it stitches the others into a roadmap.
+
+\subsection{Why the unifying perspective is meaningful}
+
+It is tempting to dismiss the proposed unification as nominal: a series of
+papers about disparate things, retrofitted under a common heading. We argue
+the contrary. The six topics are not independent: each invokes the
+apparatus of the others, often in essential ways. To make a HoTT-native
+$\zeta$ we need
+\begin{itemize}[leftmargin=*]
+\item HoTT-native real numbers (Part~II) and the complex numbers built from
+      them;
+\item primitive recursion / iteration on $\N$, hence an NNO whose universal
+      property is correctly stated in the $(\infty,1)$-categorical context
+      where holomorphic functions live (Part~IV);
+\item a constructive analysis library that respects the inductive /
+      coinductive duality (Part~I), since power series and Dirichlet series
+      are inductively-defined limits of coinductively-presented streams of
+      partial sums;
+\item a foundational frame in which the relation
+      ``$\zeta$ depends only on the structure of $\Cc$ as a topological
+      field'' is automatic, not a separate metatheorem (Part~III);
+\item a synthetic notion of category and functor strong enough to express
+      Galois actions, automorphic representations, and the entire
+      Tannakian frame around $L$-functions, hence directed univalence
+      (Part~V);
+\item finally, a coordinator paper that takes all of the above and produces
+      an actual roadmap to the goal (Part~VI).
+\end{itemize}
+Removing any one of the six components leaves a perceptible gap in the
+chain. We will spell out, in \Cref{sec:framework}, the single
+mathematical artifact in which all six contributions live, namely the
+ambient $(\infty,1)$-topos with directed-univalent structure presheaves
+and a Riemann-zeta object as a synthetic distribution; and we shall trace
+the precise way in which each of the six papers contributes a piece of
+the construction.
+
+\subsection{Relation to the prior series}
+
+The prior series \cite{paperI,paperII,paperIII,paperIV,paperV,paperVI,priorSynthesis}
+was about the natural numbers and their identity. It established that the
+natural numbers, viewed from any of the four formal perspectives III--VI,
+are \emph{the same object}, which was the central claim of the prior
+synthesis. The present series extends that programme along two axes.
+
+\textbf{From $\N$ to $\Rc, \Cc, \zeta$.} The prior series developed the
+infrastructure (NNOs, HoTT, univalence, structuralism) but applied it
+mostly to discrete objects (natural numbers, finite groups, $\pi_1(S^1)$).
+The principal continuous object whose HoTT presentation it discussed was
+the Cauchy reals $\Rc$, but only as a HIIT in Book HoTT, and only for the
+purpose of defining $\pi$ and $e$ as centres of contractible subtypes
+(Paper~V \S 8). The present series goes further: a complete coalgebraic
+dual for transcendentals (Part~I), a cubical formalisation of the HIIT
+itself (Part~II), and the analytic objects --- complex numbers,
+holomorphic functions, Dirichlet series, $L$-functions --- needed to write
+down $\zeta$ (Part~VI).
+
+\textbf{From 1-categorical to $(\infty,1)$-categorical.} The prior series
+worked mostly in 1-categorical universe, citing Lurie and Riehl--Shulman
+where necessary but not developing the higher-categorical theory. The
+present series tightens the higher-categorical frame: contractibility of
+the type of $(\infty,1)$-categorical NNOs (Part~IV), directed univalence
+of the universe of discrete types (Part~V), and a complete recasting of
+the Riemann zeta function as an internal object of an $(\infty,1)$-topos
+(Part~VI \S 4--5).
+
+The two extensions interact: the analytic side requires the higher
+categorical, because holomorphic functions, Galois actions, and automorphic
+forms all live naturally in $(\infty,1)$-toposes. This is what makes the
+unification non-trivial. We summarise the relation in
+\Cref{tab:priorVsCurrent}.
+
+\begin{table}[hbtp]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Aspect & Prior series & Present series \\
+\midrule
+Object discussed & $\N$, finite groups, $S^1$ & $\Rc$, $\Cc$, $\zeta$, $L$-functions \\
+Categorical level & 1-categorical, with hints & full $(\infty,1)$-categorical \\
+Univalence flavour & symmetric & symmetric + directed \\
+Foundational frame & ZFC, ETCS, MLTT, HoTT & ETCS, IZF, FOLDS vs.\ HoTT \\
+Inductive vs.\ coinductive & inductive throughout & both, with explicit duality \\
+Cubical formalisation & sketched (Paper~V \S 7) & complete (Part~II) \\
+Principal open problem & flagged in Synthesis~\S 8 item 2 & this paper's organising principle \\
+\bottomrule
+\end{tabular}
+\caption{Prior series versus present series.}\label{tab:priorVsCurrent}
+\end{table}
+
+\subsection{Organisation of this paper}
+
+\Cref{sec:framework} fixes notation and gives the unified mathematical
+framework. \Cref{sec:partI,sec:partII,sec:partIII,sec:partIV,sec:partV,sec:partVI}
+treat each of the six component papers in turn, devoting roughly two
+pages to each:
+a half-page recap, the principal theorems, and the connection to the
+others. \Cref{sec:themes} extracts the five cross-cutting themes.
+\Cref{sec:zeta-roadmap} reformulates Part~VI's six sub-problems as
+compositional gates, showing how the apparatus from Parts~I--V combine
+to make each sub-problem well-posed. \Cref{sec:open} concludes with the
+outstanding open questions for the next round of the programme.
+
+%==============================================================
+\section{The Unified Framework}\label{sec:framework}
+%==============================================================
+
+\subsection{Ambient setting}
+
+Throughout we work inside an elementary $(\infty,1)$-topos $\mathcal{E}$
+in the sense of Rasekh~\cite{Rasekh2018}. By Shulman's
+theorem~\cite{Shulman2019}, $\mathcal{E}$ admits an interpretation of
+homotopy type theory with the univalence axiom; we view that
+interpretation as the internal language. We will alternate between
+external talk (objects of $\mathcal{E}$, morphisms in $\mathcal{E}$) and
+internal talk (types $A : \Type$, terms $a : A$, identity types
+$a =_A b$, equivalences $A \simeq B$). Where the distinction matters we
+shall flag it.
+
+The universe $\Type : \Type'$ is univalent: for $A,B : \Type$,
+\begin{equation}
+\idtoeqv : (A =_{\Type} B) \to (A \simeq B)
+\end{equation}
+is an equivalence (Paper~V \cite{paperV}). When we want a directed-univalent
+universe we shall write $\Spc$ for the universe of discrete types in the
+sense of Riehl--Shulman simplicial type theory~\cite{RiehlShulman}, in
+which there is a definable map $\funtohom : \Hom_{\Spc}(A,B) \to (A \to B)$
+that is an equivalence after Gratzer--Weinberger--Buchholtz~\cite{GWB2024};
+see Part~V (\Cref{sec:partV} below).
+
+\subsection{The unified triple}
+
+\begin{definition}[Unified triple]\label{def:triple}
+We assemble the contributions of Parts~I--VI into a single triple
+\[
+\bigl(\Type_{\mathrm{cu}},\ \zeta,\ \ua_{?}\bigr)
+\]
+where:
+\begin{itemize}
+\item $\Type_{\mathrm{cu}}$ is the univalent universe of types
+      in cubical type theory (Part~II), with both inductive HIITs and
+      coinductive M-types (Parts~I, II) and an NNO whose contractibility
+      is internalised at the $(\infty,1)$-level (Part~IV);
+\item $\zeta : \Cc \to \Cc$ is a HoTT-native zeta function (Part~VI),
+      defined either as an HIIT (cf.\ Part~II), as the analytic limit of
+      an Euler-product stream (cf.\ Part~I), or as the unique solution to
+      a meromorphic-continuation universal property (cf.\ Part~III, where
+      we contrast meromorphic-extension UPs across the three foundations);
+\item $\ua_{?}$ is a symbol that ranges over $\{\ua, \dua\}$,
+      symmetric or directed univalence: $\ua$ for ordinary HoTT
+      (Parts~I--IV, VI), $\dua$ for directed type theory (Part~V).
+\end{itemize}
+\end{definition}
+
+\Cref{def:triple} is the central object of this paper. Each of Parts~I--VI
+contributes either a component, a justification, or a structural
+property of the triple. Specifically:
+\begin{itemize}
+\item Part~I: provides the coalgebraic dual presentation of $\Cc$ used
+      to make sense of $\zeta$ as the limit of a stream of partial sums.
+\item Part~II: provides the cubical formalisation of $\Rc$, hence of
+      $\Cc = \Rc \times \Rc$.
+\item Part~III: certifies that the HoTT-internal definition of $\zeta$
+      is invariant under the choice between ETCS, IZF, FOLDS, and HoTT
+      via the univalence boundary.
+\item Part~IV: certifies that the NNO needed for the Dirichlet sum
+      $\sum_{n \geq 1} n^{-s}$ in the $(\infty,1)$-categorical universe
+      is contractibly unique.
+\item Part~V: certifies that automorphic representations, which are
+      directed objects, can be expressed using $\dua$.
+\item Part~VI: assembles the triple and posits the six sub-problems
+      whose collective resolution gives a HoTT-native proof of, say,
+      $\zeta(2) = \pi^2/6$ and a HoTT-native statement of the Riemann
+      hypothesis.
+\end{itemize}
+
+\subsection{Notation and types}
+
+We write $\N$, $\Z$, $\Q$ for the standard discrete types of natural
+numbers, integers, and rationals. We write $\Rc$ for the Cauchy reals as
+a HIIT (Paper~V \S 11.3 / Booij \cite{Booij2020}, formalised in Part~II)
+and $\Cc := \Rc \times \Rc$ with the standard field structure. We write
+$\Aut(A)$ for the type of self-equivalences of $A$, and $\isContr(A)$ for
+the proposition that $A$ is contractible.
+
+%==============================================================
+\section{Part I: Coalgebraic Transcendentals}\label{sec:partI}
+%==============================================================
+
+\subsection{Recap}
+
+Part~I~\cite{coalgebraicTranscendentals} addresses the open problem flagged
+at the end of the prior synthesis (\S 8 item 1): a final-coalgebra
+characterisation of $\pi$ and $e$ that avoids the inductive HIIT route. The
+prior synthesis (Paper~V \S 8) defined $\pi$ and $e$ as centres of
+contractible subtypes of the inductive Cauchy reals. Part~I provides the
+dual description: $\pi$ is the unique element of an explicit final coalgebra
+modulo carry-bisimulation, distinguished by a categorical predicate that
+does not invoke the inductive presentation.
+
+\subsection{Principal theorems}
+
+\begin{theorem}[\cite{coalgebraicTranscendentals}, \S 4]
+For each base $b \geq 2$ there is an endofunctor $F_b : \Type \to \Type$
+with $F_b X = \{0,1,\dots,b-1\} \times X$ whose final coalgebra $\nu F_b$
+is the type of digit streams in base $b$. After quotienting by the
+\emph{carry-bisimulation} relation, the resulting type
+$\nu F_b / \mathord{\bisim}$ is equivalent (as ordered Archimedean field)
+to $[0,1]$.
+\end{theorem}
+
+\begin{theorem}[$\pi$ and $e$ as centres of coinductive contractible
+types, \cite{coalgebraicTranscendentals}, \S 7]\label{thm:partI:pi-e}
+There exist bisimulation-closed predicates $P_\pi, P_e$ on the digit-stream
+final coalgebra such that
+\[
+\Sigma_{x : \nu F_b / \bisim}\, P_\pi(x) \quad\text{is contractible,}
+\]
+and similarly for $e$. The centres are the carriers of $\pi/4$ and $e$
+respectively.
+\end{theorem}
+
+The predicates $P_\pi, P_e$ are stated coalgebraically: $P_\pi$ asserts
+that the stream is the unique fixed point of the BBP digit-extraction
+coendomorphism, and $P_e$ asserts that the stream is the bisimulation
+class of the unique fixed point of the spigot algorithm of
+\cite{rabwagon-spigot,gibbons-spigot}.
+
+\subsection{Connection to the unified triple}
+
+Part~I gives the \emph{coalgebraic} half of the inductive--coinductive
+duality. In the unified framework the relevance is direct: the
+Dirichlet series $\sum n^{-s}$ is most naturally presented as a stream of
+partial sums, and convergence is a coinductive property. \Cref{thm:partI:pi-e}
+provides the prototype: a transcendental real expressed as the
+unique element of a final coalgebra picked out by a coinductive predicate.
+The same recipe will apply to $\zeta(2k)$ (rational multiples of $\pi^{2k}$)
+once Part~VI's machinery is in place.
+
+\subsection{Cross-references}
+
+Part~I cites Part~II for the cubical Cauchy-real construction whose
+existence it presupposes, and Part~VI for the analytic context in which
+its transcendentals are deployed. Within the prior series, Part~I extends
+Paper~III \S 5 (coinductive presentation of $\R$), Theorem~5.2 (streams as
+final coalgebra), and Paper~V \S 8 (inductive presentation of $\pi, e$).
+
+%==============================================================
+\section{Part II: Cubical HIITs and the Cauchy Reals}\label{sec:partII}
+%==============================================================
+
+\subsection{Recap}
+
+Part~II~\cite{cubicalHiitCauchy} addresses the open problem (Synthesis
+\S 8 item 6) of giving a clean cubical-Agda formalisation of the HIIT
+Cauchy reals. The prior series (Paper~V \S 5.4 / Booij \cite{Booij2020})
+constructed $\Rc$ as a HIIT in Book HoTT; the present part transports the
+construction to cubical Agda~\cite{CubicalAgda} where univalence is
+constructive.
+
+\subsection{Principal theorems}
+
+\begin{theorem}[Cubical Cauchy reals]
+There is a cubical higher inductive--inductive type with constructors
+\begin{align*}
+\rat &: \Q \to \Rc, \\
+\hlim &: (\varepsilon : \Q^{>0}) \to (s : \Cauchy(\Rc,\varepsilon)) \to \Rc, \\
+\mathsf{eq} &: (u, v : \Rc) \to (\forall \varepsilon,\; u \bisim_\varepsilon v) \to u = v,
+\end{align*}
+together with closeness-relation constructors, such that the resulting
+type $\Rc$ is an h-set, an Archimedean ordered field, and the universal
+Cauchy completion of $\Q$.
+\end{theorem}
+
+\begin{theorem}[Universal property]
+For any Cauchy-complete Archimedean ordered $\Q$-field $F$, there is a
+unique field homomorphism $\Rc \to F$ commuting with $\rat$. Hence any two
+HIIT-presentations of the Cauchy reals are equal, by univalence.
+\end{theorem}
+
+\subsection{Connection to the unified triple}
+
+Part~II provides the foundational object on which Part~VI builds. In the
+unified framework: $\Type_{\mathrm{cu}}$ is the cubical universe whose
+existence is asserted by Cubical Agda, and $\Rc \in \Type_{\mathrm{cu}}$
+is the HIIT just constructed. Hence
+\[
+\Cc := \Rc \times \Rc \in \Type_{\mathrm{cu}}.
+\]
+It is in $\Cc$ that the zeta function lives.
+
+\subsection{Cross-references}
+
+Part~II provides the carrier on which all of Part~I's coalgebraic
+constructions ultimately rest (since $[0,1]$ is a quotient of digit
+streams that must equal a sub-HIIT of $\Rc$), and the carrier on which
+Part~VI's $\zeta$ is built.
+
+%==============================================================
+\section{Part III: ETCS, IZF, FOLDS}\label{sec:partIII}
+%==============================================================
+
+\subsection{Recap}
+
+Part~III~\cite{etcsIzfFolds} addresses the open problem (Synthesis \S 8
+item 3) of comparing three structural foundations against each other and
+against HoTT\@. ETCS (Lawvere 1964~\cite{Lawvere1964}) replaces ZFC by an
+axiomatisation of the category of sets; IZF (Friedman~\cite{Friedman1973})
+keeps membership but rejects excluded middle; FOLDS (Makkai
+1995~\cite{Makkai1995}) is a logic in which only equivalence-invariant
+properties are expressible.
+
+\subsection{Principal theorems}
+
+\begin{theorem}[Bi-interpretation, \cite{McLarty2004}]
+ETCS is bi-interpretable with bounded Zermelo plus Replacement.
+\end{theorem}
+
+\begin{theorem}[Univalence boundary]
+Following~\cite[\S 6]{etcsIzfFolds}: among the four foundations
+$\{\text{ETCS}, \text{IZF}, \text{FOLDS}, \text{HoTT}\}$, only HoTT
+internalises the structure identity principle (SIP) as a theorem; in
+ETCS and IZF, SIP requires excluded middle and is not automatic; in
+FOLDS, the equivalence principle is enforced syntactically rather than
+semantically.
+\end{theorem}
+
+\subsection{Connection to the unified triple}
+
+Part~III certifies that the unified triple
+$(\Type_{\mathrm{cu}}, \zeta, \ua)$ is foundationally robust in a precise
+sense: under any of ETCS, IZF, FOLDS, or HoTT, the construction of
+$\zeta$ from $\Rc$ and $\Cc$ produces an isomorphic object (modulo the
+respective notion of equivalence). Without this, one might worry that
+$\zeta$ as defined inside HoTT is parochial. The univalence-boundary
+theorem says: HoTT goes a strict step further than the other three by
+making structure-preservation \emph{a theorem rather than a metatheorem}.
+
+\begin{remark}[Strengths of the alternatives]\label{rem:partIIIstrengths}
+We do not claim that HoTT is uniquely correct as a structural foundation;
+each of ETCS, IZF, and FOLDS has distinctive strengths that complement
+HoTT's. ETCS provides a particularly clean axiomatisation of the
+category $\Set$ that supports the standard mathematical practice of
+working ``up to isomorphism'' in everyday set theory without invoking
+the higher-categorical machinery; it is a useful working metatheory for
+HoTT itself. IZF supplies a constructive membership-based foundation
+that interfaces directly with realizability semantics and effective
+toposes, which are valuable for extracting computational content from
+proofs. FOLDS provides a syntactic enforcement of the equivalence
+principle that does not require univalence, and it scales naturally to
+$n$-categorical structures via Reedy fibrant diagrams. Each foundation
+has a domain of natural application; HoTT's distinctive feature is that
+it is the unique foundation in which structure-preservation is
+\emph{internal}, hence the appropriate setting for the unified triple.
+\end{remark}
+
+\subsection{Cross-references}
+
+Part~III sits orthogonally to Parts~I, II, IV: it does not contribute
+machinery to $\zeta$ but certifies the construction across foundations.
+It connects to Paper~II of the prior series (which mentioned ETCS, IZF
+as alternatives but did not develop them) and to Paper~VI (which
+developed Lawvere theories within an ETCS-friendly frame).
+
+%==============================================================
+\section{Part IV: \texorpdfstring{$(\infty,1)$}{(infinity,1)}-NNOs}\label{sec:partIV}
+%==============================================================
+
+\subsection{Recap}
+
+Part~IV~\cite{infinityNno} addresses the open problem (Synthesis \S 8 item
+4) of the higher-categorical structure of NNO\@. The prior series proved
+contractibility of the type of NNOs in HoTT (Paper~V Theorem~4.4). The
+$(\infty,1)$-categorical analogue, in elementary $(\infty,1)$-toposes, is
+more delicate: Rasekh~\cite{Rasekh2018} showed that every elementary
+$(\infty,1)$-topos has a NNO, by constructing it from the loop space of
+$S^1 = K(\Z,1)$.
+
+\subsection{Principal theorems}
+
+\begin{theorem}[Higher contractibility,
+\cite{infinityNno}, Theorem 4.4 / \cite{Rasekh2018}]
+The space $\NNO_{(\infty,1)}$ of natural-numbers objects in any elementary
+$(\infty,1)$-topos $\mathcal{E}$ is contractible: the canonical
+forgetful map $\NNO_{(\infty,1)} \to \mathcal{E}_*$ to pointed objects is
+an inclusion of a contractible subspace.
+\end{theorem}
+
+\begin{theorem}[Lurie / Rasekh equivalence]
+Lurie's NNO (in presentable $(\infty,1)$-toposes) and Rasekh's NNO
+(in elementary $(\infty,1)$-toposes) coincide on their common domain of
+definition; the higher coherences of the universal property follow
+automatically from contractibility.
+\end{theorem}
+
+\subsection{Connection to the unified triple}
+
+Part~IV ensures that the iteration / primitive recursion needed to define
+the Dirichlet sum
+\[
+\zeta_{\mathrm{Dir}}(s) := \sum_{n \geq 1} n^{-s}
+\]
+is correctly stated in the $(\infty,1)$-context. Without
+contractibility, two distinct presentations of $\N$ in $\mathcal{E}$
+might give two non-equivalent definitions of $\zeta$ via two
+non-equivalent enumerations of the natural numbers; contractibility
+prevents this.
+
+\subsection{Cross-references}
+
+Part~IV uses Part~II's cubical machinery to formalise contractibility
+within Cubical Agda, and feeds Part~VI's $\zeta$. It extends Paper~III
+\S 3 (NNO universal property), Paper~V Theorem~4.4 (contractibility in
+HoTT), and Paper~VI Theorem~4.1 (initial in $\mathrm{Mod}(T_{\mathrm{succ}})$).
+
+%==============================================================
+\section{Part V: Directed Univalence}\label{sec:partV}
+%==============================================================
+
+\subsection{Recap}
+
+Part~V~\cite{directedUnivalence} addresses the open problem (Synthesis
+\S 8 item 5) of a complete directed univalence principle. Riehl--Shulman
+simplicial type theory~\cite{RiehlShulman} introduced a directed
+interval; Gratzer--Weinberger--Buchholtz~\cite{GWB2024} proved directed
+univalence for the universe $\Spc$ of discrete types. Part~V surveys the
+state of the art and outlines a path to directed univalence for arbitrary
+types.
+
+\subsection{Principal theorems}
+
+\begin{theorem}[\cite{GWB2024}; \cite{directedUnivalence}, \S 5]
+There is a triangulated type theory in which the universe $\Spc$ of discrete
+types is directed univalent: the canonical map
+\[
+\funtohom : \Hom_{\Spc}(A, B) \to (A \to B)
+\]
+is an equivalence.
+\end{theorem}
+
+\begin{theorem}[Directed structure identity principle,
+\cite{directedUnivalence}, \S 6]
+For any structure-functor $F : \Spc^{\op} \to \Spc$ and any $F$-structures
+$(A, \alpha), (B, \beta)$, the directed identity type
+$(A,\alpha) =_F^{\to} (B,\beta)$ is equivalent to the type of
+$F$-structure-preserving directed maps $(A, \alpha) \to (B, \beta)$.
+\end{theorem}
+
+\subsection{Connection to the unified triple}
+
+Part~V provides the synthetic apparatus for category theory and functor
+theory inside HoTT: with directed univalence, functors become directed
+maps in the universe, and natural transformations become directed
+2-cells. This is essential for Part~VI's treatment of automorphic
+representations (which are functors $\mathrm{GL}(n,\mathbb{A}) \to \Cc^*$
+with extra coherence) and for the categorical Langlands correspondence.
+In the unified triple, $\ua_{?} = \dua$ is the case relevant to Langlands.
+
+\subsection{Cross-references}
+
+Part~V extends Paper~V \S 8.3 (directed HoTT paragraph) and Synthesis
+\S 7.2 (synthetic $\infty$-categories). It feeds Part~VI \S 4--5
+(Langlands).
+
+%==============================================================
+\section{Part VI: Langlands and the \texorpdfstring{$\zeta(s)=0$}{zeta(s)=0} Roadmap}\label{sec:partVI}
+%==============================================================
+
+\subsection{Recap}
+
+Part~VI~\cite{langlandsAnalytic} is the centerpiece. It addresses the
+principal open problem (Synthesis \S 7.3, \S 8 item 2): a HoTT-native
+formulation of analytic number theory with $\zeta$ a HoTT-native object
+and $\zeta(s)=0$ a HoTT-native proposition. Part~VI does \emph{not}
+solve this problem; it formulates it precisely and offers a roadmap.
+
+\subsection{Principal contributions}
+
+\begin{enumerate}[leftmargin=*]
+\item A \emph{prerequisite chain}: HoTT-native real numbers $\Rc$
+      $\Rightarrow$ HoTT-native complex numbers $\Cc$ via univalent
+      algebraic closure $\Rightarrow$ HoTT-native holomorphic functions
+      $\Rightarrow$ HoTT-native Dirichlet series.
+\item Three candidate definitions of $\zeta$: as an HIIT, as the analytic
+      limit of an Euler product, and as the unique solution to a
+      meromorphic-continuation universal property.
+\item A worked example $\zeta(2) = \pi^2/6$ at the level of definitions.
+\item A geometric Langlands $(\infty,1)$-topos formulation, plus
+      Clausen--Scholze condensed mathematics, plus Loeffler--Stoll
+      Lean / Mathlib comparison.
+\item Six concrete sub-problems for HoTT-native $\zeta$, with effort
+      estimates.
+\item A formal HoTT statement of the Riemann hypothesis.
+\end{enumerate}
+
+\subsection{The six sub-problems}
+
+We will reproduce these in \Cref{sec:zeta-roadmap}. They are:
+\begin{enumerate}
+\item HoTT-native $\Cc$ with full algebraic-closure axiom.
+\item HoTT-native holomorphic functions.
+\item HoTT-native Dirichlet series machinery.
+\item HoTT-native analytic continuation.
+\item HoTT-native functional equation.
+\item HoTT-native formal RH statement.
+\end{enumerate}
+The dependency graph is a chain $1 \to 2 \to 3 \to 4 \to 5 \to 6$ with a
+shortcut from 1 to 3.
+
+\subsection{Connection to the unified triple}
+
+Part~VI is the place at which the triple $(\Type_{\mathrm{cu}}, \zeta, \ua_?)$
+is finally assembled. Each sub-problem invokes one of the preceding
+parts:
+\begin{itemize}
+\item Sub-problem 1 ($\Cc$): uses Part~II.
+\item Sub-problem 2 (holomorphic functions): uses Part~II for the carrier
+      and Part~III for the foundational independence of the definition.
+\item Sub-problem 3 (Dirichlet series): uses Part~I for the coalgebraic
+      formulation as a stream of partial sums, Part~II for convergence,
+      and Part~IV for the indexing $\N$.
+\item Sub-problem 4 (analytic continuation): uses Parts~I--IV.
+\item Sub-problem 5 (functional equation): uses Parts~I--IV plus Part~V
+      for the cohesive / directed reformulation.
+\item Sub-problem 6 (formal RH): uses Parts~I--V.
+\end{itemize}
+
+%==============================================================
+\section{Cross-Cutting Themes}\label{sec:themes}
+%==============================================================
+
+\subsection{Theme 1: Inductive--coinductive duality (Parts I, II)}
+
+The reals $\Rc$ admit two presentations: inductively, as a HIIT of Cauchy
+sequences modulo a path-constructor (Paper~V \S 5.4; Part~II); and
+coinductively, as a final coalgebra of digit streams modulo
+carry-bisimulation (Paper~III \S 5; Part~I). These are equal by
+univalence applied to the universal property of the Cauchy completion
+(Paper~III Theorem~4.1) but differ computationally.
+
+\begin{principle}[Inductive--coinductive duality]\label{prin:dual}
+In a univalent universe, the inductive presentation $\Rc^{\mathrm{ind}}$
+(a HIIT) and the coinductive presentation $\Rc^{\mathrm{coind}}$ (a final
+coalgebra modulo bisimulation) give equal types, by the Cauchy-completion
+universal property. They differ as effective structures (Type II Turing
+computability). Subsets defined inductively (e.g.\ contractible-centre
+subtypes, Paper~V \S 8) and coinductively (e.g.\ bisimulation-class
+subtypes, Part~I) coincide on the underlying type but expose different
+algorithmic structure.
+\end{principle}
+
+\Cref{prin:dual} is the unifying theorem of Parts~I and~II\@. In
+\Cref{sec:zeta-roadmap} we use it to argue that the convergence of the
+Dirichlet sum $\sum n^{-s}$ for $\Re(s) > 1$ is naturally a coinductive
+fact about partial-sum streams, while the analytic continuation to
+$\mathbb{C} \setminus \{1\}$ is naturally an inductive fact about
+holomorphic-extension functors.
+
+\subsection{Theme 2: Structural vs.\ material foundations (Part III)}
+
+The contrast between membership-based foundations (ZFC, IZF) and
+structure-based foundations (ETCS, FOLDS, HoTT) is the subject of
+Part~III\@. Within HoTT, structure becomes material in a precise sense:
+the type $\Sigma_{X : \Type} F(X)$ of $F$-structures is itself a type,
+and equivalence of structures is internalised as identity by univalence.
+
+\begin{principle}[Structural materialism]\label{prin:strucMaterial}
+Under univalence, the distinction between structural and material
+foundations collapses: every structural property becomes a property of
+\emph{some specific type}, and that type is itself an object of the
+universe. The universe internalises its own structure-up-to-isomorphism
+language.
+\end{principle}
+
+This is not vacuous. In ZFC, ``the natural numbers'' is not a single
+object: there are von Neumann naturals, Zermelo naturals, and infinitely
+many other encodings, all with different junk theorems
+(Paper~II \S 4--6). In HoTT, ``the natural numbers'' is a single type
+$\N : \Type$, and the type of NNO structures is contractible (Paper~V
+Theorem~4.4 / Part~IV). Univalence is the principle that makes the
+category-theoretic ``up to isomorphism'' literally an identity.
+
+\subsection{Theme 3: Coherence and contractibility (Part IV)}
+
+The bridge from 1-categorical universal properties (``unique up to
+isomorphism'') to $(\infty,1)$-categorical ones (``unique up to
+contractible space of choices'') is the contractibility theorem of
+Part~IV\@. The 1-categorical statement says: any two NNOs are uniquely
+isomorphic. The $(\infty,1)$-categorical statement says: the space of
+NNOs is contractible, i.e.\ uniquely isomorphic in a way that is itself
+unique up to a unique 2-isomorphism, etc.
+
+\begin{principle}[Higher coherence]\label{prin:coherence}
+A universal property in a 1-category lifts to an $(\infty,1)$-category
+if and only if the moduli space of structures satisfying it is
+contractible. Univalence makes contractibility internal.
+\end{principle}
+
+This principle is what makes the prior synthesis's theorem
+(``Identity of perspectives'' Theorem 5.2) lift from natural numbers to
+arbitrary essentially algebraic structures, including the analytic
+objects of Part~VI.
+
+\subsection{Theme 4: Symmetric vs.\ directed univalence (Parts II, V)}
+
+Symmetric univalence (Paper~V Theorem~4.2; Part~II) gives an equivalence
+$(A =_{\Type} B) \simeq (A \simeq B)$. Directed univalence
+(Riehl--Shulman; Part~V) gives an equivalence
+$\Hom_{\Spc}(A, B) \simeq (A \to B)$ in the universe of discrete types.
+
+\begin{principle}[Symmetric--directed contrast]\label{prin:dualUniv}
+The symmetric-directed contrast tracks the contrast between groupoids
+($\infty$-groupoids = ordinary types) and categories
+($(\infty,1)$-categories = directed types). The symmetric universe is the
+correct setting for invariance theorems; the directed universe is the
+correct setting for representation-theoretic statements.
+\end{principle}
+
+For the analytic-NT programme, this principle has a concrete
+consequence: \emph{statements about $\zeta$ as a function} live in the
+symmetric universe (Part~II), while \emph{statements about automorphic
+representations and Langlands functoriality} live in the directed
+universe (Part~V).
+
+\subsection{Theme 5: The \texorpdfstring{$\zeta$}{zeta}-prerequisite chain (Part VI)}
+
+The five themes above coalesce in Part~VI\@. The following diagram
+summarises the dependencies.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzcd}[column sep=large, row sep=large]
+\text{Part I}
+  \arrow[dr, "\text{coalg. } \Rc \to \Cc"] & & \text{Part IV}
+  \arrow[dl, "\N \text{ contractible}"] \\
+& \text{Part VI: } \zeta & \\
+\text{Part II}
+  \arrow[ur, "\Rc \text{ HIIT}"] &
+\text{Part III}
+  \arrow[u, "\text{found.\ indep.}"] & \text{Part V}
+  \arrow[ul, "\dua \text{ for autom.\ reps}"]
+\end{tikzcd}
+\caption{The five-into-one dependency. Each of Parts I--V contributes to
+Part VI's roadmap toward $\zeta(s)=0$.}\label{fig:fivedep}
+\end{figure}
+
+\Cref{fig:fivedep} encodes the central claim of this synthesis: the six
+component papers are not independent investigations but a single
+five-prerequisite construction whose target is the HoTT-native $\zeta$.
+
+%==============================================================
+\section{The \texorpdfstring{$\zeta(s)=0$}{zeta(s)=0} Roadmap as Compositional Gates}\label{sec:zeta-roadmap}
+%==============================================================
+
+\subsection{Reformulation}
+
+We reformulate Part~VI's six sub-problems as \emph{compositional gates}:
+each sub-problem invokes exactly the apparatus assembled in the
+preceding parts.
+
+\subsection{Gate 1: HoTT-native \texorpdfstring{$\Cc$}{Cc} with algebraic closure}
+
+\begin{problem}[Gate 1]\label{prob:gate1}
+Construct $\Cc : \Type_{\mathrm{cu}}$ as an algebraic closure of $\Rc$,
+with the universal property: for every algebraically closed field $F$
+extending $\Rc$, there is a unique $\Rc$-algebra map $\Cc \to F$.
+\end{problem}
+
+\textbf{Apparatus required.} Part~II (cubical $\Rc$). Part~III
+(foundation-independence of the construction). Part~IV (universal
+property at the $(\infty,1)$-level).
+
+\textbf{Status.} Partial; algebraic closure not yet formalised.
+
+\subsection{Gate 2: HoTT-native holomorphic functions}
+
+\begin{problem}[Gate 2]\label{prob:gate2}
+Define $\holo(U, \Cc)$ for an open subtype $U : \Cc$, via the synthetic
+notion of cohesive HoTT~\cite{shulman-cohesive,coalgebraicTranscendentals},
+or directly as differentiable functions; prove the Cauchy--Riemann
+equations, the Cauchy integral formula, and the identity theorem.
+\end{problem}
+
+\textbf{Apparatus required.} Gate 1; Part~I for stream-presentation of
+power series; Part~II for the analytic limit construction.
+
+\textbf{Status.} Possible by direct constructive analysis. Estimated
+effort: $\sim 5000$ lines.
+
+\subsection{Gate 3: HoTT-native Dirichlet series}
+
+\begin{problem}[Gate 3]\label{prob:gate3}
+Define
+\[
+\mathsf{Dirichlet}(\Cc)
+\;:=\; \Sigma_{f : \N \to \Cc}\,
+  \bigl(\textstyle\sum_n f(n) n^{-s}\text{ converges for } \Re(s) > \sigma_f\bigr)
+\]
+as a type, with the algebra structure (Cauchy product, derivative,
+shift); for the trivial sequence $f \equiv 1$ obtain the Dirichlet zeta
+function $\zeta_{\mathrm{Dir}}(s)$.
+\end{problem}
+
+\textbf{Apparatus required.} Gates 1, 2; Part~I (coalgebraic streams of
+partial sums); Part~IV (NNO indexing). Note the natural use of
+\Cref{prin:dual}: convergence is coinductive over the partial-sum
+stream, while the algebra structure is inductive on the underlying
+sequences.
+
+\textbf{Status.} Companion Haskell code provides a finite-precision
+prototype; HoTT formalisation pending.
+
+\subsection{Gate 4: HoTT-native analytic continuation}
+
+\begin{problem}[Gate 4]\label{prob:gate4}
+Formalise the analytic-continuation theorem: a holomorphic function on a
+connected open subtype admitting a power series at one boundary point
+extends holomorphically to a neighbourhood of that point. Apply to
+$\zeta_{\mathrm{Dir}}$ to obtain $\zeta : \Cc \setminus \{1\} \to \Cc$.
+\end{problem}
+
+\textbf{Apparatus required.} Gates 1--3; Part~III for foundational
+robustness of analytic continuation across ETCS / IZF / FOLDS / HoTT\@.
+This is the key technical bottleneck. Constructive analytic continuation
+is delicate; the classical identity theorem uses excluded middle, which
+must be replaced by a constructive density argument.
+
+\textbf{Status.} Open; bottleneck.
+
+\subsection{Gate 5: HoTT-native functional equation}
+
+\begin{problem}[Gate 5]\label{prob:gate5}
+Prove the functional equation
+\[
+\zeta(s) = 2^{s} \pi^{s-1} \sin(\pi s/2) \Gamma(1-s) \zeta(1-s)
+\]
+in HoTT, using either (a) the Mellin-transform / theta-function method,
+(b) Riemann's contour integral method, or (c) a synthetic cohesive-HoTT
+proof using analytic-stack duality.
+\end{problem}
+
+\textbf{Apparatus required.} Gates 1--4; Part~V (directed reasoning for
+duality), Part~I (coalgebraic identity for the gamma function).
+
+\textbf{Status.} Requires Gates 1--4 first.
+
+\subsection{Gate 6: HoTT-native RH statement}
+
+\begin{problem}[Gate 6]\label{prob:gate6}
+Write down a HoTT proposition $\mathrm{RH} : \Prop$ such that
+$\mathrm{RH}$ inhabits if and only if every non-trivial zero of $\zeta$
+has real part $1/2$. Verify this proposition is equal, modulo the
+ambient model, to the classical RH\@.
+\end{problem}
+
+The HoTT statement is, in the notation of Part~VI:
+\[
+\mathrm{RH} := \prod_{s : \Cc} \bigl(\zeta(s) = 0\bigr) \to \mathsf{IsNonTrivial}(s) \to \bigl(\Re(s) =_{\Rc} 1/2\bigr).
+\]
+
+\textbf{Apparatus required.} Gates 1--4; Part~III for the foundation-
+independent reading; Part~V for the connection to Langlands functoriality.
+
+\textbf{Status.} Doable now (modulo Gates 1--4); the statement, not the
+proof.
+
+\subsection{Composition diagram}
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{l c c c c c c}
+\toprule
+Apparatus & Gate 1 & Gate 2 & Gate 3 & Gate 4 & Gate 5 & Gate 6 \\
+\midrule
+Part I (coalg.\ streams)            &         & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+Part II ($\Rc$ HIIT)                & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+Part III (found.\ indep.)           & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+Part IV ($(\infty,1)$-NNO)          & $\bullet$ &           & $\bullet$ & $\bullet$ & $\bullet$ & $\bullet$ \\
+Part V (directed univ.)             &           &           &           &           & $\bullet$ & $\bullet$ \\
+\midrule
+Inheritance from prior gates        & ---       & 1         & 1,2       & 1,2,3     & 1,2,3,4   & 1,2,3,4,5 \\
+\bottomrule
+\end{tabular}
+\caption{Compositional gate matrix for the six sub-problems. A bullet
+$\bullet$ means the apparatus of the corresponding part is invoked
+in that gate. The bottom row records the chain of preceding gates on
+which each gate depends, mirroring the linear roadmap
+$\text{Gate 1} \to \text{Gate 2} \to \cdots \to \text{Gate 6}$
+of Part~VI.}
+\label{fig:gates}
+\end{figure}
+
+\begin{figure}[hbtp]
+\centering
+\begin{tikzcd}[column sep=small, row sep=small]
+\text{Gate 1} \arrow[r] \arrow[rr, bend left=20] & \text{Gate 2} \arrow[r] & \text{Gate 3} \arrow[r] & \text{Gate 4} \arrow[r] & \text{Gate 5} \arrow[r] & \text{Gate 6}
+\end{tikzcd}
+\caption{Linear dependency of the six sub-problems
+(reproducing Part~VI's Figure for the roadmap, with the shortcut
+$1 \to 3$).}\label{fig:gateschain}
+\end{figure}
+
+\subsection{Estimated effort}
+
+Following Part~VI, the total effort is estimated at $\sim 15{,}000$ lines
+of Cubical Agda, $8$--$12$ graduate-student-years. Comparable to the
+total effort behind Loeffler--Stoll~\cite{loefflerstoll} plus its
+Mathlib dependencies.
+
+\subsection{Worked example: \texorpdfstring{$\zeta(2)$}{zeta(2)} as a HoTT-native fact}\label{sec:zeta2}
+
+To make the gate structure concrete, consider the special value
+$\zeta(2) = \pi^2/6$. A HoTT-native proof of this identity would
+proceed as follows.
+
+\begin{enumerate}[leftmargin=*]
+\item By Gate~3, the Dirichlet sum $\sum_{n=1}^\infty 1/n^2$ converges in
+      $\Cc$. The convergence is a coinductive fact about the
+      partial-sum stream
+      $S_N := \sum_{n=1}^N 1/n^2$, which is bisimilar (in the sense of
+      Part~I) to a Cauchy stream of approximations to $\pi^2/6$.
+\item By Part~I (\Cref{thm:partI:pi-e}), $\pi$ is the centre of a
+      contractible coalgebraic subtype, hence $\pi^2/6$ is.
+\item By Part~II's universal property, the Cauchy reals are unique up
+      to canonical equivalence, so the limit of $S_N$ in $\Rc$ is
+      well-defined and is equal to $\pi^2/6$.
+\item The classical Euler proof, transported via the foundation-
+      independence of Part~III, gives the equality. Specifically: the
+      function $\sin(\pi z)/(\pi z)$ admits a product expansion
+      $\prod_{n \geq 1}(1 - z^2/n^2)$, whose coefficient of $z^2$ on
+      both sides yields $\zeta(2) = \pi^2/6$. The product expansion is
+      a coinductive identity in the sense that the partial products
+      $P_N(z) := \prod_{n=1}^N (1-z^2/n^2)$ form a stream
+      ${(P_N)}_{N \in \N}$ of holomorphic functions whose coefficient
+      streams converge coordinatewise; the equality of the coefficient
+      of $z^2$ between the two sides is then a bisimulation between
+      coefficient streams in the sense of Part~I, and the
+      Weierstrass-product machinery~\cite{Booij2020} provides the
+      uniform-convergence bound that promotes the coordinatewise
+      coalgebraic identity to an identity of holomorphic functions in
+      $\Cc$.
+\end{enumerate}
+
+The above is a specification of a proof, not the proof itself. Fully
+formalising it inside Cubical Agda is the subject of the gates'
+implementation.
+
+\begin{remark}
+Loeffler--Stoll~\cite{loefflerstoll} formalised $\zeta(2) = \pi^2/6$ in
+Lean / Mathlib; their proof is roughly 200 lines on top of the
+analytic continuation infrastructure (3300 lines). A Cubical Agda
+formalisation would presumably have similar proportions, modulo the
+constructive subtleties around analytic continuation
+(Gate~4).
+\end{remark}
+
+\subsection{Worked example: the functional equation}
+
+Riemann's functional equation
+\[
+\zeta(s) = 2^s \pi^{s-1} \sin(\pi s / 2)\, \Gamma(1-s)\, \zeta(1-s)
+\]
+is the principal organising identity for $\zeta$. In the unified
+framework it is Gate~5. We sketch the route in HoTT\@.
+
+The classical proof uses the Mellin transform: the integral
+$\int_0^\infty x^{s-1} f(x)\,dx$ for suitable $f$, with $f$ a theta
+function. The HoTT-native version requires:
+\begin{itemize}[leftmargin=*]
+\item $\Gamma$ as a HoTT-native object: by Gates~2--3, $\Gamma$ is
+      definable as the analytic continuation of $\int_0^\infty
+      x^{s-1} e^{-x}\,dx$ for $\Re(s) > 0$;
+\item theta functions $\theta(\tau)$: defined as Dirichlet-type series
+      indexed by $\Z$, hence available once Gates~2--4 are in place;
+\item the Mellin pairing $\langle\theta,\zeta\rangle$: definable as a
+      synthetic integral over the directed half-line $(0,\infty)$,
+      whose definition requires Part~V's directed structure for the
+      orientation;
+\item the modular invariance $\theta(\tau) = {(-i\tau)}^{-1/2}\theta(-1/\tau)$:
+      a synthetic statement in cohesive HoTT~\cite{shulman-cohesive}, using
+      the cohesive shape modality to pass between $\Z$-equivariant
+      and $\mathrm{SL}_2(\Z)$-equivariant cohomology.
+\end{itemize}
+
+The functional equation falls out of the modular invariance of
+$\theta$ via the Mellin pairing; the HoTT-native version requires
+the synthetic apparatus of Parts~II, IV, V.
+
+\subsection{Worked example: the Riemann hypothesis as a HoTT proposition}
+
+The HoTT-internal RH proposition is, in the notation of Part~VI:
+\[
+\mathrm{RH} := \prod_{s : \Cc} \bigl(\zeta(s) =_{\Cc} 0\bigr) \to
+\mathsf{IsNonTrivial}(s) \to \bigl(\Re(s) =_{\Rc} 1/2\bigr).
+\]
+
+Three remarks on this proposition.
+
+\textbf{Remark 1: Propositionality.} $\mathrm{RH}$ is an
+$(-1)$-truncated type because each of the constituent identities
+$\Re(s) = 1/2$ is a path in an h-set. Hence ``$\mathrm{RH}$ has two
+distinct proofs'' is empty; either $\mathrm{RH}$ is inhabited, or it
+is not.
+
+\textbf{Remark 2: Decidability.} $\mathrm{RH}$ is not decidable in
+HoTT: there is no algorithm $\mathrm{RH} \vee \neg \mathrm{RH}$. This
+is consistent with constructivity, since $\mathrm{RH}$ is a
+$\Pi$-statement over an uncountable type. Under classical logic
+(LEM), $\mathrm{RH} \vee \neg \mathrm{RH}$ is inhabited; this is a
+consequence of LEM, not a constructive theorem.
+
+\textbf{Remark 3: Modal status.} $\mathrm{RH}$ admits a modal-logical
+analysis. Inside cohesive HoTT, with cohesion modalities $\sharp,
+\flat$~\cite{shulman-cohesive}, one can ask whether $\mathrm{RH}$ is
+$\flat$-stable (true in the discrete shadow) or $\sharp$-stable
+(true in the codiscrete shadow). The answer is not known.
+
+%==============================================================
+\section{Discussion}\label{sec:discussion}
+%==============================================================
+
+\subsection{What HoTT contributes vs.\ what HoTT requires}
+
+A fair question, posed by reviewers of Part~VI, is: what does HoTT
+actually \emph{contribute} to analytic number theory, beyond a more
+elaborate language? The answer has three parts.
+
+\textbf{(1) Foundation-independence is internalised.} In ZFC, the
+statement ``$\zeta(2) = \pi^2/6$'' depends, at least nominally, on the
+chosen encoding of $\C$. In HoTT, by univalence and the
+structure-identity principle (Part~III), the statement is invariant
+under all isomorphisms of $\Cc$. This is not a sociological convention
+but a theorem.
+
+\textbf{(2) Coherences are automatic.} Classical proofs of identities
+like the functional equation involve a long chain of intermediate
+identities, each requiring its own proof of well-definedness on
+equivalence classes. In HoTT, by univalence and contractibility
+(Part~IV), these intermediate identities are automatic: paths in the
+universe transport along functorial constructions.
+
+\textbf{(3) Computation comes for free.} In Cubical Agda (Part~II), the
+construction of $\zeta$ would be \emph{executable}: one could ask the
+proof assistant to compute $\zeta(2)$ to $k$ decimal places, and the
+construction of the proof of $\zeta(2) = \pi^2/6$ would yield, as a
+byproduct, an algorithm computing $\pi^2/6$ to $k$ decimal places, by
+Type II Turing computability of the cubical reals.
+
+The cost is also threefold:
+\begin{itemize}[leftmargin=*]
+\item Constructive analytic continuation is much harder than the
+      classical version (Gate~4).
+\item Some classical theorems (e.g.\ the prime-number theorem with the
+      classical contour-shift proof) require LEM and do not transport
+      directly.
+\item The infrastructure --- HIIT machinery (Part~II), $(\infty,1)$-NNO
+      (Part~IV), directed univalence (Part~V) --- is itself a
+      research-level investment.
+\end{itemize}
+
+\subsection{Lean Mathlib vs.\ Cubical Agda}
+
+The Loeffler--Stoll formalization~\cite{loefflerstoll} is in Lean 4 /
+Mathlib, which uses classical foundations. Their formalisation is
+$\sim 3300$ lines for analytic continuation and the functional
+equation. Our estimate (Part~VI, repeated in
+\Cref{sec:zeta-roadmap}) is $\sim 15000$ lines for the equivalent
+work in Cubical Agda. The factor-of-five overhead reflects:
+\begin{itemize}[leftmargin=*]
+\item additional structural lemmas that are free in Mathlib's
+      classical setting (e.g.\ propositional extensionality);
+\item HIIT path-constructor reasoning;
+\item constructive analogues of identity-theorem-style classical
+      arguments;
+\item the cubical machinery itself (transport, composition, Glue
+      types).
+\end{itemize}
+Whether this overhead is worth paying is a separate question; we have
+argued in (1)--(3) above that it is.
+
+\subsection{The role of cohesive / differential HoTT}
+
+Several gates --- holomorphic functions (Gate~2), the modular
+invariance underlying the functional equation (Gate~5) --- have a
+natural cohesive flavour. Cohesive HoTT~\cite{shulman-cohesive} adjoins
+to the universe a triple of modalities $(\flat,\,\sharp,\,\esh)$
+that encode, respectively, the discrete, the codiscrete, and the
+shape (cohesive shape) of a cohesive space. Holomorphicity is then a
+$\flat$-modal condition; modular invariance is a $\sharp$-modal
+condition. The full development of analytic number theory in
+cohesive HoTT is a long-term programme; we view Part~VI's roadmap as
+the first step.
+
+\subsection{The role of computer-checked proofs}
+
+The estimates in \Cref{sec:zeta-roadmap} assume Cubical Agda as the
+implementation platform. Other platforms are possible: Lean 4 with a
+HoTT layer (in development), Coq with the UniMath library, or rzk
+\cite{rzk} for the directed-univalent fragment. Whether the cubical
+flavour or the rzk flavour is better suited to the directed parts
+(Gate~5, Part~V) is an empirical question whose answer awaits
+experimentation. A pragmatic strategy might combine the two: cubical
+Agda for the symmetric-univalent fragment and rzk for the directed
+fragment, glued via an interface based on the universe of discrete
+types.
+
+\subsection{What success would look like}
+
+A successful execution of the programme outlined here would yield:
+\begin{enumerate}[leftmargin=*]
+\item a Cubical Agda library defining $\zeta : \Cc \to \Cc$ with the
+      Euler product, the functional equation, and the formal RH
+      statement;
+\item a proof of $\zeta(2) = \pi^2/6$ formally verified by the
+      computer;
+\item a proof of the non-vanishing of $\zeta$ on $\Re(s) = 1$, hence
+      a HoTT-native proof of the prime number theorem;
+\item the formal RH proposition $\mathrm{RH} : \Prop$, in a form that
+      could in principle be inhabited by a proof if one were ever
+      found.
+\end{enumerate}
+
+The last item bears emphasis: HoTT does not promise a proof of RH\@. It
+promises a \emph{statement} of RH that is foundationally robust,
+structurally clean, and decoupled from the choice of set-theoretic
+model. That, in itself, is a nontrivial contribution.
+
+%==============================================================
+\section{Open Questions}\label{sec:open}
+%==============================================================
+
+We close with the outstanding open questions for the next round of the
+programme. These are not the gates of \Cref{sec:zeta-roadmap}, which are
+``mechanical'' in the sense that we know how they would proceed; they
+are the genuinely conceptual questions still to be resolved.
+
+\subsection{Open question 1: Coalgebraic \texorpdfstring{$\zeta(2k)$}{zeta(2k)}}
+
+\begin{problem}\label{prob:openCoalg}
+Extend Part~I's coalgebraic characterisation of $\pi$ to the
+coalgebraic characterisation of $\zeta(2k)$ for all $k \geq 1$. Since
+$\zeta(2k) \in \mathbb{Q} \cdot \pi^{2k}$, a candidate construction is
+the BBP-type extraction algorithm for digits of $\pi^{2k}$ composed
+with rational scaling. Formalise this in Cubical Agda.
+\end{problem}
+
+\subsection{Open question 2: Cubical formalisation of analytic
+continuation}
+
+\begin{problem}\label{prob:openCont}
+Implement a Cubical Agda library for analytic continuation of holomorphic
+functions on $\Cc$. The library should include the identity theorem and
+the monodromy theorem in their constructive forms.
+\end{problem}
+
+\subsection{Open question 3: Directed univalence for non-discrete types}
+
+\begin{problem}\label{prob:openDua}
+Extend the Gratzer--Weinberger--Buchholtz proof of directed univalence
+from the universe $\Spc$ of discrete types to the full universe of
+$(\infty,1)$-categorical types.
+\end{problem}
+
+This is the open problem that Part~V isolates as the crux for synthetic
+representation theory.
+
+\subsection{Open question 4: Foundational comparison theorem}
+
+\begin{problem}\label{prob:openFound}
+Prove a precise comparison theorem: for any algebraic statement
+$\varphi$ in the language of fields, $\varphi$ is provable in HoTT for
+$(\Cc, \zeta, +, \times)$ if and only if it is provable in classical
+ZFC for $(\C, \zeta, +, \times)$.
+\end{problem}
+
+This is the conceptual content of Part~III lifted to $\Cc$.
+
+\subsection{Open question 5: \texorpdfstring{$\infty$}{infinity}-toposes for analytic Langlands}
+
+\begin{problem}\label{prob:openLanglands}
+Identify the elementary $(\infty,1)$-topos $\mathcal{E}_{\mathrm{aut}}$
+in which automorphic representations of $\mathrm{GL}(n,\mathbb{A}_\Q)$
+naturally live, and verify that its internal language admits all six
+gates of \Cref{sec:zeta-roadmap}.
+\end{problem}
+
+\subsection{Open question 6: Riemann hypothesis as HoTT proposition}
+
+\begin{problem}\label{prob:openRH}
+Once Gates 1--6 are complete, investigate the modal-logical status of
+$\mathrm{RH}$ inside HoTT\@. Specifically, is $\mathrm{RH}$ provably
+decidable (a question independent of whether $\mathrm{RH}$ is
+provable)? If so, the constructive content of $\mathrm{RH}$ is an
+algorithm that, on input $s : \Cc$ with $\zeta(s) = 0$, certifies either
+$\Re(s) = 1/2$ or its negation.
+\end{problem}
+
+%==============================================================
+\section{Conclusion}\label{sec:conclusion}
+%==============================================================
+
+This synthesis paper has unified six independent investigations into a
+single research programme directed at a HoTT-native formulation of
+analytic number theory. Five cross-cutting themes
+(\Cref{prin:dual,prin:strucMaterial,prin:coherence,prin:dualUniv}, plus
+the $\zeta$-prerequisite chain of \Cref{sec:zeta-roadmap}) tie the parts
+together, and Part~VI's six sub-problems are reformulated in
+\Cref{sec:zeta-roadmap} as compositional gates inheriting exactly the
+apparatus of the preceding parts. The Riemann hypothesis appears, in
+this picture, not as a single statement to be proved, but as a single
+proposition to be \emph{stated}: the construction of the proposition is
+itself a multi-year, multi-person research programme, and we have set
+out, in \Cref{fig:gates} and \Cref{sec:open}, the gates that the
+programme must traverse.
+
+The prior series \cite{paperI,paperII,paperIII,paperIV,paperV,paperVI,priorSynthesis}
+established that the natural numbers are foundationally one object,
+viewed from many perspectives. The present series extends this picture
+from the natural numbers to the analytic objects of contemporary
+mathematics: the reals, the complex numbers, holomorphic functions,
+$L$-functions, and ultimately $\zeta$ itself. The unifying perspective
+is the same throughout: under univalence, equivalent presentations are
+literally equal, and the structure-identity principle becomes
+internalised at every level. What was the central claim of the prior
+synthesis for $\N$ becomes, in the present synthesis, a roadmap for
+$\zeta$.
+
+We have argued that the unification is not nominal but structural: each
+of the six papers contributes essential apparatus to the
+$\zeta$-roadmap, and removing any one of them leaves a perceptible gap.
+Whether the roadmap can be completed in the next decade is an empirical
+question about how much effort the community puts in. Whether
+$\mathrm{RH}$ is provable inside the HoTT framework is a deep
+mathematical question that is not, on present evidence, more or less
+likely to receive a positive answer than the classical question. What
+HoTT contributes is not a new approach to the Riemann hypothesis; it
+contributes a new \emph{language} in which the question can be stated, a
+language in which the structural symmetries of the problem become
+visible, and a foundation in which questions of foundational independence
+become provable rather than philosophically debatable.
+
+%==============================================================
+\begin{thebibliography}{99}
+\raggedright
+%==============================================================
+
+% --- Component papers (Parts I--VI) ---
+
+\bibitem{coalgebraicTranscendentals}
+M.\ Long, ``Final Coalgebras and Transcendental Numbers in HoTT: A
+Coinductive Characterisation of $\pi$ and $e$.''
+GrokRxiv:2026.05.coalgebraic-transcendentals, 4 May 2026. (Part~I)
+
+\bibitem{cubicalHiitCauchy}
+M.\ Long, ``Cubical Higher Inductive--Inductive Types and the Cauchy
+Reals: A Cubical Agda Completion of the Book HoTT Construction.''
+GrokRxiv:2026.05.cubical-hiit-cauchy, 4 May 2026. (Part~II)
+
+\bibitem{etcsIzfFolds}
+M.\ Long, ``ETCS, IZF, and FOLDS: Comparative Structural Foundations and
+the Univalence Boundary.'' GrokRxiv:2026.05.etcs-izf-folds, 4 May 2026.
+(Part~III)
+
+\bibitem{infinityNno}
+M.\ Long, ``Higher-Categorical Natural Numbers Objects: Contractibility,
+$\infty$-Toposes, and Lurie's NNO.''
+GrokRxiv:2026.05.infinity-nno, 4 May 2026. (Part~IV)
+
+\bibitem{directedUnivalence}
+M.\ Long, ``Directed Univalence: From Riehl--Shulman to a Complete
+Principle.''
+GrokRxiv:2026.05.directed-univalence, 4 May 2026. (Part~V)
+
+\bibitem{langlandsAnalytic}
+M.\ Long, ``Toward HoTT-Native Analytic Number Theory: Riemann Zeta,
+Langlands, and the $\zeta(s) = 0$ Question.''
+GrokRxiv:2026.05.langlands-analytic-number-theory, 4 May 2026. (Part~VI)
+
+% --- Prior series (Papers I--VII) ---
+
+\bibitem{paperI}
+M.\ Long, ``The Naive Perspective: Numbers as Symbols and Quantities.''
+GrokRxiv:2026.05.naive-perspective-numbers, May 2026.
+
+\bibitem{paperII}
+M.\ Long, ``The Set-Theoretic Perspective: Numbers as von Neumann
+Ordinals.'' GrokRxiv:2026.05.set-theoretic-perspective, May 2026.
+
+\bibitem{paperIII}
+M.\ Long, ``The Universal Property Perspective: Numbers as Initial
+Successor Structures.'' GrokRxiv:2026.05.universal-property, May 2026.
+
+\bibitem{paperIV}
+M.\ Long, ``The Yoneda Perspective: Numbers as Representable Functors.''
+GrokRxiv:2026.05.yoneda, May 2026.
+
+\bibitem{paperV}
+M.\ Long, ``The HoTT Perspective: Numbers as Inductive Types up to Path
+Equivalence.'' GrokRxiv:2026.05.hott-perspective, May 2026.
+
+\bibitem{paperVI}
+M.\ Long, ``The Categorical/Structural Perspective: Numbers as Invariants
+of Structure-Preserving Morphisms.''
+GrokRxiv:2026.05.categorical-structural, May 2026.
+
+\bibitem{priorSynthesis}
+M.\ Long, ``The Univalent Correspondence: How Six Perspectives on Number
+Become One.''
+GrokRxiv:2026.05.univalent-correspondence-synthesis, May 2026.
+
+% --- HoTT and univalence ---
+
+\bibitem{HoTTBook}
+The Univalent Foundations Program, \emph{Homotopy Type Theory: Univalent
+Foundations of Mathematics}. Institute for Advanced Study, 2013.
+
+\bibitem{Voevodsky}
+V.\ Voevodsky, \emph{The univalence axiom}. Talks and lecture notes,
+2010--2014.
+
+\bibitem{LicataShulman}
+D.\ R.\ Licata and M.\ Shulman, ``Calculating the fundamental group of
+the circle in homotopy type theory.'' \emph{LICS} 2013, pp.\ 223--232.
+
+% --- Cubical type theory ---
+
+\bibitem{CCHM}
+C.\ Cohen, T.\ Coquand, S.\ Huber, A.\ M\"ortberg, ``Cubical type theory:
+a constructive interpretation of the univalence axiom.''
+\emph{TYPES 2015 Proceedings}.
+
+\bibitem{CubicalAgda}
+A.\ Vezzosi, A.\ M\"ortberg, A.\ Abel, ``Cubical Agda: a dependently
+typed programming language with univalence and higher inductive types.''
+\emph{ICFP 2019}.
+
+\bibitem{Booij2020}
+A.\ Booij, \emph{Analysis in univalent type theory}. PhD thesis,
+University of Birmingham, 2020.
+
+% --- Coalgebra and coinduction ---
+
+\bibitem{rutten}
+J.\,J.\,M.\,M.\ Rutten, ``Universal coalgebra: a theory of systems.''
+\emph{TCS} 249(1):3--80, 2000.
+
+\bibitem{jacobs}
+B.\ Jacobs, \emph{Introduction to Coalgebra}. Cambridge University Press,
+2016.
+
+\bibitem{rabwagon-spigot}
+S.\ Rabinowitz and S.\ Wagon, ``A spigot algorithm for the digits of
+$\pi$.'' \emph{Amer.\ Math.\ Monthly} 102(3):195--203, 1995.
+
+\bibitem{gibbons-spigot}
+J.\ Gibbons, ``Unbounded spigot algorithms for the digits of pi.''
+\emph{Amer.\ Math.\ Monthly} 113(4):318--328, 2006.
+
+% --- Foundations: ETCS, IZF, FOLDS ---
+
+\bibitem{Lawvere1964}
+F.\,W.\ Lawvere, ``An elementary theory of the category of sets.''
+\emph{PNAS} 52:1506--1511, 1964.
+
+\bibitem{Friedman1973}
+H.\ Friedman, ``Some applications of Kleene's methods for intuitionistic
+systems.'' \emph{Cambridge Summer School in Mathematical Logic},
+\emph{LNM} 337, Springer, 1973.
+
+\bibitem{Makkai1995}
+M.\ Makkai, \emph{First-order logic with dependent sorts, with
+applications to category theory}. McGill preprint, 1995.
+
+\bibitem{McLarty2004}
+C.\ McLarty, ``Exploring categorical structuralism.''
+\emph{Philosophia Mathematica} 12(1):37--53, 2004.
+
+\bibitem{Aczel1978}
+P.\ Aczel, ``The type-theoretic interpretation of constructive set
+theory.'' \emph{Logic Colloquium '77}, North-Holland, 1978.
+
+\bibitem{Awodey2014}
+S.\ Awodey, ``Structuralism, invariance, and univalence.''
+\emph{Phil.\ Math.} 22(1), 2014.
+
+% --- Higher categories and $\infty$-toposes ---
+
+\bibitem{Lurie}
+J.\ Lurie, \emph{Higher Topos Theory}. Annals of Mathematics Studies 170,
+Princeton University Press, 2009. arXiv:math/0608040.
+
+\bibitem{LurieSAG}
+J.\ Lurie, \emph{Spectral Algebraic Geometry}. Manuscript, February 2018.
+
+\bibitem{Rasekh2018}
+N.\ Rasekh, ``Every elementary higher topos has a natural number
+object.'' arXiv:1809.01734, 2018; \emph{TAC} 37(13), 2021.
+
+\bibitem{Shulman2019}
+M.\ Shulman, ``All $(\infty,1)$-toposes have strict univalent universes.''
+arXiv:1904.07004, 2019.
+
+% --- Directed univalence ---
+
+\bibitem{RiehlShulman}
+E.\ Riehl and M.\ Shulman, ``A type theory for synthetic
+$\infty$-categories.''
+\emph{Higher Structures} 1(1):147--224, 2017. arXiv:1705.07442.
+
+\bibitem{GWB2024}
+D.\ Gratzer, J.\ Weinberger, U.\ Buchholtz, ``Directed univalence in
+simplicial homotopy type theory.'' arXiv:2407.09146, 2024.
+
+\bibitem{CisinskiNguyen}
+D.-C.\ Cisinski and H.-K.\ Nguyen, ``The universal cocartesian fibration.''
+arXiv:2210.08945, 2022.
+
+\bibitem{Riehl2025}
+E.\ Riehl, ``Synthetic perspectives on spaces and categories.''
+arXiv:2510.15795, 2025.
+
+% --- Cohesive HoTT ---
+
+\bibitem{shulman-cohesive}
+M.\ Shulman, ``Brouwer's fixed-point theorem in real-cohesive homotopy
+type theory.'' \emph{Math.\ Struct.\ Comput.\ Sci.} 28(6):856--941, 2018.
+
+% --- Langlands and Riemann zeta ---
+
+\bibitem{loefflerstoll}
+D.\ Loeffler and M.\ Stoll, ``Formalizing zeta and $L$-functions in
+Lean.'' arXiv:2503.00959; \emph{Annals of Formalized Mathematics} 1,
+2025.
+
+\bibitem{Gaitsgory2024}
+D.\ Gaitsgory, S.\ Raskin, N.\ Rozenblyum, et al., ``Proof of the geometric
+Langlands conjecture, I--V.'' arXiv:2405.03599 and sequels, 2024.
+
+\bibitem{ClausenScholze2018}
+D.\ Clausen and P.\ Scholze, ``Lectures on condensed mathematics.'' Bonn
+preprint, 2018.
+
+\bibitem{ClausenScholze2024}
+D.\ Clausen and P.\ Scholze, ``Analytic stacks and the six-functor
+formalism.'' Bonn preprint, 2024.
+
+% --- Computability ---
+
+\bibitem{weihrauch}
+K.\ Weihrauch, \emph{Computable Analysis}. Springer, 2000.
+
+\bibitem{kleene}
+S.\,C.\ Kleene, ``Recursive functionals and quantifiers of finite types,
+I.'' \emph{Trans.\ AMS} 91:1--52, 1959.
+
+% --- Other ---
+
+\bibitem{LumsdaineShulman}
+P.\ Lumsdaine and M.\ Shulman, ``Semantics of higher inductive types.''
+arXiv:1705.07088, 2017.
+
+\bibitem{ANST2019}
+B.\ Ahrens, P.\ North, M.\ Shulman, D.\ Tsementzis, ``The univalence
+principle.'' arXiv:2102.06275, 2021.
+
+\bibitem{Tsementzis2017}
+D.\ Tsementzis, ``A meaning explanation for HoTT.'' \emph{Synthese}
+2017.
+
+\bibitem{Palmgren2016}
+E.\ Palmgren, ``Categories with families and first-order logic with
+dependent sorts.'' arXiv:1605.01586, 2016.
+
+\bibitem{rzk}
+N.\ Bubenik et al., \emph{rzk: an experimental proof assistant for
+synthetic $\infty$-category theory}.
+\url{https://rzk-lang.github.io/rzk/}, accessed 2026.
+
+\bibitem{Joyal}
+A.\ Joyal, ``Quasi-categories and Kan complexes.''
+\emph{J.\ Pure Appl.\ Algebra} 175(1):207--222, 2002.
+
+\bibitem{Hyland1982}
+J.\,M.\,E.\ Hyland, ``The effective topos.'' \emph{Proceedings of the
+Brouwer Centenary Symposium}, North-Holland, 1982.
+
+\bibitem{KapulkinLumsdaine}
+K.\ Kapulkin and P.\ Lumsdaine, ``The simplicial model of univalent
+foundations (after Voevodsky).'' \emph{J.\ EMS} 23(6):2071--2126, 2021.
+
+\bibitem{turing}
+A.\,M.\ Turing, ``On computable numbers, with an application to the
+Entscheidungsproblem.'' \emph{Proc.\ London Math.\ Soc.} 42:230--265,
+1937.
+
+\bibitem{NorthDirected}
+P.\,R.\ North, ``Towards a directed homotopy type theory.''
+\emph{ENTCS} 347, 2019.
+
+\end{thebibliography}
+
+\end{document}

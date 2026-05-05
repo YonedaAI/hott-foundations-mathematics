@@ -1,0 +1,32 @@
+{
+  "domain": "Mathematics / HoTT / Category Theory / Analytic Number Theory",
+  "palette": {
+    "--bg": "#0a0e1f",
+    "--surface": "#12163a",
+    "--surface-hover": "#1a1f4a",
+    "--accent": "#fbbf24",
+    "--accent-hover": "#f59e0b",
+    "--accent-glow": "rgba(251,191,36,0.12)",
+    "--accent-secondary": "#a78bfa",
+    "--text": "#f0ead8",
+    "--text-muted": "#9b94b8",
+    "--text-dim": "#5c5580",
+    "--border": "rgba(167,139,250,0.18)",
+    "--code-bg": "#0d1130",
+    "--success": "#34d399",
+    "--warning": "#fb923c"
+  },
+  "fonts": {
+    "body": "Crimson Pro",
+    "ui": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "hero": {
+    "gradient": "radial-gradient(ellipse at 30% 40%, rgba(167,139,250,0.18) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(251,191,36,0.10) 0%, transparent 50%), linear-gradient(160deg, #0a0e1f 0%, #12163a 50%, #0f0a2a 100%)"
+  },
+  "cardHover": {
+    "transform": "translateY(-3px)",
+    "boxShadow": "0 8px 32px rgba(251,191,36,0.15), 0 0 0 1px rgba(167,139,250,0.25)"
+  },
+  "backgroundPattern": "mathematical lattice (subtle simplicial complex / Cayley graph lines)"
+}

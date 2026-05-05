@@ -1,0 +1,1547 @@
+\documentclass[12pt]{article}
+
+% --- Core math (load first) ---
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+
+% --- Page layout ---
+\usepackage[margin=1in]{geometry}
+
+% --- Graphics ---
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% --- Diagrams ---
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc,positioning,arrows.meta}
+
+% --- Tables ---
+\usepackage{tabularx, array, booktabs}
+
+% --- Listings ---
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=flexible,
+  keepspaces=true,
+  showstringspaces=false
+}
+
+% --- References (must come after most other packages) ---
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{problem}[theorem]{Open Problem}
+
+% --- Macros ---
+\newcommand{\Type}{\mathcal{U}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rc}{\R_c}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\D}{\mathbb{D}}
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Stream}{\mathsf{Stream}}
+\newcommand{\hd}{\mathsf{hd}}
+\newcommand{\tl}{\mathsf{tl}}
+\newcommand{\out}{\mathsf{out}}
+\newcommand{\unfold}{\mathsf{unfold}}
+\newcommand{\corec}{\mathsf{corec}}
+\newcommand{\bisim}{\mathrel{\sim}}
+\newcommand{\Id}{\mathsf{Id}}
+\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\op}{\mathrm{op}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Nat}{Nat}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\id}{id}
+
+% --- GrokRxiv sidebar ---
+\definecolor{grokgray}{RGB}{110,110,110}
+\AddToHook{shipout/background}{%
+  \ifnum\value{page}=1
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[
+        rotate=90,
+        anchor=south,
+        font=\Large\sffamily\bfseries\color{grokgray},
+        inner sep=0pt
+      ] at ([xshift=38pt, yshift=0.52\paperheight]current page.south west)
+      {GrokRxiv:2026.05.coalgebraic-transcendentals\quad
+       [\,math.LO\,]\quad
+       04 May 2026};
+    \end{tikzpicture}
+  \fi
+}
+
+% --- Title block ---
+\title{Final Coalgebras and Transcendental Numbers in HoTT:\\
+A Coinductive Characterisation of $\pi$ and $e$}
+
+\author{Matthew Long \\
+\textit{The YonedaAI Collaboration} \\
+\textit{YonedaAI Research Collective} \\
+Chicago, IL \\
+\texttt{research@yonedaai.com} $\cdot$ \url{https://yonedaai.com}}
+
+\date{4 May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The univalent presentation of the real numbers admits two profoundly
+different formulations: an \emph{inductive} one, in which $\R$ is built
+as a higher inductive--inductive type (HIIT) of Cauchy sequences modulo
+a path-constructor for the equivalence relation
+(Booij; HoTT Book \S 11.3); and a \emph{coinductive} one, in which
+$\R$ (or $[0,1]$) is presented as a final coalgebra for an endofunctor
+on $\Type$ encoding digit streams modulo carry-bisimulation. Paper III
+of our prior series~\cite{paperIII} sketched the coalgebraic dual but
+left the transcendentals $\pi$ and $e$ entirely on the inductive side
+(Paper~V \S 8). The present paper completes the coalgebraic side: we
+construct functors $F_b: \Type \to \Type$ and $G: \Type \to \Type$ whose
+final coalgebras present the digit-stream and Cauchy-stream models of
+$[0,1]$ and $\R$ respectively; we lift the standard analytic
+descriptions of $\pi$ (the Bailey--Borwein--Plouffe series, Machin's
+formula, the Leibniz alternating series) and $e$ (Euler's series) to
+\emph{bisimulation-closed observable predicates} on these final
+coalgebras; and we prove that $\pi$ and $e$ arise as unique elements
+identified by these predicates without recourse to the
+HIIT path-constructors of Cauchy reals. Along the way we develop
+coinduction up-to-context, prove a constructive Lambek lemma in cubical
+HoTT via M-types (Ahrens--Capriotti--Spadotti), and supply Haskell
+and Lean~4 formalisations of the resulting stream coalgebras and
+their corecursive definitions of $\pi$ and $e$. We close by relating
+the coalgebraic picture to the Riemann zeta function: a $\zeta(s)=0$
+statement entirely internal to the language of a final coalgebra
+remains the principal open problem and we frame it precisely.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% =============================================================
+\section{Introduction}
+% =============================================================
+
+\subsection{\texorpdfstring{Two presentations of $\R$, two presentations of $\pi$}{Two presentations of R, two presentations of pi}}
+
+The synthesis paper of our series~\cite{synthesis} identified six
+mutually equivalent presentations of the natural numbers (NNO,
+Peano, primitive recursion, set-theoretic encoding, Yoneda
+representable, HoTT inductive type). For the real numbers the analogue
+narrative produces two presentations rather than six, but each is
+itself a different \emph{universal property}:
+
+\begin{enumerate}
+    \item \textbf{Inductive (Cauchy/HIIT).} Booij's HoTT Cauchy reals
+    $\Rc$~\cite{booij}, presented as the initial algebra of a signature
+    consisting of $\Q$-coercion, a limit operation taking
+    $(\varepsilon \mapsto x_\varepsilon)$-Cauchy approximations to a
+    point of $\Rc$, plus path constructors that quotient. This is the
+    universal Cauchy-complete Archimedean ordered field.
+    \item \textbf{Coinductive (final coalgebra).} The cofree object on
+    a digit-stream signature: $\R \cong \nu G$ for an endofunctor
+    $G$ which is roughly $G\,X = \D \times X$ (with $\D$ a
+    digit alphabet) modulo a carry-bisimulation. Streams come with a
+    \emph{coinduction} principle (Lambek; Rutten~\cite{rutten})
+    rather than a recursion principle.
+\end{enumerate}
+
+These two presentations are isomorphic as ordered fields by
+the standard uniqueness theorem for Dedekind-complete Archimedean
+fields (Paper~III Theorem~4.1). They are however \emph{not}
+isomorphic as effective structures: the Type II Turing computability
+literature~\cite{weihrauch} establishes that Cauchy realizers and
+stream realizers are interreducible but not equiprimitive. In the
+intensional setting of HoTT this distinction shows up in the
+\emph{computation rules}: the inductive presentation supports
+recursors that compute on constructors, while the coinductive
+presentation supports corecursors that produce streams element by
+element with guarded productivity.
+
+For the transcendentals $\pi$ and $e$, the inductive side is
+well-understood: Paper~V Definitions~8.1--8.2 present
+$\pi$ as the centre of the contractible type
+$\Sigma_{p:\Rc}\,(\sin p = 0)\times(p>0)\times(\forall x \in (0,p),\sin x>0)$
+and $e$ as $\exp(1)$ via the universal property of $\exp$ as the
+unique smooth $f:\Rc\to\Rc$ with $f'=f$ and $f(0)=1$. The
+coinductive side has, prior to this paper, been left implicit: the
+generic statement ``$\pi$ and $e$ are computable hence have
+canonical digit streams'' is true but does not constitute a
+HoTT-internal characterisation.
+
+\subsection{The principal contribution}
+
+The principal contribution of this paper is to write down such an
+internal characterisation. Concretely, we construct:
+
+\begin{itemize}
+\item A functor $F_b: \Type \to \Type$, $F_b\,X = \D_b \times X$, with
+$\D_b = \mathsf{Fin}(b)$ the alphabet on $b$ digits, and prove that
+its final coalgebra $\nu F_b$ in cubical HoTT is the M-type of
+streams $\D_b^\N$.
+\item A bisimulation $\bisim_b$ on $\nu F_b$, the
+\emph{carry-bisimulation}, which makes $\nu F_b / \bisim_b$ an
+ordered Archimedean field equipped with a continuous map to $[0,1]$.
+\item Two \emph{bisimulation-closed observable predicates}
+$P_\pi, P_e$ on $\nu F_b$, expressed entirely in the internal
+language of the coalgebra (head/tail/observation), which uniquely
+identify (up to bisimulation) the Bailey--Borwein--Plouffe digits of
+$\pi$ in base $16$ and the Euler-series digits of $e$ in any base.
+\item A coinductive proof, via coinduction up-to-context, that the
+unique-existence statement is \emph{contractible}: the type
+$\Sigma_{s : \nu F_b}\,P_\pi(s)$ is contractible.
+\end{itemize}
+
+This separates the question ``what does $\pi$ name?'' into a
+foundational layer (the final coalgebra structure) and a content
+layer (the BBP series). The final-coalgebra layer is internal to
+HoTT and uses no HIIT path constructors. The
+content layer translates a classical analytic identity into a
+guarded corecursive equation, whose validity is checked by
+coinduction.
+
+\subsection{Why coinduction matters in HoTT}
+
+In Martin-L\"of type theory the coinductive types of Coquand
+and the M-types of Ahrens--Capriotti--Spadotti~\cite{ACS} are
+treated by dualising the W-type construction. In cubical HoTT
+M-types satisfy a strong coinduction principle, namely that
+bisimulation implies path-equality. This is Theorem~5.3 of
+Paper~III in our series, which we recall and refine here as
+Theorem~\ref{thm:coinduction}.
+
+Crucially, coinduction allows us to exhibit equalities between
+streams produced by \emph{a priori} different corecursive schemes.
+For instance, the digit stream produced by Machin's formula
+\[
+\pi = 16\arctan(1/5) - 4\arctan(1/239)
+\]
+is not, as a sequence of base-10 digits, definitionally equal to
+the digit stream produced by the Leibniz series
+\[
+\pi = 4\sum_{n=0}^\infty \frac{(-1)^n}{2n+1}.
+\]
+Their equality must be proven, and coinduction up-to is the natural
+tool. Once equality is established, both schemes name the same
+$\pi: \nu F_{10}/{\bisim_{10}}$. Our characterisation
+factors through this identification.
+
+\subsection{Outline}
+
+\Cref{sec:framework} fixes the type-theoretic framework: cubical
+HoTT, polynomial endofunctors, M-types, and the construction of
+final coalgebras. \Cref{sec:lambek} states and proves a
+HoTT-internal Lambek lemma and the resulting coinduction principle.
+\Cref{sec:streams} develops the stream coalgebra in detail, including
+the carry-bisimulation. \Cref{sec:bisim} introduces
+bisimulation-closed predicates and the up-to technique.
+\Cref{sec:pi-e} contains the main results: the coalgebraic
+characterisations of $\pi$ and $e$. \Cref{sec:cubical} sketches the
+cubical M-type realisation. \Cref{sec:cauchy-vs-coalg} compares to
+the Cauchy HIIT of Paper~V. \Cref{sec:zeta} states the
+$\zeta$-prerequisite chain and the $\zeta(s)=0$-internal-to-coalgebra
+problem. \Cref{sec:open} closes with open problems.
+
+% =============================================================
+\section{Mathematical framework}\label{sec:framework}
+% =============================================================
+
+\subsection{Cubical HoTT and polynomial endofunctors}
+
+We work in cubical type theory \`a la Cohen--Coquand--Huber--M\"ortberg
+(CCHM)~\cite{cchm}, with universes $\Type_0:\Type_1:\dots$ closed
+under the usual type formers, and with the univalence axiom
+provable from the path-cube structure. We write $a =_A b$ for the
+path type, $\refl_a$ for the constant path, and $\Sigma$, $\Pi$ for
+the dependent types. Truncation levels follow Voevodsky's
+conventions: a type is a \emph{proposition} if it has at most one
+inhabitant up to path equality, a \emph{set} if its identity types
+are propositions, and so on.
+
+\begin{definition}[Polynomial endofunctor]
+\label{def:poly}
+A \emph{polynomial endofunctor} on $\Type$ is a functor
+$F: \Type \to \Type$ of the form
+\[
+F\,X \;=\; \Sigma_{a:A}\,X^{B(a)}
+\]
+for some $A : \Type$ and $B : A \to \Type$. The pair $(A,B)$ is
+called a \emph{container} or \emph{signature}.
+\end{definition}
+
+The action of $F$ on a function $f: X \to Y$ is
+$F\,f\,(a, h) = (a, f \circ h)$.
+
+\begin{example}\label{ex:streamfun}
+The \emph{stream functor} on alphabet $A$ is $F_A\,X = A \times X$.
+This is polynomial with $A$-many shapes (one per letter) and a
+single position per shape: $F_A\,X = \Sigma_{a:A}\,X^{\mathbf{1}}$,
+where $\mathbf{1}$ is the unit type.
+\end{example}
+
+\begin{example}\label{ex:digit}
+For $b \geq 2$, the \emph{base-$b$ digit functor} is
+$F_b\,X = \mathsf{Fin}(b) \times X$, the special case of
+\Cref{ex:streamfun} with $A = \mathsf{Fin}(b)$.
+\end{example}
+
+\begin{definition}[Coalgebra]\label{def:coalg}
+An $F$-\emph{coalgebra} is a pair $(C, \gamma)$ with
+$\gamma: C \to F\,C$. A morphism of coalgebras
+$(C,\gamma)\to(D,\delta)$ is a function $f: C \to D$ such that
+$\delta \circ f = F\,f \circ \gamma$. The category of
+$F$-coalgebras is denoted $\mathbf{Coalg}(F)$.
+\end{definition}
+
+\begin{definition}[Final coalgebra]\label{def:final}
+$(\nu F, \out)$ is a \emph{final $F$-coalgebra} if for every
+$F$-coalgebra $(C, \gamma)$ there is a unique morphism
+$\unfold_\gamma: (C,\gamma) \to (\nu F, \out)$.
+\end{definition}
+
+\begin{remark}[Final = terminal in $\mathbf{Coalg}(F)$]
+``Final'' here is the standard terminology of Rutten~\cite{rutten}.
+In categorical language final coalgebras are terminal objects of
+$\mathbf{Coalg}(F)$, dual to initial algebras (Lambek).
+\end{remark}
+
+\subsection{M-types as final coalgebras}
+
+In MLTT the coinductive analogue of W-types is the M-type
+construction. The M-type for container $(A,B)$ is
+\[
+M\,A\,B \;=\; \Sigma_{u: \mathrm{Tree}^\infty(A,B)}\,\mathrm{Wf}(u),
+\]
+where $\mathrm{Tree}^\infty(A,B)$ is the type of (potentially
+infinite) trees and $\mathrm{Wf}$ is the productivity (well-formedness)
+predicate. In cubical HoTT, Ahrens--Capriotti--Spadotti~\cite{ACS}
+prove:
+
+\begin{theorem}[ACS, M-type final coalgebra]\label{thm:ACS}
+For any container $(A,B)$, the M-type $M\,A\,B$ carries a
+coalgebra structure $\out: M\,A\,B \to F_{(A,B)}(M\,A\,B)$ which
+is final.
+\end{theorem}
+
+For our applications the relevant case is the stream functor
+$F_A\,X = A \times X$, where the M-type
+specialises to streams $\Stream\,A \cong A^\N$.
+
+\begin{definition}[Stream coalgebra]\label{def:streamcoalg}
+$\Stream\,A := M\,A\,(\lambda{-}.\,\mathbf{1})$. The destructor
+\[
+  \out: \Stream\,A \to A \times \Stream\,A
+\]
+decomposes into the two component maps
+\[
+  \hd: \Stream\,A \to A, \qquad
+  \tl: \Stream\,A \to \Stream\,A.
+\]
+\end{definition}
+
+\begin{remark}[Cubical realisation]
+In cubical HoTT, $\Stream\,A$ admits a definition by guarded
+recursion using the modality $\rhd$ of Birkedal et al.~\cite{birkedal}:
+$\Stream\,A \cong A \times \rhd \Stream\,A$. The fixed point exists
+because $\rhd$ is a contractive functor and the guarded recursion
+theorem applies.
+\end{remark}
+
+% =============================================================
+\section{Lambek's lemma and coinduction}\label{sec:lambek}
+% =============================================================
+
+We recall Lambek's lemma in its dual coalgebraic form, which is
+the cornerstone of all coinductive characterisations.
+
+\begin{lemma}[Dual Lambek]\label{lem:lambek}
+If $(\nu F, \out)$ is a final $F$-coalgebra, then
+$\out: \nu F \to F(\nu F)$ is a path-equivalence.
+\end{lemma}
+
+\begin{proof}
+Consider the coalgebra $(F(\nu F), F\out)$. Finality yields a
+unique map $\theta: F(\nu F) \to \nu F$ with
+$\out \circ \theta = F(F\out) \circ F\,\out = F(\out \circ \theta)$.
+Then $\theta \circ \out: \nu F \to \nu F$ is a coalgebra morphism,
+and so is $\id_{\nu F}$, so by uniqueness $\theta\circ\out = \id$.
+Symmetrically, $\out \circ \theta$ is a coalgebra morphism on
+$(F(\nu F), F\out)$ to itself, equal to the identity. Hence
+$\out$ is a path-equivalence with inverse $\theta$.
+\end{proof}
+
+\begin{remark}
+\Cref{lem:lambek} is conceptually crucial: it says the
+final coalgebra is a fixed point of $F$ \emph{up to path
+equivalence}, the coinductive dual of Lambek's algebraic
+``$\mu F \cong F(\mu F)$''. In cubical HoTT this equivalence is
+\emph{strict} (definitional after path-application) at base types,
+which is what makes $\hd, \tl$ definable.
+\end{remark}
+
+\begin{definition}[Bisimulation]\label{def:bisim}
+A relation $R: C \times C \to \Type$ on the carrier of an
+$F$-coalgebra $(C,\gamma)$ is an $F$-bisimulation if there exists
+a coalgebra structure
+$\bar\gamma: \Sigma_{(x,y):C\times C}R(x,y) \to F(\Sigma\dots R)$
+making the two projections coalgebra morphisms. Concretely, for
+the stream functor $F_A\,X = A \times X$, the unfolded definition
+is: a relation $R$ on $\Stream\,A$ is a bisimulation iff for all
+$(x,y)$ with $R(x,y)$, we have $\hd(x) = \hd(y)$ and
+$R(\tl(x), \tl(y))$.
+\end{definition}
+
+\begin{theorem}[Coinduction principle]\label{thm:coinduction}
+Let $(\nu F, \out)$ be a final $F$-coalgebra. For any
+$F$-bisimulation $R$ and any $x, y: \nu F$, if $R(x,y)$ holds,
+then $x = y$ in $\nu F$.
+\end{theorem}
+
+\begin{proof}
+By \Cref{def:bisim} the projections
+$\pi_1, \pi_2: \Sigma_{(x,y)}R(x,y) \to \nu F$ are coalgebra
+morphisms into the final coalgebra. By uniqueness of mediating
+maps, $\pi_1 = \pi_2$ as coalgebra morphisms, hence as
+functions, hence pointwise. So if $(x,y,p):\Sigma_{(x,y)}R(x,y)$
+then $\pi_1(x,y,p) = \pi_2(x,y,p)$, i.e.\ $x = y$.
+\end{proof}
+
+This is the fundamental \emph{coinductive proof principle}: to
+exhibit a path between two elements of a final coalgebra it
+suffices to exhibit a bisimulation containing them.
+
+% =============================================================
+\section{Stream coalgebras and digit streams}\label{sec:streams}
+% =============================================================
+
+\subsection{The stream functor and its final coalgebra}
+
+\begin{theorem}[Streams as final coalgebra]\label{thm:streamfinal}
+For any type $A$, the M-type $\Stream\,A$ together with
+$\out = \langle\hd,\tl\rangle$ is the final coalgebra of
+$F_A = A\times(-)$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For coalgebra $(C,\gamma:C\to A\times C)$, define
+$\unfold_\gamma: C \to \Stream\,A$ by guarded corecursion:
+\begin{align*}
+\hd(\unfold_\gamma(c)) &:= \pi_1(\gamma(c)),\\
+\tl(\unfold_\gamma(c)) &:= \unfold_\gamma(\pi_2(\gamma(c))).
+\end{align*}
+The morphism property $\out \circ \unfold_\gamma = F_A\,\unfold_\gamma \circ \gamma$
+is judgmental. Uniqueness follows from coinduction
+(\Cref{thm:coinduction}) applied to the relation $R(s,t) :=
+\Sigma_{c:C}\,(s = \unfold_\gamma(c))\times(t = \unfold_\gamma(c))$.
+\end{proof}
+
+\begin{example}[Constant stream]
+For $a:A$, $\mathsf{const}_a := \unfold_\gamma$ where $C = \mathbf{1}$
+and $\gamma(\star) = (a,\star)$, so
+$\hd(\mathsf{const}_a) = a$ and $\tl(\mathsf{const}_a) = \mathsf{const}_a$.
+\end{example}
+
+\begin{example}[Naturals as stream]
+$\mathsf{nats} := \unfold_\gamma$ where $C = \N$ and
+$\gamma(n) = (n, n+1)$. Yields $\mathsf{nats} = 0,1,2,3,\dots$
+\end{example}
+
+\subsection{\texorpdfstring{Base-$b$ digit streams and approximation maps}{Base-b digit streams and approximation maps}}
+
+Fix $b \geq 2$. We work with digit streams of $\mathsf{Fin}(b)$.
+
+\begin{definition}[Approximation map]\label{def:approx}
+The base-$b$ \emph{approximation map}
+$\alpha_b: \Stream\,\mathsf{Fin}(b) \to \Rc$ takes a stream
+$d_0 d_1 d_2 \dots$ to the Cauchy real
+\[
+\alpha_b(d) := \lim_{n\to\infty}\sum_{k=0}^{n-1}\frac{d_k}{b^{k+1}},
+\]
+which exists because the partial sums form a $b^{-n}$-Cauchy
+approximation in Booij's sense: for $m \geq n$ the difference
+$\bigl|\sum_{k=0}^{m-1}\!d_k/b^{k+1} - \sum_{k=0}^{n-1}\!d_k/b^{k+1}\bigr|
+= \sum_{k=n}^{m-1}\!d_k/b^{k+1} \leq \sum_{k=n}^{\infty}(b-1)/b^{k+1} = b^{-n}$,
+so the partial sums are uniformly Cauchy with modulus $b^{-n}$
+and Booij's $\lim$-constructor applies.
+\end{definition}
+
+\begin{lemma}[Approximation surjects onto ${[0,1]}$]\label{lem:approx-surj}
+$\alpha_b: \Stream\,\mathsf{Fin}(b) \to \Rc$ has image $[0,1]\subset\Rc$.
+\end{lemma}
+
+\begin{proof}
+Surjection onto $[0,1]$ is the standard digit-expansion: given
+$x\in[0,1]\cap \Rc$, define $d_k = \lfloor b^{k+1} x\rfloor \mod b$
+using the floor function on Cauchy reals. The sum converges
+to $x$ by the standard estimate. Existence of floor on $\Rc$
+uses Booij's order. (Note that floor is not constant on
+bisimulation classes; this is the source of the carry equivalence.)
+\end{proof}
+
+\begin{definition}[Carry-bisimulation]\label{def:carry}
+The relation $\bisim_b$ on $\Stream\,\mathsf{Fin}(b)$ is the smallest
+equivalence such that $\alpha_b(s) = \alpha_b(t)$ implies
+$s \bisim_b t$. Concretely, for any $n$ and any $d\in\mathsf{Fin}(b-1)$,
+\[
+d_0\cdots d_{n-1}\,d\,(b{-}1)(b{-}1)\cdots
+\;\bisim_b\;
+d_0\cdots d_{n-1}\,(d{+}1)\,0\,0\cdots
+\]
+This is exactly the ``$0.999\ldots = 1.000\ldots$'' identification.
+\end{definition}
+
+\begin{theorem}[${[0,1]}$ as quotient final coalgebra]\label{thm:01-quotient}
+The set-quotient $\Stream\,\mathsf{Fin}(b)/{\bisim_b}$ is in
+HoTT-equivalence with $[0,1] \subset \Rc$ via $\alpha_b$.
+\end{theorem}
+
+\begin{proof}
+$\alpha_b$ factors through the quotient by definition of $\bisim_b$.
+The induced map is injective by the kernel of $\alpha_b$ being
+$\bisim_b$, and surjective by \Cref{lem:approx-surj}. Both maps
+are set-functions (between h-sets), hence the resulting bijection
+is an equivalence by univalence-for-sets.
+\end{proof}
+
+\begin{remark}[$\R$ from ${[0,1]}$]
+The whole real line $\R$ is recovered as
+$\Z \times [0,1] / \sim$ with the obvious carrying identifications,
+or equivalently as the final coalgebra of the functor
+$G\,X = \Z \times \Stream\,\mathsf{Fin}(b)\,X$ modulo
+the appropriate bisimulation.
+\end{remark}
+
+% =============================================================
+\section{Bisimulation-closed predicates and coinduction up-to}\label{sec:bisim}
+% =============================================================
+
+To characterise $\pi$ and $e$ \emph{internally} to the final
+coalgebra, we need predicates that respect $\bisim_b$. We
+formalise this notion and develop the up-to technique.
+
+\begin{definition}[Bisimulation-closed predicate]\label{def:bclosed}
+A predicate $P: \Stream\,\mathsf{Fin}(b) \to \mathsf{Prop}$ is
+\emph{$\bisim_b$-closed} (or simply \emph{closed}) if
+$s \bisim_b t \to P(s) \leftrightarrow P(t)$. Equivalently, $P$
+factors through the quotient $\Stream\,\mathsf{Fin}(b)/{\bisim_b}$.
+\end{definition}
+
+\begin{example}\label{ex:closed}
+The predicate $P(s) := (\alpha_b(s) < 1/2)$ is closed; the
+predicate $P(s) := (\hd(s) = 4)$ in base $10$ is \emph{not}
+closed: the stream $0.4\,9\,9\,9\dots$ has $\hd = 4$ but is
+bisimilar to $0.5\,0\,0\dots$ which has $\hd = 5$.
+\end{example}
+
+\begin{definition}[Observable predicate]\label{def:observable}
+A predicate $P$ is \emph{observable} if it is determined by the
+function $\alpha_b$, i.e.\ $P(s) = Q(\alpha_b(s))$ for some
+$Q: \Rc \to \mathsf{Prop}$. Every observable predicate is closed,
+but not conversely.
+\end{definition}
+
+\begin{lemma}\label{lem:observable-closed}
+A predicate is closed iff it factors through $\alpha_b$.
+\end{lemma}
+
+\begin{proof}
+$(\Rightarrow)$ A closed predicate factors through
+$\Stream/{\bisim_b}$, and $\alpha_b$ induces an equivalence
+between $\Stream/{\bisim_b}$ and $\im(\alpha_b)\subseteq\Rc$
+(\Cref{thm:01-quotient}). Composition with the inverse equivalence
+gives the factorisation.
+$(\Leftarrow)$ Immediate: factoring through $\alpha_b$ implies
+$\alpha_b(s)=\alpha_b(t)\Rightarrow P(s)\leftrightarrow P(t)$, which
+is the definition of closure under the kernel of $\alpha_b$.
+\end{proof}
+
+\subsection{Coinduction up-to-context}
+
+The plain coinduction principle (\Cref{thm:coinduction}) requires
+exhibiting a strict bisimulation. In practice this is often
+inconvenient: one wants to prove $s = t$ by exhibiting a relation
+$R$ such that $R(s,t)$ implies that the heads agree and the
+tails are related by $R$ \emph{after some closure operations}.
+Sangiorgi--Rutten formalised this via the \emph{up-to} technique.
+
+\begin{definition}[$\Phi$-up-to]\label{def:upto}
+Let $\Phi$ be a monotone operator on relations on $\Stream\,A$.
+A relation $R$ is a \emph{bisimulation up-to $\Phi$} if for every
+$(s,t) \in R$, $\hd(s) = \hd(t)$ and
+$(\tl(s), \tl(t)) \in \Phi(R)$.
+\end{definition}
+
+\begin{theorem}[Up-to-context soundness]\label{thm:upto-sound}
+If $\Phi$ is \emph{compatible} (i.e.\ $\Phi$ preserves bisimulations
+in the sense of Pous--Sangiorgi~\cite{poussangiorgi}), then any
+bisimulation up-to $\Phi$ is contained in $\bisim$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Define $R^* := \bigcup_{n\geq 0}\Phi^n(R)$. Show by induction
+that $R^*$ is a (plain) bisimulation: heads agree because
+$\Phi$ preserves head-equality, and tails of $R^*$-related pairs
+remain in $R^*$ because $\Phi^n(R) \subseteq \Phi^{n+1}(R)$ by
+monotonicity and the bisimulation-up-to-$\Phi$ condition.
+\end{proof}
+
+\begin{example}[Equivalence-closure up-to]
+$\Phi(R) := \{(s,t) : \exists s', t'\,R(s',t') \wedge s = s' \wedge t = t'\}$
+is compatible. So one may freely substitute path-equal streams
+inside coinductive proofs.
+\end{example}
+
+\begin{example}[Arithmetic up-to]
+For arithmetic operations on base-$b$ digit streams (addition,
+multiplication, division, exponentiation by digit), the operators
+\[
+\Phi_+(R) := \{(s+u, t+u) : R(s,t)\},\qquad
+\Phi_\cdot(R) := \{(s\cdot u, t\cdot u) : R(s,t)\}
+\]
+are compatible (their compatibility reduces to verifying that
+each operation is itself definable as coalgebra morphisms, which
+is~\cite{ghani-hancock-pattinson}).
+\end{example}
+
+% =============================================================
+\section{\texorpdfstring{Coalgebraic characterisations of $\pi$ and $e$}{Coalgebraic characterisations of pi and e}}\label{sec:pi-e}
+% =============================================================
+
+We now state the main results of the paper.
+
+\subsection{\texorpdfstring{The case of $e$}{The case of e}}
+
+\begin{definition}[Series coalgebra for $e$]\label{def:e-coalg}
+Define a coalgebra $(C_e, \gamma_e)$ on
+$C_e := \N \times \N \times \N \times \N \times \N$
+(state: $(n, k, \mathrm{num}, \mathrm{den}, \mathrm{outdig})$
+representing partial summation of $\sum_k 1/k!$ in base $b$),
+with transition $\gamma_e$ implementing the streaming
+factorial-series algorithm of Sale~\cite{sale-e-1968} (refined to
+spigot form by Rabinowitz--Wagon~\cite{rabwagon-spigot} and Gibbons~\cite{gibbons-spigot})
+for streaming the digits of $e$ in base $b$. Concretely,
+$\gamma_e(s) = (d(s), s')$ where $d(s) \in \mathsf{Fin}(b)$ is the
+next emitted digit and $s'$ is the updated state.
+\end{definition}
+
+\begin{theorem}[$e$ as final-coalgebra unfold]\label{thm:e-final}
+$\unfold_{\gamma_e}(s_0) = s_e \in \Stream\,\mathsf{Fin}(b)$
+where $s_0$ is the initial state and
+$\alpha_b(s_e) = e - 2 \in [0,1]$. Equivalently, the digit stream
+of $e$ (after subtracting the integer part) is the unique
+solution of the corecursive equation
+\[
+s_e = \mathsf{streamingFraction}(\langle 1/k! \rangle_{k\geq 0}).
+\]
+\end{theorem}
+
+\begin{proof}
+Existence is by guarded corecursion using the productivity of the
+streaming-factorial algorithm: the state-evolution is structurally
+decreasing on a measure (the rational interval bounding the
+unprocessed tail shrinks geometrically), so each output digit is
+produced after finitely many state transitions. The image under
+$\alpha_b$ equals $e-2$ by the algorithm's correctness
+theorem (a classical fact; see Sale~\cite{sale-e-1968} and the
+spigot-algorithm analysis in~\cite{rabwagon-spigot,gibbons-spigot}).
+\end{proof}
+
+\begin{definition}[Predicate $P_e$]\label{def:Pe}
+$P_e: \Stream\,\mathsf{Fin}(b) \to \mathsf{Prop}$ is the predicate
+$P_e(s) := \alpha_b(s) = e - 2$. It is observable
+(\Cref{def:observable}) hence closed (\Cref{lem:observable-closed}).
+\end{definition}
+
+\begin{theorem}[Coalgebraic characterisation of $e$]\label{thm:e-char}
+The type
+\[
+\Sigma_{s : \Stream\,\mathsf{Fin}(b)}\,P_e(s)
+\]
+quotiented by $\bisim_b$ is contractible. Equivalently:
+$e - 2$ is the unique element of $\nu F_b/{\bisim_b}$ satisfying $P_e$.
+\end{theorem}
+
+\begin{proof}
+Existence: \Cref{thm:e-final} gives an inhabitant.
+Uniqueness: if $s_1, s_2$ both satisfy $P_e$ then
+$\alpha_b(s_1) = e - 2 = \alpha_b(s_2)$, so $s_1 \bisim_b s_2$
+by definition of $\bisim_b$. Hence after quotient they coincide.
+Since the fibres of the quotient map are propositions (a
+consequence of working with h-sets), the total space is a
+proposition. Combined with inhabitation, this proves
+contractibility.
+\end{proof}
+
+\begin{remark}
+\Cref{thm:e-char} is internal in the sense that
+$P_e$ is expressed in terms of $\alpha_b$, which is itself
+definable by guarded corecursion. The HIIT path constructors of
+Booij's $\Rc$ enter only \emph{inside} $\alpha_b$. If one is
+willing to take $\alpha_b$ as the basic ``observation'', the
+characterisation is purely coalgebraic. We discuss this point
+further in \Cref{sec:cauchy-vs-coalg}.
+\end{remark}
+
+\subsection{\texorpdfstring{The case of $\pi$}{The case of pi}}
+
+For $\pi$ the situation is more subtle because no \emph{finite-state}
+streaming algorithm is known. We use Bailey--Borwein--Plouffe (BBP)
+in base 16, which is streamable digit-by-digit although the state
+grows linearly.
+
+\begin{definition}[BBP coalgebra]\label{def:bbp}
+The Bailey--Borwein--Plouffe identity (1995):
+\[
+\pi = \sum_{k=0}^\infty \frac{1}{16^k}
+\left(\frac{4}{8k+1} - \frac{2}{8k+4} - \frac{1}{8k+5} -
+\frac{1}{8k+6}\right).
+\]
+This induces a coalgebra
+$(C_\pi, \gamma_\pi)$ with $C_\pi$ encoding partial summation
+state, and $\gamma_\pi$ implementing the BBP digit extraction
+algorithm in base 16.
+\end{definition}
+
+\begin{theorem}[$\pi$ as final-coalgebra unfold]\label{thm:pi-final}
+$\unfold_{\gamma_\pi}(s_0) = s_\pi \in \Stream\,\mathsf{Fin}(16)$
+satisfies $\alpha_{16}(s_\pi) = \pi - 3$.
+\end{theorem}
+
+\begin{proof}
+By the BBP correctness theorem (which is constructively valid;
+see~\cite{bbp}), the partial sums $\sum_{k=0}^{n-1}$ approximate
+$\pi$ to within $O(16^{-n})$. The hexadecimal digit-extraction
+state evolves productively, so guarded corecursion yields a
+stream whose image under $\alpha_{16}$ equals $\pi - 3$.
+\end{proof}
+
+\begin{definition}[Predicate $P_\pi$]\label{def:Ppi}
+$P_\pi: \Stream\,\mathsf{Fin}(16) \to \mathsf{Prop}$ is
+$P_\pi(s) := \alpha_{16}(s) = \pi - 3$. Closed by
+\Cref{lem:observable-closed}.
+\end{definition}
+
+\begin{theorem}[Coalgebraic characterisation of $\pi$]\label{thm:pi-char}
+The type
+$\Sigma_{s : \Stream\,\mathsf{Fin}(16)}\,P_\pi(s)$ quotiented by
+$\bisim_{16}$ is contractible.
+\end{theorem}
+
+\begin{proof}
+Same structure as \Cref{thm:e-char}, using \Cref{thm:pi-final}.
+\end{proof}
+
+\subsection{\texorpdfstring{Internalisation: removing the reference to $\Rc$}{Internalisation: removing the reference to R\_c}}
+
+\Cref{thm:e-char} and \Cref{thm:pi-char} reference $e-2$ and
+$\pi - 3$ as elements of $\Rc$, hence implicitly the HIIT\@.
+We now upgrade these to characterisations expressed
+\emph{purely} in terms of bisimulations between streams.
+
+\begin{theorem}[Internal characterisation of $e$]\label{thm:e-internal}
+There is a stream $s^* \in \Stream\,\mathsf{Fin}(b)$ defined by
+guarded corecursion (no use of $\Rc$ or HIIT) such that:
+\begin{enumerate}
+\item $s_e \bisim_b s^*$, where $s_e$ is from \Cref{thm:e-final}.
+\item For any stream $t$, if $t$ satisfies the corecursive equation
+$\out(t) = \gamma_e(\mathrm{state}(t))$ for the (no-$\Rc$) state
+projection $\mathrm{state}: \Stream \to \N^5$ (a partial function
+defined on the image of $\unfold_{\gamma_e}$, see \Cref{app:state}),
+then $s^* \bisim_b t$.
+\end{enumerate}
+The unique-existence is proved by coinduction up-to-context.
+\end{theorem}
+
+\begin{proof}
+Take $s^* := \unfold_{\gamma_e}(s_0)$ where $\gamma_e$ from
+\Cref{def:e-coalg} is purely combinatorial (state in $\N^5$, no
+real numbers; the explicit transition rules are spelled out in
+\Cref{app:state}). Existence: \Cref{thm:e-final}.
+
+Uniqueness is the substantive part. Suppose $t \in \Stream\,\mathsf{Fin}(b)$
+satisfies the equation $\out(t) = \gamma_e(\mathrm{state}(t))$ for some
+state-projection function $\mathrm{state}: \Stream \to \N^5$ that
+agrees with $s_0$ at $t$. Define the relation
+\[
+R(u_1, u_2) \;:=\; \Sigma_{c:\N^5}\,
+  \bigl( u_1 = \unfold_{\gamma_e}(c) \bigr)\times
+  \bigl( u_2 = \unfold_{\gamma_e}(c) \bigr).
+\]
+This is reflexive on the image of $\unfold_{\gamma_e}$. We claim
+$R$ is a bisimulation \emph{up-to the closure} $\Phi$ defined by
+$\Phi(R)(v_1,v_2) := \Sigma_{c}\,R(\unfold_{\gamma_e}(c),\unfold_{\gamma_e}(c))$
+(equivalently, $\Phi$ is the equivalence-closure under
+$\unfold_{\gamma_e}$-substitution; this is compatible by the
+example following \Cref{thm:upto-sound}). To verify
+the bisimulation-up-to property: given $R(u_1,u_2)$ with witness
+$c$, both heads equal $\pi_1(\gamma_e(c))$ and both tails
+equal $\unfold_{\gamma_e}(\pi_2(\gamma_e(c)))$, so heads agree
+and tails are again related (with the new witness
+$\pi_2(\gamma_e(c))$). By \Cref{thm:upto-sound} $R \subseteq \bisim$,
+and by \Cref{thm:coinduction} $R(s^*, t)$ implies $s^* = t$.
+
+Now apply this with $u_1 := s^* = \unfold_{\gamma_e}(s_0)$ and
+$u_2 := t$: we need to exhibit a $c$ with $t = \unfold_{\gamma_e}(c)$.
+Such a $c$ is provided by $\mathrm{state}(t) = s_0$ together with
+the corecursive equation, by another application of coinduction
+(using $R'(v_1,v_2) := \exists c.\,v_2 = \unfold_{\gamma_e}(c)\wedge
+\mathrm{state}(v_1) = c\wedge v_1\text{ satisfies the equation}$).
+Hence $s^* = t$.
+
+Therefore $s^*$ is the unique stream satisfying the corecursive
+equation, and the bisimulation class
+$[s^*] \in \Stream/{\bisim_b}$ is uniquely identified by an
+internal predicate.
+\end{proof}
+
+\begin{theorem}[Internal characterisation of $\pi$]\label{thm:pi-internal}
+There is a stream $s^*_\pi \in \Stream\,\mathsf{Fin}(16)$
+defined by guarded corecursion (no use of $\Rc$) such that
+$s^*_\pi \bisim_{16} s_\pi$ uniquely up to bisimulation,
+characterised by the recursion:
+\[
+\out(s^*_\pi) = \gamma_\pi^{\text{combinatorial}}(\mathrm{state}_0).
+\]
+\end{theorem}
+
+\begin{proof}
+The argument is structurally identical to that of
+\Cref{thm:e-internal}. Concretely, replace $\gamma_e$ by the
+combinatorial BBP transition function $\gamma_\pi^{\text{combinatorial}}$:
+its state space is $\N^k$ (with $k=4$ corresponding to the four
+sub-series in BBP, plus a position counter; see~\cite{bbp})
+holding the integer numerators and denominators of the modular
+partial sums. The relation
+\[
+R(u_1, u_2) \;:=\; \Sigma_{c:\N^k}\,
+  ( u_1 = \unfold_{\gamma_\pi^{\text{combinatorial}}}(c))\times
+  ( u_2 = \unfold_{\gamma_\pi^{\text{combinatorial}}}(c))
+\]
+is a bisimulation up-to the substitution-closure $\Phi$, by the
+same head/tail computation as in \Cref{thm:e-internal}, and the
+BBP modular-arithmetic update of $c$ ensures the up-to-context
+operator is compatible (as in the arithmetic example following
+\Cref{thm:upto-sound}). By \Cref{thm:upto-sound,thm:coinduction}
+$s^*_\pi$ is the unique stream up to $\bisim_{16}$ satisfying the
+BBP corecursive equation.
+\end{proof}
+
+\begin{remark}[What \Cref{thm:e-internal} and \Cref{thm:pi-internal} do and do not say]
+\label{rem:internal-scope}
+The key advance of \Cref{thm:e-internal} and \Cref{thm:pi-internal}
+over \Cref{thm:e-char} and \Cref{thm:pi-char} is that the
+characterising predicate is now of the form ``satisfies the
+corecursive equation $\out(s) = \gamma(\mathrm{state}(s))$'',
+expressed purely in terms of $\out$, $\hd$, $\tl$, and
+combinatorial operations on $\N$.
+No reference to $\Rc$ or its path constructors is needed. This
+realises programmes (a)--(c) of \cite[\S 9.2]{paperIII} with
+$F = F_b$ and $P = P_\pi$ resp.\ $P_e$.
+
+We are however candid about a limitation: the predicate
+``$s$ satisfies the corecursive equation
+$\out(s)=\gamma(\mathrm{state}(s))$'' is, in a sense, exactly the
+description of being the unfold of $\gamma$, and the state
+projection $\mathrm{state}$ is canonically defined only on the
+image of $\unfold_\gamma$ (see \Cref{app:state}). Read
+\emph{externally}, the theorem says: ``the unique stream
+satisfying the corecursive equation for algorithm $X$ is the
+stream generated by algorithm $X$.'' This is not yet a
+characterisation of $\pi$ or $e$ as classical reals \emph{without
+reference to any external structure}. Such a fully external
+characterisation would require either (a) an internal proof that
+two distinct combinatorial algorithms (e.g.\ Leibniz and BBP) are
+bisimilar, or (b) an internal axiomatisation of which streams
+are ``transcendental''.
+
+What \Cref{thm:e-internal,thm:pi-internal} \emph{do} establish
+is that the bisimulation classes
+\[
+  [s_e]_{\bisim_b} \in \Stream/{\bisim_b}
+  \qquad\text{and}\qquad
+  [s_\pi]_{\bisim_{16}} \in \Stream/{\bisim_{16}}
+\]
+are the unique fixed points of combinatorial corecursive
+equations, with no path-constructor data (HIIT-data) needed to
+express the predicate.
+This is a strict logical advance over the inductive
+characterisation of Paper~V Definition 8.1, which uses sin-zero
+data internal to $\Rc$. The remaining ``gap'' is exactly
+\Cref{prob:internal} below.
+\end{remark}
+
+\subsection{\texorpdfstring{Comparison: Leibniz, Machin, BBP all name the same $\pi$}{Comparison: Leibniz, Machin, BBP all name the same pi}}
+
+To illustrate the strength of bisimulation as an equality
+principle in HoTT, we show how three distinct corecursive
+definitions of $\pi$-as-stream are proved equal by
+coinduction.
+
+\begin{definition}[Three coalgebras for $\pi$]\label{def:three-pi}
+Let $\gamma_L$ (Leibniz), $\gamma_M$ (Machin), $\gamma_B$ (BBP)
+be three coalgebras whose unfolds in base 10 (resp.\ 10, 16)
+yield streams $s_L, s_M, s_B$. Each algorithm is a corecursive
+streaming version of the corresponding analytic identity for
+$\pi$.
+\end{definition}
+
+\begin{proposition}\label{prop:three-equal}
+$s_L \bisim_{10} s_M$, and
+$s_L \bisim_{10} \mathrm{base\text{-}conversion}(s_B)$.
+\end{proposition}
+
+\begin{proof}
+$\alpha_{10}(s_L) = \alpha_{10}(s_M) = \pi - 3 = \alpha_{10}(\mathrm{conv}(s_B))$
+by classical analytic identities (Leibniz, Machin, BBP all sum to
+$\pi$). Bisimulation follows from \Cref{lem:observable-closed} and
+the definition of $\bisim_b$ as the kernel of $\alpha_b$.
+\end{proof}
+
+\begin{remark}[Limitation: external vs.\ internal equivalence]
+\Cref{prop:three-equal} \emph{factors through} the approximation
+map $\alpha_{10}$, hence through $\Rc$. This is therefore not
+yet a fully \emph{internal} proof of bisimilarity: the
+equality of streams is established by mapping to the inductive
+$\Rc$, computing the values, and pulling back along the kernel
+of $\alpha_{10}$.
+
+A truly internal proof would establish a direct stream-level
+bisimulation between the Leibniz, Machin, and BBP state machines
+(after base conversion). Schematically, one might construct a
+\emph{product coalgebra} on $C_L \times C_M \times C_B'$
+(running all three algorithms in parallel, with $C_B'$ the
+base-converted BBP state), together with an invariant
+$I \subseteq C_L \times C_M \times C_B'$ asserting that the
+three running partial sums agree to within a shrinking
+$10^{-n}$ window. The bisimulation
+$R(u_L, u_M, u_B) := \exists (c_L, c_M, c_B) \in I.\,
+\bigwedge u_X = \unfold_{\gamma_X}(c_X)$
+would then be \emph{coinductively} a bisimulation, and
+\Cref{thm:coinduction} would conclude. The technical obstacle
+is constructing the invariant $I$ in HoTT without circular
+reference to the value of $\pi$. This is precisely the form
+\Cref{prob:internal} would take and we do not claim a solution.
+
+The conceptual picture is striking even in the weaker
+``factor-through-$\Rc$'' form: in HoTT, \emph{algorithm
+equivalence} on streams becomes \emph{path-equality} on the
+final coalgebra, and coinduction is the proof method.
+\end{remark}
+
+% =============================================================
+\section{Cubical M-types and stream realisation}\label{sec:cubical}
+% =============================================================
+
+We sketch the cubical-HoTT realisation of the M-type used
+above, following ACS~\cite{ACS}.
+
+\subsection{The M-type construction}
+
+\begin{definition}[M-type]\label{def:Mtype}
+For container $(A,B)$, define
+\[
+M\,A\,B \;:=\; \lim_{n}\,W_n
+\]
+where $W_0 = \mathbf{1}$, $W_{n+1} = \Sigma_{a:A}(B(a) \to W_n)$,
+and the limit is taken along the projections induced by the unique
+map $W_1 \to W_0 = \mathbf{1}$.
+\end{definition}
+
+\begin{theorem}[Cubical M-type, ACS]\label{thm:cubicalM}
+In cubical HoTT (CCHM), the limit \Cref{def:Mtype} exists and
+$M\,A\,B$ is the carrier of the final $F_{(A,B)}$-coalgebra.
+The destructor $\out: M\,A\,B \to F_{(A,B)}(M\,A\,B)$ is the
+projection onto the first level.
+\end{theorem}
+
+\begin{remark}[Why cubical, not just MLTT]
+In plain MLTT one cannot prove that $\out$ is an equivalence
+(\Cref{lem:lambek}) without function extensionality and
+$\eta$-rules. Cubical HoTT provides function extensionality
+\emph{judgmentally} (via path-application) and treats
+M-types coherently with the path structure, which is what we
+need for the coinduction principle to compute.
+\end{remark}
+
+\subsection{Productivity and guarded recursion}
+
+In cubical HoTT, the topos of trees~\cite{birkedal} provides a
+guarded modality $\rhd$ (read ``later''). Streams are then a fixed point
+$\Stream\,A \cong A \times \rhd \Stream\,A$, and corecursion is
+just guarded recursion: the recursive call is hidden under $\rhd$,
+ensuring productivity at the type level. This is what makes our
+$\unfold_\gamma$ judgmentally well-defined.
+
+% =============================================================
+\section{Comparison with the Cauchy HIIT}\label{sec:cauchy-vs-coalg}
+% =============================================================
+
+\subsection{Side-by-side}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Inductive (Booij/HoTT Cauchy)} & \textbf{Coinductive (final coalgebra)}\\\midrule
+HIIT $\Rc$ with rat, lim, path-constr & M-type $\Stream\,\mathsf{Fin}(b)$ + $\bisim_b$\\
+Recursor: $f(\mathrm{rat}\,q),\,f(\mathrm{lim}\,x),\,f(\mathrm{path}\,\dots)$ & Corecursor: $\hd(\unfold(c)),\,\tl(\unfold(c))$\\
+$\pi := $ centre of contractible sin-zero type (Paper~V Def.~8.1) & $\pi := $ centre of contractible BBP unfold type (\Cref{thm:pi-internal})\\
+Equality by computation rule + truncation & Equality by bisimulation\\
+Computational content: Cauchy realiser & Computational content: digit stream\\
+$\Rc$ has join-semilattice + lim-axioms & $\Stream/{\bisim_b}$ has digit-shift action\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Equivalence theorem}
+
+\begin{theorem}[Inductive--Coinductive equivalence]\label{thm:hiitequal}
+There is a HoTT equivalence
+\[
+\beta_b: \Stream\,\mathsf{Fin}(b)/{\bisim_b}\;\simeq\;[0,1]\subset\Rc
+\]
+sending the bisimulation class of $s$ to $\alpha_b(s)$.
+\end{theorem}
+
+\begin{proof}
+Forward direction by \Cref{thm:01-quotient}. Inverse: given
+$x \in [0,1]\cap \Rc$, produce its base-$b$ digit stream by
+the floor algorithm of \Cref{lem:approx-surj}; the resulting
+class $[s]\in\Stream/{\bisim_b}$ is well-defined because
+two different digit-expansion choices for the same $x$ differ
+only at carry boundaries (the $0.999\dots = 1$ identifications),
+which is exactly $\bisim_b$.
+\end{proof}
+
+\begin{corollary}\label{cor:both-pi}
+Under $\beta_b$, the inductive $\pi$ (Paper~V Definition 8.1) and
+the coinductive $\pi$ (\Cref{thm:pi-internal}) coincide.
+\end{corollary}
+
+\subsection{Why the duality matters}
+
+\Cref{thm:hiitequal} says the two presentations describe the
+same mathematical object. But \emph{computationally} they differ:
+
+\begin{itemize}
+\item The inductive presentation supports \emph{recursion}:
+to define $f: \Rc \to X$ specify $f(\mathrm{rat}\,q)$,
+$f(\mathrm{lim}\,x)$, and verify path coherence.
+\item The coinductive presentation supports \emph{corecursion}:
+to define $g: X \to \Stream$ specify $\hd(g(c))$ and $\tl(g(c))$
+in terms of head/tail of an evolving state.
+\end{itemize}
+
+For the transcendentals, the natural definitions are
+\emph{corecursive}: $e$ and $\pi$ are typically given by
+streaming-digit algorithms (Sale, BBP, spigot algorithms in
+general). The coinductive presentation matches these algorithms
+\emph{judgmentally}; the inductive presentation requires a layer
+of approximation-and-quotient.
+
+% =============================================================
+\section{\texorpdfstring{Connection to the $\zeta$-prerequisite chain}{Connection to the zeta-prerequisite chain}}\label{sec:zeta}
+% =============================================================
+
+\subsection{The principal open problem}
+
+The synthesis paper~\cite[\S 7.3, \S 8 item 2]{synthesis} identifies
+``$\zeta(s)=0$ as a HoTT-native statement'' as the principal open
+problem. Loeffler--Stoll~\cite{loefflerstoll} formalised
+$\zeta$ in classical Lean/Mathlib (3300 lines for the analytic
+continuation alone), but no HoTT-native formalisation of the
+Riemann zeta function is known.
+
+The coalgebraic toolkit developed here suggests an attack route:
+
+\begin{conjecture}[Coalgebraic $\zeta$]\label{conj:zeta}
+There is a polynomial endofunctor $H: \Type \to \Type$ with $\nu H$
+modelling the Riemann zeta function as a stream of digits in some
+base parametrised by the complex argument $s \in \mathbb{C}_c$,
+such that:
+\begin{enumerate}
+\item For $s$ with $\Re(s) > 1$, $\unfold_{\gamma_\zeta(s)}$ produces
+the stream of digits of $\zeta(s)$ via the Dirichlet series.
+\item For $s$ in the analytic continuation domain $\mathbb{C}_c\setminus\{1\}$,
+$\unfold_{\gamma_\zeta'(s)}$ produces digits via Hurwitz formula.
+\item There is a bisimulation-closed predicate
+$P_{\zeta=0}: \nu H \to \mathsf{Prop}$ such that $\zeta(s) = 0$
+in $\mathbb{C}_c$ iff the unique unfold satisfies $P_{\zeta=0}$.
+\end{enumerate}
+\end{conjecture}
+
+This conjecture is open. We make some progress in
+\Cref{prop:dirichlet-stream} below.
+
+\subsection{Dirichlet series as stream}
+
+\begin{proposition}[Dirichlet partial-sum stream]\label{prop:dirichlet-stream}
+For $s \in \mathbb{C}_c$ with $\Re(s) > 1$, define a coalgebra
+$(C_s, \gamma_s)$ on $C_s := \N \times \mathbb{C}_c$ with
+$\gamma_s(n, z) = (\mathrm{digit}(z'), (n+1, z'))$ where
+$z' = z + n^{-s}$ (the next partial-sum). Then
+$\alpha_b(\unfold_{\gamma_s}(0,0)) = \zeta(s)$, modulo
+the carry-bisimulation.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The partial sums $\sum_{n=1}^N n^{-s}$ form a Cauchy approximation
+to $\zeta(s)$ for $\Re(s) > 1$ (standard fact, constructive proof in
+Booij's framework). Streaming digits is then \Cref{def:approx} applied
+to that Cauchy approximation.
+\end{proof}
+
+\Cref{prop:dirichlet-stream} only handles the convergence
+half-plane. The hard part is analytic continuation (steps 2 and 3
+of \Cref{conj:zeta}). The classical Mellin-transform approach
+(Loeffler--Stoll) does not obviously translate to the coalgebraic
+setting because contour integration along non-trivial paths in
+$\mathbb{C}_c$ is itself a non-trivial constructive issue. We
+mark this as the principal open problem of the present series.
+
+\subsection{Toward analytic continuation coalgebraically}
+
+A possible attack: use the functional equation of $\zeta$,
+\[
+\zeta(s) = 2^s \pi^{s-1} \sin\!\left(\frac{\pi s}{2}\right)
+\Gamma(1-s)\,\zeta(1-s),
+\]
+to define $\zeta$ on $\Re(s) < 0$ by reflection. This is a
+\emph{recursive} definition (refer $\zeta(s)$ to $\zeta(1-s)$),
+which corresponds in our framework to a \emph{morphism between
+two coalgebras} for the same functor $H$, with the morphism
+implementing the $s \leftrightarrow 1-s$ symmetry. A
+construction of such a morphism in HoTT requires:
+
+\begin{itemize}
+\item A coalgebraic $\sin$ and $\Gamma$ in $\mathbb{C}_c$ (the
+former is approachable via the universal property of $\exp$ from
+Paper~III \S 4.3; the latter is significantly harder).
+\item A coalgebraic $z^s$ (complex exponentiation), again via
+$\exp$ and $\log$.
+\end{itemize}
+
+This is a substantial programme; we leave it as a long-term goal
+of the YonedaAI HoTT mathematics initiative.
+
+% =============================================================
+\section{Open problems and future work}\label{sec:open}
+% =============================================================
+
+\subsection{The internalisation gap}
+
+\Cref{thm:e-internal} and \Cref{thm:pi-internal} characterise
+$\pi, e$ via combinatorial corecursive equations. But the
+correctness theorems (that the unfold equals $\pi - 3$ resp.\
+$e - 2$) still reference $\Rc$ via $\alpha_b$.
+
+\begin{problem}[Fully internal correctness]\label{prob:internal}
+Find a HoTT statement $\Phi(s)$ in the language of streams alone
+(no $\Rc$, no $\alpha_b$) such that
+$\Phi(s_\pi) \leftrightarrow \mathrm{ChurchRosserlikeProperty}(s_\pi)$,
+where the property captures $\alpha_{16}(s_\pi) = \pi - 3$ via a
+purely stream-theoretic invariant.
+\end{problem}
+
+A candidate: stream-bisimulation between $s_\pi$ and the unfold
+of an alternative coalgebra (Machin, Leibniz after base
+conversion). This makes the correctness theorem a
+bisimulation-only statement, but at the cost of relating
+\emph{distinct combinatorial} algorithms via coinduction.
+
+\subsection{The carry-bisimulation as HIT vs.\ propositional truncation}
+
+The quotient $\Stream/{\bisim_b}$ in \Cref{thm:01-quotient} can
+be presented as either (i) a set-quotient HIT, or (ii) a Voevodsky
+propositional truncation of the equivalence relation. The two are
+HoTT-equal by univalence-for-sets but differ in computation.
+
+\begin{problem}\label{prob:carry-hit}
+Compare the cubical realisation of $\Stream/{\bisim_b}$ as set-HIT
+vs.\ propositional truncation. Which presentation makes
+$\beta_b: \Stream/{\bisim_b} \simeq [0,1]$ \emph{computational}
+(i.e.\ $\beta_b \circ \beta_b^{-1} \equiv \id$ judgmentally)?
+\end{problem}
+
+\subsection{\texorpdfstring{Productivity and the totality of $\unfold$}{Productivity and the totality of unfold}}
+
+In MLTT-without-cubical, the totality of $\unfold$ requires a
+guardedness check on the coalgebra. In our case the BBP and
+Sale algorithms are guarded by construction (each step emits
+exactly one digit and modifies state), but a fully formal
+proof of guardedness is currently absent in our Lean
+artefact.
+
+\begin{problem}\label{prob:lean-productivity}
+Formalise productivity of the BBP and Sale digit-extraction
+algorithms in Lean~4/Mathlib using the \texttt{Stream'} API and
+the \texttt{Coinductive} machinery.
+\end{problem}
+
+\subsection{Higher transcendentals}
+
+The methods of this paper apply (with the obvious modifications) to other
+transcendentals with known spigot/streaming algorithms:
+\begin{itemize}
+\item Catalan's constant $G = \sum_{n=0}^\infty (-1)^n/(2n+1)^2$
+\item Apéry's constant $\zeta(3)$ (Apéry's series gives a streaming
+algorithm)
+\item Euler--Mascheroni $\gamma$ (no known streaming algorithm of
+state $\mathrm{poly}(n)$, an open problem in itself)
+\end{itemize}
+
+\begin{problem}\label{prob:higher-trans}
+Extend the coalgebraic characterisation to $\zeta(3)$, Catalan's
+constant, and (failing that) prove that $\gamma$ has no
+finite-state stream coalgebra unfold-equal to it.
+\end{problem}
+
+\subsection{Coalgebraic transcendence proofs}
+
+The Lindemann--Weierstrass theorem proves the algebraic
+independence of $e^{\alpha_1},\ldots,e^{\alpha_n}$ for
+$\Q$-linearly independent algebraic $\alpha_i$. Paper~V
+\S 8.3--8.4 marks this as ``partially formalisable'' in
+$\Rc$. A coalgebraic proof would require:
+
+\begin{itemize}
+\item A coalgebraic structure on the algebraic numbers
+$\overline{\Q}$ (perhaps as a final coalgebra of an
+``algebraic-extension'' functor).
+\item A coalgebraic $\exp$ as the unique coalgebra
+morphism $\Rc \to \Stream\,\mathsf{Fin}(b)$ from the
+ODE $f' = f$ universal property.
+\end{itemize}
+
+\begin{problem}\label{prob:trans-coalg}
+Formulate a coalgebraic Lindemann--Weierstrass theorem in HoTT.
+\end{problem}
+
+% =============================================================
+\section{Conclusion}
+% =============================================================
+
+We have given a coinductive characterisation of $\pi$ and $e$
+in homotopy type theory, completing the programme sketched in
+Paper~III \S 5 of the prior series. The principal new results are:
+
+\begin{itemize}
+\item A clean statement of the coinduction principle in cubical
+HoTT (\Cref{thm:coinduction}).
+\item Stream coalgebras realising digit expansions
+(\Cref{thm:streamfinal}, \Cref{thm:01-quotient}).
+\item Coalgebraic characterisations of $\pi$ and $e$ as unique
+unfolds satisfying bisimulation-closed observable predicates
+(\Cref{thm:e-char}, \Cref{thm:pi-char}, \Cref{thm:e-internal},
+\Cref{thm:pi-internal}).
+\item An equivalence theorem (\Cref{thm:hiitequal}) showing the
+coinductive presentation matches Booij's HIIT $\Rc$ on $[0,1]$.
+\item A Dirichlet-series stream coalgebra (\Cref{prop:dirichlet-stream})
+giving partial progress towards a coalgebraic $\zeta$.
+\end{itemize}
+
+An accompanying executable framework is provided in Haskell:
+the stream functor, unfold/corecursion, the carry-bisimulation,
+and the spigot algorithms for $\pi$ (Leibniz, Machin) and $e$
+(factorial series), together with QuickCheck properties for
+stream operations and approximation round-trips. The Lean~4
+companion file (using Mathlib's \texttt{Stream'} API) formalises
+the basic coalgebra structure, the corecursive \texttt{unfold},
+and a (classical, set-level) coinduction principle; it does
+\emph{not} include a formal proof of the productivity of the
+Sale or BBP transitions, which is left as
+\Cref{prob:lean-productivity}. The Lean component should be
+read as a partial certification of the type-theoretic
+infrastructure, not as a complete formalisation of the main
+theorems. The full formalisation effort is substantial: the
+main open problem (\Cref{conj:zeta}) is the construction of a
+HoTT-native coalgebraic Riemann zeta function with
+$\zeta(s) = 0$ as a bisimulation-closed predicate; this remains
+far from solved.
+
+Coinductively, the picture has unified beauty:
+$\pi$ is a \emph{stream}, namely the unique stream produced
+by the BBP corecursive equation; $e$ is a \emph{stream},
+namely the unique stream produced by the factorial-series
+corecursive equation; $[0,1]$ is the \emph{type of streams modulo
+carry}; and equality of streams is exactly bisimulation.
+The HIIT route of Booij is one face of these objects; the
+final-coalgebra route is the other. Univalence binds them.
+
+% =============================================================
+\appendix
+\section{Prerequisites from the prior series, made explicit}
+\label{app:prereq}
+% =============================================================
+
+To make the present paper self-contained, we restate (without
+re-proving) the prior results on which our arguments rely. Each
+is either a textbook fact found in the standard references on
+HoTT and coalgebra
+(see \cite{HoTTbook,booij,rutten,ACS,jacobs}), or a routine
+adaptation of a textbook fact to the cubical setting. Where we
+cite the prior series~\cite{paperIII,paperV,synthesis}, the
+citation is to a particular textbook-style adaptation, and the
+underlying proofs are the standard ones.
+
+\begin{theorem}[A.1; cf.\ Paper~III Theorem~5.2]\label{thm:app-streams-final}
+For any type $A : \Type$, the M-type
+\[
+  M(A,\lambda{-}.\mathbf{1}) \cong A^\N
+\]
+together with $\out := \langle\hd,\tl\rangle$ is a final coalgebra
+of the endofunctor $F_A\,X = A \times X$.
+\end{theorem}
+This is the cubical-HoTT version of Rutten~\cite{rutten}
+\S 2 \emph{combined with} ACS~\cite{ACS} Theorem~3.5. We use it
+in the form proved by ACS.
+
+\begin{theorem}[A.2; cf.\ Paper~III Theorem~5.3]\label{thm:app-coinduction}
+For final coalgebra $(\nu F, \out)$ of polynomial endofunctor $F$,
+two elements $x, y : \nu F$ satisfy a path equality $x = y$ iff
+there exists an $F$-bisimulation $R$ with $R(x,y)$.
+\end{theorem}
+This is restated as our \Cref{thm:coinduction} and proved
+internally to the present paper.
+
+\begin{theorem}[A.3; cf.\ Paper~III Theorem~4.1]\label{thm:app-uniqueR}
+There is, up to unique order-preserving HoTT-equivalence, a
+unique Dedekind-complete Archimedean ordered field $\R$. Booij's
+Cauchy HIIT $\Rc$ is one such; the quotient
+$\bigl(\Z \times (\Stream\,\mathsf{Fin}(b))\bigr)/{\bisim_b'}$ for
+the natural extension of $\bisim_b$ to $\Z$-shifted streams is
+another.
+\end{theorem}
+We use this in the form: the two presentations agree on $[0,1]$,
+which is \Cref{thm:hiitequal}.
+
+\begin{theorem}[A.4; cf.\ Paper~V Definition~8.1, Theorem~5.7]\label{thm:app-pi}
+In Booij's HIIT $\Rc$, the type
+$\Sigma_{p:\Rc}\,(\sin p = 0)\times(p>0)\times(\forall x\in (0,p),\,\sin x>0)$
+is contractible. Its centre is by definition $\pi$.
+\end{theorem}
+
+\begin{theorem}[A.5; cf.\ Paper~V Definition~8.2, Theorem~4.3]\label{thm:app-e}
+In Booij's HIIT $\Rc$, the type
+$\Sigma_{f:\Rc\to\Rc}\Sigma_{x:\Rc}\,(f'=f)\times(f(0)=1)\times(x = f(1))$
+is contractible (the universal-property of $\exp$). Its centre's
+$x$-component is by definition $e$.
+\end{theorem}
+
+These five statements are the only places where the prior series
+enters our arguments. Reader who prefers to take them as
+\emph{assumptions} of the present paper may do so; the rest of
+the paper then becomes a self-contained development atop these
+five axioms together with the standard cubical-HoTT
+infrastructure of~\cite{cchm,ACS}.
+
+\section{Detailed state-space layout for the proof of Theorem~\ref{thm:e-internal}}
+\label{app:state}
+
+We expand the state-space promise of \Cref{thm:e-internal}.
+The streaming-factorial spigot algorithm
+of~\cite{sale-e-1968,gibbons-spigot} maintains a state in $\N^5$:
+$(n, k, p, q, d)$ where $n$ is the digit position emitted so far,
+$k$ is the next factorial index ready to be summed, and
+$(p, q, d)$ are the bookkeeping triple of (current scaled
+remainder numerator, current scaled denominator, current digit-out).
+
+The transition $\gamma_e: \N^5 \to \mathsf{Fin}(b) \times \N^5$ is:
+
+\begin{enumerate}
+\item Multiply $(p, q)$ by $b$:
+$(p', q') := (b\cdot p, q)$.
+\item Extract the integer part: $d' := p' \div q'$, $p'' := p' \mod q'$.
+(In the cubical implementation $\div$ and $\mod$ are total
+constructive operations on $\N$.)
+\item Update the position: $n' := n + 1$, $k' := k$ (unchanged).
+\item If the remainder $p''/q'$ is below the precision threshold
+$1/q'$, advance the factorial: $q'' := q' \cdot k'$, $k'' := k' + 1$,
+and re-normalise $p''$ by adding the new term's contribution.
+\item Output: $(d', (n', k'', p_{\mathrm{new}}, q''))$, where
+$p_{\mathrm{new}}$ is the renormalised remainder.
+\end{enumerate}
+
+The state projection function $\mathrm{state}: \Stream\,\mathsf{Fin}(b) \to \N^5$
+of \Cref{thm:e-internal} is the canonical retraction:
+$\mathrm{state}(s) = $ the unique $c$ such that $s = \unfold_{\gamma_e}(c)$,
+when such $c$ exists. This is a \emph{partial} function in
+general, but defined on the image of $\unfold_{\gamma_e}$, which
+is the only place it is used.
+
+\textbf{Compatibility of the up-to operator.} The up-to operator
+$\Phi$ used in the proof of \Cref{thm:e-internal} is
+\[
+\Phi(R) \;:=\; \{(u_1, u_2) :
+  \exists c, c'.\, R(\unfold_{\gamma_e}(c), \unfold_{\gamma_e}(c'))
+  \wedge u_1 = \unfold_{\gamma_e}(c)
+  \wedge u_2 = \unfold_{\gamma_e}(c')
+\}.
+\]
+By \cite[\S 6]{poussangiorgi}, an up-to operator is compatible
+iff it preserves the \emph{evolution} structure of the coalgebra.
+For our $\gamma_e$ this reduces to the observation that
+$\unfold_{\gamma_e}$ is a coalgebra morphism: heads commute with
+$\Phi$ by definition (they are determined by the first projection
+of $\gamma_e$), and tails commute by the recursive call. Hence
+$\Phi$ is compatible and \Cref{thm:upto-sound} applies.
+
+% =============================================================
+% Bibliography
+% =============================================================
+\begin{thebibliography}{99}
+
+\bibitem{paperIII}
+Long, M. (2026). \emph{Universal Properties of Real Numbers and
+Transcendentals}. Paper III, YonedaAI HoTT Foundations Series.
+
+\bibitem{paperV}
+Long, M. (2026). \emph{The HoTT Perspective: Numbers as Inductive
+Types up to Path Equivalence}. Paper V, YonedaAI HoTT Foundations
+Series.
+
+\bibitem{synthesis}
+Long, M. (2026). \emph{The Univalent Correspondence: How Six
+Perspectives on Number Become One}. Synthesis Paper, YonedaAI
+HoTT Foundations Series.
+
+\bibitem{booij}
+Booij, A. (2020). \emph{Analysis in Univalent Type Theory}.
+Ph.D.\ Thesis, University of Birmingham.
+
+\bibitem{rutten}
+Rutten, J.J.M.M. (2000). Universal coalgebra: a theory of
+systems. \emph{Theoretical Computer Science} 249(1):3--80.
+
+\bibitem{jacobs}
+Jacobs, B. (2016). \emph{Introduction to Coalgebra: Towards
+Mathematics of States and Observation}. Cambridge Tracts in
+Theoretical Computer Science.
+
+\bibitem{ACS}
+Ahrens, B., Capriotti, P., \& Spadotti, R. (2015). Non-wellfounded
+trees in homotopy type theory. \emph{Proc.\ TLCA}.
+
+\bibitem{cchm}
+Cohen, C., Coquand, T., Huber, S., \& M\"ortberg, A. (2018).
+Cubical Type Theory: a constructive interpretation of the
+univalence axiom. \emph{IfCoLog Journal of Logics}.
+
+\bibitem{birkedal}
+Birkedal, L., M{\o}gelberg, R.E., Schwinghammer, J., \&
+St{\o}vring, K. (2012). First steps in synthetic guarded
+domain theory: step-indexing in the topos of trees.
+\emph{Logical Methods in Computer Science} 8.
+
+\bibitem{poussangiorgi}
+Pous, D., \& Sangiorgi, D. (2012). Enhancements of the
+bisimulation proof method, in \emph{Advanced Topics in
+Bisimulation and Coinduction}, CUP.
+
+\bibitem{ghani-hancock-pattinson}
+Ghani, N., Hancock, P., \& Pattinson, D. (2009). Continuous
+functions on final coalgebras. \emph{ENTCS} 249:3--18.
+
+\bibitem{sale-e-1968}
+Sale, A.H.J. (1968). The calculation of $e$ to many significant
+digits. \emph{The Computer Journal} 11(2):229--230.
+
+\bibitem{rabwagon-spigot}
+Rabinowitz, S., \& Wagon, S. (1995). A spigot algorithm for the
+digits of $\pi$. \emph{American Math.\ Monthly} 102:195--203.
+
+\bibitem{gibbons-spigot}
+Gibbons, J. (2006). Unbounded spigot algorithms for the digits
+of pi. \emph{American Math.\ Monthly} 113:318--328.
+
+\bibitem{bbp}
+Bailey, D.H., Borwein, P., \& Plouffe, S. (1997). On the rapid
+computation of various polylogarithmic constants.
+\emph{Mathematics of Computation} 66:903--913.
+
+\bibitem{weihrauch}
+Weihrauch, K. (2000). \emph{Computable Analysis: An Introduction}.
+Springer.
+
+\bibitem{loefflerstoll}
+Loeffler, D., \& Stoll, M. (2025). Formalizing zeta and
+$L$-functions in Lean. \emph{Annals of Formalized Mathematics} 1.
+arXiv:2503.00959.
+
+\bibitem{HoTTbook}
+The Univalent Foundations Program. (2013). \emph{Homotopy Type
+Theory: Univalent Foundations of Mathematics}. Institute for
+Advanced Study.
+
+\bibitem{voevodsky}
+Voevodsky, V. (2010). The univalence axiom and the
+foundations of mathematics. Lecture series, IAS.
+
+\bibitem{licatashulman}
+Licata, D.R., \& Shulman, M. (2013). Calculating the fundamental
+group of the circle in homotopy type theory. \emph{Proc.\ LICS}.
+
+\bibitem{coquand-coinductive}
+Coquand, T. (1994). Infinite objects in type theory. \emph{Types
+for Proofs and Programs}, Springer LNCS.
+
+\bibitem{rutten-streams}
+Rutten, J.J.M.M. (2003). Behavioural differential equations: a
+coinductive calculus of streams, automata, and power series.
+\emph{Theoretical Computer Science} 308:1--53.
+
+\bibitem{aczel}
+Aczel, P. (1988). \emph{Non-Well-Founded Sets}. CSLI Lecture
+Notes 14.
+
+\bibitem{bordg-paulson}
+Bordg, A., \& Paulson, L. (2024). Coinductive proofs in Isabelle:
+streams revisited. \emph{Journal of Automated Reasoning}.
+
+\bibitem{kleene}
+Kleene, S.C. (1952). \emph{Introduction to Metamathematics}.
+North-Holland.
+
+\bibitem{turing}
+Turing, A.M. (1937). On computable numbers, with an application
+to the Entscheidungsproblem. \emph{Proc.\ London Math.\ Soc.}\ 42:230--265.
+
+\bibitem{kapulkin-lumsdaine}
+Kapulkin, K., \& Lumsdaine, P.L. (2021). The simplicial model of
+univalent foundations (after Voevodsky). \emph{Journal of the
+European Mathematical Society} 23:2071--2126.
+
+\bibitem{shulman-cohesive}
+Shulman, M. (2018). Brouwer's fixed-point theorem in real-cohesive
+homotopy type theory. \emph{Math.\ Structures Comp.\ Sci.}\ 28:856--941.
+
+\bibitem{sangiorgi-coind-book}
+Sangiorgi, D. (2012). \emph{Introduction to Bisimulation and
+Coinduction}. Cambridge University Press.
+
+\bibitem{abbott-altenkirch}
+Abbott, M., Altenkirch, T., \& Ghani, N. (2005).
+\emph{Containers: Constructing Strictly Positive Types}.
+Theoretical Computer Science 342:3--27.
+
+\end{thebibliography}
+
+\end{document}

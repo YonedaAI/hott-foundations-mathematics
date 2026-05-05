@@ -1,0 +1,752 @@
+<h1 data-number="1" id="sec:intro"><span class="header-section-number">1</span> Introduction</h1>
+<h2 data-number="1.1" id="why-three-foundations"><span class="header-section-number">1.1</span> Why three foundations</h2>
+<p>The phrase “foundations of mathematics” is in 2026 plural by both fact and conviction. A working mathematician encountering structures up to isomorphism (vector spaces, groups, topological spaces, schemes, <span class="math inline">\(\infty\)</span>-categories) needs an underlying logic that respects the equivalence principle: <em>isomorphic objects share their mathematical content</em>. Classical Zermelo–Fraenkel set theory with Choice (ZFC), the de facto standard since the 1920s, supports this principle only by a sociological convention — the convention to prove only structural properties — but the formalism itself permits non-structural predicates such as “<span class="math inline">\(\emptyset \in 7\)</span>” (a sentence whose truth value depends on Kuratowski’s particular encoding of pairs).</p>
+<p>The three foundational alternatives we examine in this paper each respond to that inadequacy in a different way:</p>
+<ul>
+<li><p><strong>ETCS (Lawvere 1964)</strong> replaces the universe of sets-with-membership by a <em>category</em> of sets-with-functions, axiomatised structurally as a well-pointed topos with a natural numbers object (NNO) and a choice operator;</p></li>
+<li><p><strong>IZF (Friedman 1973, Myhill, Aczel)</strong> keeps the membership predicate but moves to intuitionistic logic, accepting full Separation, Replacement, Powerset, and Infinity while rejecting Excluded Middle and Choice; structuralism is enforced indirectly via realisability and topos-valued models;</p></li>
+<li><p><strong>FOLDS (Makkai 1995)</strong> re-engineers the underlying <em>logic</em> so that only isomorphism-invariant predicates are expressible; the equivalence principle is a metatheorem of the syntax rather than a moral imperative.</p></li>
+</ul>
+<p>Each is motivated by the search for a logical environment in which equivalence-invariance is built in. Each succeeds for a different reason. And each has a precise relationship to HoTT, the foundation introduced by Voevodsky (2010) in which equivalence-invariance is proven as a theorem (the Univalence Axiom and its corollary, the Structure Identity Principle).</p>
+<h2 data-number="1.2" id="structural-vs-material-set-theory"><span class="header-section-number">1.2</span> Structural vs material set theory</h2>
+<p>Following Awodey <span class="citation" data-cites="Awodey2014"></span>, McLarty <span class="citation" data-cites="McLarty2004"></span>, and Shulman, we use the following terminology.</p>
+<div class="definition">
+<p><strong>Definition 1</strong> (Material set theory).  A set theory is <em>material</em> if its primitive non-logical relation is membership <span class="math inline">\(\in\)</span>, with sets identified by extensionality (two sets are equal iff they have the same elements), and where the universe of discourse is a single class of all sets ranging over a <span class="math inline">\(\in\)</span>-tree.</p>
+</div>
+<div class="definition">
+<p><strong>Definition 2</strong> (Structural set theory).  A set theory is <em>structural</em> if its primitive notions are sets and functions (equivalently: the objects and morphisms of a category), with sets identified up to unique isomorphism, and where membership is a derived notion (<span class="math inline">\(x\in A\)</span> means “<span class="math inline">\(x:1\to A\)</span> is a global element”).</p>
+</div>
+<p>ZFC and IZF are material; ETCS and Lawvere’s ETCC (Elementary Theory of the Category of Categories) are structural; FOLDS is neither — it is a logic, applicable to either flavour, but designed so that even when interpreted materially, only structural sentences are syntactically expressible. HoTT is structural (in fact <em>higher-structural</em>: types are identified up to higher equivalence).</p>
+<h2 data-number="1.3" id="the-univalence-boundary"><span class="header-section-number">1.3</span> The univalence boundary</h2>
+<p>The methodological question that organises this paper is:</p>
+<blockquote>
+<p><em>Of the principles, axioms, and metatheorems that distinguish ETCS, IZF, and FOLDS, which become theorems in HoTT (with univalence) and which do not?</em></p>
+</blockquote>
+<p>A principle that becomes a theorem under HoTT+UA but not under HoTT alone (i.e. the <span class="math inline">\((-1)\)</span>-truncated fragment, or the propositions-as-subsingletons fragment) lies on the <em>far</em> side of the univalence boundary: it is <em>conditional on</em> univalence. A principle that holds without univalence lies on the <em>near</em> side: it is unconditional.</p>
+<p>We will argue in <a href="#sec:boundary" data-reference-type="ref+label" data-reference="sec:boundary">7</a> that the boundary cuts as follows:</p>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>Principle</strong></th>
+<th style="text-align: center;">ETCS</th>
+<th style="text-align: center;">IZF</th>
+<th style="text-align: center;">FOLDS</th>
+<th style="text-align: center;">UA in HoTT?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">NNO existence</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">thm</td>
+<td style="text-align: center;">expr. </td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">Function ext.</td>
+<td style="text-align: center;">thm</td>
+<td style="text-align: center;">thm</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">implied by UA<span class="math inline">\(^{*}\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;">Prop. ext.</td>
+<td style="text-align: center;">thm</td>
+<td style="text-align: center;">thm</td>
+<td style="text-align: center;">expr. </td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr>
+<td style="text-align: left;">SIP</td>
+<td style="text-align: center;">meta</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">meta</td>
+<td style="text-align: center;"><strong>yes</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">FOLDS-eq. <span class="math inline">\(=\)</span> id</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">meta</td>
+<td style="text-align: center;"><strong>yes</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">EM</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">reject</td>
+<td style="text-align: center;">expr. </td>
+<td style="text-align: center;">indep.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Choice</td>
+<td style="text-align: center;">AC</td>
+<td style="text-align: center;">reject</td>
+<td style="text-align: center;">expr. </td>
+<td style="text-align: center;">indep. (PEM+AC)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Replacement</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">thm (small)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Powerset</td>
+<td style="text-align: center;">derived</td>
+<td style="text-align: center;">axiom</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">impred. <span class="math inline">\(\Omega\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><span class="math inline">\(^{*}\)</span>Function extensionality (FE) is a theorem of HoTT + UA (Voevodsky) but is independent of MLTT alone; see <a href="#sec:hott" data-reference-type="ref+label" data-reference="sec:hott">5</a> and <a href="#thm:fefar" data-reference-type="ref+label" data-reference="thm:fefar">43</a> for the precise nuance.</p>
+<h2 data-number="1.4" id="outline"><span class="header-section-number">1.4</span> Outline</h2>
+<p><a href="#sec:etcs" data-reference-type="ref+Label" data-reference="sec:etcs">2</a> states the eight-axiom presentation of ETCS, proves the elementary consequences (NNO, products, exponentials), and recalls McLarty’s bi-interpretation theorem with Bounded Zermelo + Replacement. <a href="#sec:izf" data-reference-type="ref+Label" data-reference="sec:izf">3</a> presents IZF, contrasts it with CZF and ZFC, and discusses the realisability and topos-valued models that connect IZF to HoTT. <a href="#sec:folds" data-reference-type="ref+Label" data-reference="sec:folds">4</a> develops Makkai’s signature theory, defines FOLDS-equivalence, and proves Makkai’s Invariance Theorem (every FOLDS-formula is invariant under FOLDS-equivalence). <a href="#sec:hott" data-reference-type="ref+Label" data-reference="sec:hott">5</a> reframes HoTT as the unifying framework: which structural principles become theorems, which need univalence. <a href="#sec:models" data-reference-type="ref+Label" data-reference="sec:models">6</a> surveys models: ETCS in toposes, FOLDS in fibrations, HoTT in <span class="math inline">\((\infty,1)\)</span>-toposes. <a href="#sec:boundary" data-reference-type="ref+Label" data-reference="sec:boundary">7</a> formally analyses the univalence boundary. <a href="#sec:open" data-reference-type="ref+Label" data-reference="sec:open">8</a> states three open problems. <a href="#sec:conclusion" data-reference-type="ref+Label" data-reference="sec:conclusion">12</a> concludes.</p>
+<h1 data-number="2" id="sec:etcs"><span class="header-section-number">2</span> ETCS: The Elementary Theory of the Category of Sets</h1>
+<h2 data-number="2.1" id="the-eight-axioms"><span class="header-section-number">2.1</span> The eight axioms</h2>
+<p>ETCS is a first-order theory in the language of categories (objects, morphisms, composition, identity). The eight axioms below follow Lawvere’s original 1964 PNAS paper <span class="citation" data-cites="Lawvere1964"></span> as updated by Lawvere–Rosebrugh <span class="citation" data-cites="LawvereRosebrugh2003"></span> and McLarty <span class="citation" data-cites="McLarty2004"></span>.</p>
+<div id="def:etcs" class="definition">
+<p><strong>Definition 3</strong> (ETCS axioms).  A category <span class="math inline">\(\mathcal{S}\)</span> <em>models ETCS</em> iff it satisfies:</p>
+<ol>
+<li><p><span class="math inline">\(\mathcal{S}\)</span> has finite limits (terminal object <span class="math inline">\(1\)</span>, binary products <span class="math inline">\(A\times B\)</span>, equalisers).</p></li>
+<li><p><span class="math inline">\(\mathcal{S}\)</span> is Cartesian closed: for any objects <span class="math inline">\(A,B\)</span> there is an exponential <span class="math inline">\(B^A\)</span> with evaluation <span class="math inline">\(\mathrm{ev}: B^A \times A \to B\)</span> enjoying the universal property of <span class="math inline">\(\lambda\)</span>-abstraction.</p></li>
+<li><p><span class="math inline">\(\mathcal{S}\)</span> has a subobject classifier: an object <span class="math inline">\(\Omega\)</span> with a morphism <span class="math inline">\(\top: 1 \to \Omega\)</span> such that every monomorphism <span class="math inline">\(m: A \hookrightarrow B\)</span> arises as the pullback of <span class="math inline">\(\top\)</span> along a unique characteristic morphism <span class="math inline">\(\chi_m : B \to \Omega\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathcal{S}\)</span> has a natural numbers object: an object <span class="math inline">\(\mathbb{N}\)</span> with maps <span class="math inline">\(0:1\to \mathbb{N}\)</span> and <span class="math inline">\(s:\mathbb{N}\to \mathbb{N}\)</span> such that for every <span class="math inline">\((X, x_0:1\to X,
+f:X\to X)\)</span> there is a unique morphism <span class="math inline">\(h:\mathbb{N}\to X\)</span> with <span class="math inline">\(h\circ 0 = x_0\)</span> and <span class="math inline">\(h\circ s = f\circ h\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathcal{S}\)</span> is well-pointed: if <span class="math inline">\(f,g:A\to B\)</span> are distinct morphisms, then there exists <span class="math inline">\(x:1\to A\)</span> with <span class="math inline">\(f\circ x \ne g\circ x\)</span>.</p></li>
+<li><p>(Axiom of choice) Every epimorphism <span class="math inline">\(e: A \twoheadrightarrow B\)</span> has a section <span class="math inline">\(s: B \to A\)</span> with <span class="math inline">\(e \circ s = \mathrm{id}_B\)</span>.</p></li>
+<li><p>(Two-valuedness; derivable from A5–A6 and A8) Any morphism <span class="math inline">\(f:1\to \Omega\)</span> equals either <span class="math inline">\(\top\)</span> or <span class="math inline">\(\bot\)</span>, where <span class="math inline">\(\bot\)</span> is the unique map factoring through the initial object. Listed for didactic completeness; see the remark below.</p></li>
+<li><p>(Non-degeneracy) <span class="math inline">\(0\not\cong 1\)</span> (the initial object is not isomorphic to the terminal).</p></li>
+</ol>
+</div>
+<div class="remark">
+<p><em>Remark 4</em>.  A1+A2+A3 alone make <span class="math inline">\(\mathcal{S}\)</span> an <em>elementary topos</em> in the sense of Lawvere–Tierney. Adding A4 gives a <em>topos with NNO</em>. Adding A5–A8 specialises to “topos behaving like classical sets”. Equivalently, an ETCS model is a well-pointed topos with NNO and choice. Two-valuedness (A7) follows from well-pointedness plus non-degeneracy when AC is present.</p>
+</div>
+<h2 data-number="2.2" id="elementary-consequences"><span class="header-section-number">2.2</span> Elementary consequences</h2>
+<div id="prop:etcsfunext" class="proposition">
+<p><strong>Proposition 5</strong> (Function extensionality in ETCS).  <em>For <span class="math inline">\(f,g: A\to B\)</span>, if <span class="math inline">\(\forall x:1\to A,\, f\circ x = g\circ x\)</span>, then <span class="math inline">\(f=g\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> This is the contrapositive of well-pointedness (A5). ◻</p>
+</div>
+<div id="prop:etcspower" class="proposition">
+<p><strong>Proposition 6</strong> (Power objects).  <em><span class="math inline">\(\mathcal{S}\)</span> has power objects <span class="math inline">\(P(A) := \Omega^A\)</span>, with the standard adjunction <span class="math inline">\(\mathrm{Sub}(B\times A)\cong \mathrm{Hom}(B, P(A))\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> Combine A2 and A3: <span class="math inline">\(P(A) = \Omega^A\)</span> classifies subobjects of any product <span class="math inline">\(B\times A\)</span> via <span class="math inline">\(\chi: B\times A \to \Omega\)</span> uncurried as <span class="math inline">\(\widetilde{\chi}:
+B\to \Omega^A\)</span>. ◻</p>
+</div>
+<div id="thm:mclarty" class="theorem">
+<p><strong>Theorem 7</strong> (McLarty’s bi-interpretation theorem).  <em>ETCS and Bounded Zermelo set theory plus Replacement (<strong>BZ</strong>+<strong>R</strong>) are bi-interpretable: each can interpret the other, and the interpretations compose to the identity up to definable isomorphism.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> Given a model of ETCS, define a class of <em>trees</em> as well-founded extensional quotients of pointed graphs internalised by the NNO and powerset; this gives a model of <span class="math inline">\(\mathbf{BZ}+\mathbf{R}\)</span>. Conversely, given a model <span class="math inline">\(V\)</span> of <span class="math inline">\(\mathbf{BZ}+\mathbf{R}\)</span>, define <span class="math inline">\(\mathcal{S}_V\)</span> to be the category of sets and functions inside <span class="math inline">\(V\)</span>; one verifies A1–A8 directly. Composition produces models that are equivalent in the appropriate 2-categorical sense. Full proof in McLarty <span class="citation" data-cites="McLarty2004"></span>; we return to it in <a href="#sec:models" data-reference-type="ref+label" data-reference="sec:models">6</a>. ◻</p>
+</div>
+<h2 data-number="2.3" id="encoding-free-arithmetic"><span class="header-section-number">2.3</span> Encoding-free arithmetic</h2>
+<p>ETCS resolves Benacerraf’s identification problem (Paper II of our series) by making <em>ordered pair</em> a primitive operation (the universal property of products) rather than the Kuratowski encoding <span class="math inline">\(\langle a,b\rangle = \{\{a\},\{a,b\}\}\)</span>. Junk theorems such as “<span class="math inline">\(3 \in 7\)</span>” (vacuously true under von Neumann ordinals: <span class="math inline">\(3 = \{0,1,2\}\)</span> and <span class="math inline">\(7=\{0,\ldots,6\}\)</span>) are not formulable in the ETCS language: <span class="math inline">\(3:1\to \mathbb{N}\)</span> is a global element, <span class="math inline">\(7:1\to \mathbb{N}\)</span> likewise, and there is no membership predicate between them.</p>
+<div class="example">
+<p><strong>Example 8</strong>.  <span class="math inline">\(\mathbb{N} \times \mathbb{N}\)</span> in ETCS is the categorical product of <span class="math inline">\(\mathbb{N}\)</span> with itself, characterised by the universal property; whether one uses Kuratowski pairs, Wiener pairs, or any other internal encoding to <em>prove existence</em> inside <span class="math inline">\(\mathbf{BZ+R}\)</span> is irrelevant to the structural object so produced.</p>
+</div>
+<h2 data-number="2.4" id="worked-example-arithmetic-via-the-recursor"><span class="header-section-number">2.4</span> Worked example: arithmetic via the recursor</h2>
+<p>We illustrate how arithmetic is developed structurally in ETCS using only the universal property of the NNO. Given the NNO <span class="math inline">\((\mathbb{N},0,s)\)</span>, define addition <span class="math inline">\(+:\mathbb{N}\times\mathbb{N}\to\mathbb{N}\)</span> as follows.</p>
+<div id="def:etcsadd" class="definition">
+<p><strong>Definition 9</strong> (Addition in ETCS).  The addition map <span class="math inline">\(+: \mathbb{N}\times\mathbb{N}\to\mathbb{N}\)</span> is the unique morphism satisfying:</p>
+<ul>
+<li><p><span class="math inline">\(+ \circ \langle 0_{\mathbb{N}}, \mathrm{id}_{\mathbb{N}}\rangle = \mathrm{id}_{\mathbb{N}}\)</span> (left zero), and</p></li>
+<li><p><span class="math inline">\(+ \circ (s\times \mathrm{id}_{\mathbb{N}}) = s \circ +\)</span> (left successor).</p></li>
+</ul>
+</div>
+<div id="prop:etcsadd" class="proposition">
+<p><strong>Proposition 10</strong> (Existence of addition).  <em>There exists a unique morphism <span class="math inline">\(+\)</span> as in <a href="#def:etcsadd" data-reference-type="ref+label" data-reference="def:etcsadd">9</a>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> Apply the NNO universal property to the pointed endomorphism <span class="math inline">\((\mathbb{N}^{\mathbb{N}}, \mathrm{id}_{\mathbb{N}} : 1\to \mathbb{N}^{\mathbb{N}},
+\widehat{s\circ\mathrm{ev}}: \mathbb{N}^{\mathbb{N}}\to \mathbb{N}^{\mathbb{N}})\)</span> where the basepoint is the constant function <span class="math inline">\(\mathrm{id}_{\mathbb{N}}\)</span> and the endomap is post-composition with <span class="math inline">\(s\)</span>. This yields a unique <span class="math inline">\(\widehat{+}: \mathbb{N} \to \mathbb{N}^{\mathbb{N}}\)</span>, which uncurries to <span class="math inline">\(+: \mathbb{N}\times\mathbb{N}\to \mathbb{N}\)</span> satisfying both equations. ◻</p>
+</div>
+<div class="example">
+<p><strong>Example 11</strong> (Multiplication and exponentiation).  Multiplication <span class="math inline">\(\cdot\)</span> is defined by the same recursion technique with <span class="math inline">\(+\)</span> in place of <span class="math inline">\(s\)</span>: <span class="math inline">\(\cdot\circ\langle 0,\mathrm{id}\rangle = 0\)</span>, <span class="math inline">\(\cdot\circ (s\times \mathrm{id}) =
++\circ\langle\mathrm{id},\cdot\rangle\)</span>. Exponentiation <span class="math inline">\(\uparrow\)</span> similarly: <span class="math inline">\(\uparrow\circ\langle 0,\mathrm{id}\rangle = 1\)</span>, <span class="math inline">\(\uparrow\circ (s\times \mathrm{id}) = \cdot\circ\langle\mathrm{id},\uparrow\rangle\)</span>.</p>
+</div>
+<h2 data-number="2.5" id="etcs-without-choice"><span class="header-section-number">2.5</span> ETCS without choice</h2>
+<p>Removing A6 (choice) yields what is sometimes called <em>ETCS-AC</em> or <em>Topos+NNO+WP</em> (well-pointed topos with NNO). This system is consistent with both EM and <span class="math inline">\(\neg\)</span>EM in non-trivial models. McLarty’s bi-interpretation theorem extends to: ETCS-AC is bi-interpretable with <span class="math inline">\(\mathbf{BZ}+\mathbf{R}\)</span>-AC. The constructive variant of ETCS (replace A5 well-pointedness by Kock’s notion of subterminal-pointedness, drop A6 and A7) is bi-interpretable with appropriate fragments of IZF. We will see in <a href="#sec:boundary" data-reference-type="ref+label" data-reference="sec:boundary">7</a> that AC is on the <em>straddling</em> side of the univalence boundary.</p>
+<h2 data-number="2.6" id="comparison-with-awodeyforssell-categorical-structuralism"><span class="header-section-number">2.6</span> Comparison with Awodey–Forssell categorical structuralism</h2>
+<p>Awodey <span class="citation" data-cites="Awodey2014"></span> introduces a refined notion of <em>structural foundation</em>: a formal system whose models satisfy isomorphism-invariance internally. ETCS satisfies this in the 1-categorical sense; its only non-invariant data are the choices of products, exponentials, etc., which are determined up to (unique) isomorphism. The “isomorphism-invariance” guarantee in ETCS, however, is not a theorem of ETCS <em>about itself</em>; it is a metatheorem (any two products are isomorphic; any property expressible in the categorical language is invariant under isomorphism). To make the guarantee <em>internal</em>, one needs HoTT.</p>
+<h1 data-number="3" id="sec:izf"><span class="header-section-number">3</span> IZF: Intuitionistic Zermelo–Fraenkel</h1>
+<h2 data-number="3.1" id="axioms"><span class="header-section-number">3.1</span> Axioms</h2>
+<p>IZF (Friedman 1973, Myhill, surveyed in <span class="citation" data-cites="StanfordIZFCZF"></span>) is the system over intuitionistic first-order logic with equality and a binary predicate <span class="math inline">\(\in\)</span>, having the following axioms.</p>
+<div id="def:izf" class="definition">
+<p><strong>Definition 12</strong> (IZF axioms).  We adopt the formulation of IZF using the strong <em>Collection schema</em> (rather than the weaker Replacement schema); under intuitionistic logic, Collection is strictly stronger than Replacement, so this choice is significant. The remark following the definition discusses the difference.</p>
+<ol>
+<li><p>(Extensionality) <span class="math inline">\(\forall x\forall y\,[(\forall z\,(z\in x \Leftrightarrow
+z\in y))\Rightarrow x=y]\)</span>.</p></li>
+<li><p>(Empty set) <span class="math inline">\(\exists x\, \forall y\,(y\notin x)\)</span>.</p></li>
+<li><p>(Pairing) <span class="math inline">\(\forall x\forall y\, \exists z\,\forall w\,
+(w\in z\Leftrightarrow w=x\vee w=y)\)</span>.</p></li>
+<li><p>(Union) <span class="math inline">\(\forall x\, \exists y\,\forall z\,(z\in y \Leftrightarrow \exists w
+\in x.\, z\in w)\)</span>.</p></li>
+<li><p>(Infinity) <span class="math inline">\(\exists \omega\,(\emptyset\in\omega \wedge \forall x\in\omega.\,
+x\cup\{x\}\in\omega)\)</span>.</p></li>
+<li><p>(Full Separation) For every formula <span class="math inline">\(\varphi(z)\)</span>, <span class="math inline">\(\forall x\,\exists y\,
+\forall z\,(z\in y \Leftrightarrow z\in x \wedge \varphi(z))\)</span>.</p></li>
+<li><p>(Powerset) <span class="math inline">\(\forall x\, \exists y\, \forall z\,(z\in y \Leftrightarrow z
+\subseteq x)\)</span>.</p></li>
+<li><p>(Collection) For every formula <span class="math inline">\(\varphi(x,y)\)</span>, if <span class="math inline">\(\forall x\in a.\,\exists
+y.\, \varphi(x,y)\)</span>, then <span class="math inline">\(\exists b.\,\forall x\in a.\,\exists y\in b.\, \varphi(x,y)\)</span>.</p></li>
+<li><p>(<span class="math inline">\(\in\)</span>-Induction) For every <span class="math inline">\(\varphi\)</span>, <span class="math inline">\([\forall x\,((\forall y\in x.\,\varphi(y))\Rightarrow \varphi(x))]\Rightarrow \forall x.\,
+\varphi(x)\)</span>.</p></li>
+</ol>
+<p>The underlying logic is intuitionistic; <em>Excluded Middle (EM)</em> and <em>Choice (AC)</em> are not assumed.</p>
+</div>
+<div class="remark">
+<p><em>Remark 13</em>.  A standard simplification replaces (I8) Collection by the weaker Replacement schema. Friedman’s IZF uses Collection because, under intuitionistic logic, Collection is strictly stronger than Replacement: Replacement requires uniqueness of the witness, while Collection requires only existence. In classical logic, Collection is derivable from Replacement using EM; in IZF this implication fails.</p>
+</div>
+<h2 data-number="3.2" id="izf-and-zfc-strength-and-divergence"><span class="header-section-number">3.2</span> IZF and ZFC: strength and divergence</h2>
+<div id="thm:friedman" class="theorem">
+<p><strong>Theorem 14</strong> (Friedman <span class="citation" data-cites="Friedman1973"></span>).  <em><span class="math inline">\(\mathrm{ZF} = \mathrm{IZF} + \mathrm{EM}\)</span>, where <span class="math inline">\(\mathrm{EM}\)</span> is the schema <span class="math inline">\(\varphi\vee\neg\varphi\)</span> over the IZF language. Consequently, IZF and ZF are equiconsistent.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> Forward direction: <span class="math inline">\(\mathrm{IZF}\subseteq \mathrm{ZF}\)</span> definitionally, since classical logic includes intuitionistic logic and EM gives the rest. Reverse: every ZF axiom is in IZF except those needing EM in their classical forms, but Separation in IZF is full so the classical schema follows. The equiconsistency: any model of ZF is a model of IZF+EM; any model of IZF gives a Heyting-valued model that, under EM, becomes a model of ZF. Friedman’s original proof uses double-negation translations. ◻</p>
+</div>
+<div class="remark">
+<p><em>Remark 15</em> (CZF vs IZF).  Aczel’s CZF (Constructive Zermelo–Fraenkel) replaces Powerset by <em>Subset Collection</em> (or its equivalent <em>Fullness</em> axiom) and Full Separation by <em>Restricted Separation</em> (where <span class="math inline">\(\varphi\)</span> is bounded). CZF is significantly weaker than IZF: <span class="math inline">\(\mathrm{CZF} \subsetneq \mathrm{IZF}\)</span>, and CZF is interpretable in Martin-Löf type theory via Aczel’s sets-in-types translation. IZF is impredicative (Powerset and Full Separation), which puts it in tension with the predicative spirit of MLTT and HoTT.</p>
+</div>
+<h2 data-number="3.3" id="izf-realisability-and-hott"><span class="header-section-number">3.3</span> IZF, realisability, and HoTT</h2>
+<div class="definition">
+<p><strong>Definition 16</strong> (Realisability model).  A <em>realisability model</em> of IZF is a category-theoretic structure <span class="math inline">\((\mathbb{V}, \Vdash)\)</span> where <span class="math inline">\(\mathbb{V}\)</span> is a class hierarchy and <span class="math inline">\(\Vdash\)</span> is a forcing relation specified by terms of an underlying calculus (e.g. untyped <span class="math inline">\(\lambda\)</span>-calculus, PCAs, or partial combinatory algebras) such that the IZF axioms are forced.</p>
+</div>
+<p>The connection to HoTT runs through the topos-theoretic interpretation. Hyland’s effective topos <span class="math inline">\(\mathcal{E}\!f\!f\)</span> provides a realisability model in which IZF holds (via Full Separation, Collection, and Powerset using the lifted <span class="math inline">\(\Omega\)</span>). Inside <span class="math inline">\(\mathcal{E}\!f\!f\)</span>, the internal language is intuitionistic higher-order logic, which embeds into HoTT once we resolve coherence at higher levels. Shulman’s results <span class="citation" data-cites="Shulman2019"></span> show every Grothendieck <span class="math inline">\((\infty,1)\)</span>-topos models HoTT; specialising to localic <span class="math inline">\((\infty,1)\)</span>-toposes gives realisability models of HoTT compatible with IZF.</p>
+<div id="thm:awodey-warren" class="theorem">
+<p><strong>Theorem 17</strong> (Awodey–Warren propositions-as-types for IZF).  <em>The <span class="math inline">\((-1)\)</span>-truncated fragment of HoTT (i.e. HoTT restricted to mere propositions) satisfies the IZF axioms in the following sense: there is an interpretation <span class="math inline">\(\llbracket\cdot\rrbracket\)</span> of IZF formulas into <span class="math inline">\((-1)\)</span>-truncated types such that <span class="math inline">\(\mathrm{IZF}\vdash \varphi\)</span> implies <span class="math inline">\(\mathrm{HoTT}\vdash \llbracket\varphi\rrbracket\)</span> provided we add the propositional resizing axiom and the Mahlo–Universe axiom needed for Replacement.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> Each IZF set is interpreted as a well-founded <span class="math inline">\(\mathbb{V}\)</span>-structure (Aczel’s V) inside HoTT. Full Separation translates to subtype formation under propositional resizing. Powerset translates to <span class="math inline">\(A \to \mathrm{hProp}\)</span>. Collection requires the Mahlo-style closure on the universe. See HoTT Book <span class="citation" data-cites="HoTTBook"></span> §10.5 for details. ◻</p>
+</div>
+<h2 data-number="3.4" id="diaconescus-theorem-and-izf"><span class="header-section-number">3.4</span> Diaconescu’s theorem and IZF</h2>
+<div id="thm:diaconescu" class="theorem">
+<p><strong>Theorem 18</strong> (Diaconescu 1975).  <em>In any topos satisfying the axiom of choice, the law of excluded middle holds. In particular, <span class="math inline">\(\mathrm{IZF}+\mathrm{AC}\)</span> proves <span class="math inline">\(\mathrm{EM}\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> Given a proposition <span class="math inline">\(P\)</span>, consider the set <span class="math inline">\(A = \{x\in\{0,1\}: x=0 \vee P\}\)</span> and <span class="math inline">\(B = \{x\in\{0,1\}: x=1\vee P\}\)</span>. By Pairing both are sets, and their union is <span class="math inline">\(\{0,1\}\)</span>. AC gives a choice function on the family of these two non-empty sets, producing <span class="math inline">\(a\in A, b\in B\)</span>. Now either <span class="math inline">\(a=b\)</span>, in which case <span class="math inline">\(P\)</span> holds (decidably), or <span class="math inline">\(a\neq b\)</span>, in which case <span class="math inline">\(\neg P\)</span> holds. Either way <span class="math inline">\(P\vee\neg P\)</span>. ◻</p>
+</div>
+<div class="corollary">
+<p><strong>Corollary 19</strong>.  <em><span class="math inline">\(\mathrm{IZF}+\mathrm{AC}\)</span> is equivalent to <span class="math inline">\(\mathrm{ZFC}\)</span>. Hence the constructive content of IZF is genuinely tied to the absence of AC.</em></p>
+</div>
+<h2 data-number="3.5" id="aczels-czf-and-predicativity"><span class="header-section-number">3.5</span> Aczel’s CZF and predicativity</h2>
+<p>A subtle but important alternative to IZF is Aczel’s CZF (Constructive Zermelo–Fraenkel), formulated in <span class="citation" data-cites="Aczel1978"></span>. CZF differs from IZF in two crucial ways:</p>
+<ul>
+<li><p><em>Restricted Separation</em>: the Separation schema is restricted to bounded formulas (formulas all of whose quantifiers are restricted to a set).</p></li>
+<li><p><em>Subset Collection (Fullness)</em>: replaces Powerset.</p></li>
+</ul>
+<p>The result is a predicative theory, in the sense of Feferman: CZF can be interpreted in Martin-Löf type theory (the sets-in-types interpretation <span class="citation" data-cites="Aczel1978"></span>), and hence has the proof-theoretic strength of MLTT plus a single Mahlo-like inaccessible.</p>
+<div class="remark">
+<p><em>Remark 20</em>.  The IZF/CZF distinction matters for the comparison with HoTT: CZF is closer to HoTT in spirit (predicative, type-theoretic), whereas IZF is closer to ZF in spirit (impredicative, set-theoretic). Both can be interpreted in HoTT, but CZF more naturally.</p>
+</div>
+<h1 data-number="4" id="sec:folds"><span class="header-section-number">4</span> FOLDS: First-Order Logic with Dependent Sorts</h1>
+<h2 data-number="4.1" id="dependent-signatures"><span class="header-section-number">4.1</span> Dependent signatures</h2>
+<div id="def:foldssig" class="definition">
+<p><strong>Definition 21</strong> (FOLDS signature, after Makkai <span class="citation" data-cites="Makkai1995"></span>).  A <em>FOLDS signature</em> is a small category <span class="math inline">\(\mathbf{L}\)</span> that is:</p>
+<ul>
+<li><p><em>One-way</em>: there are no non-trivial endomorphisms or antiparallel parallel arrows.</p></li>
+<li><p><em>Direct</em>: every object has finitely many objects above it, and the order on “levels” (height in the underlying graph) is well-founded.</p></li>
+<li><p>Equipped with a designated set of <em>relation symbols</em>: distinguished objects intended to be interpreted as truth-valued (i.e. subterminal).</p></li>
+</ul>
+<p>A <em>kind</em> is a non-relation object; a <em>relation</em> is one of the designated objects.</p>
+</div>
+<div id="ex:foldscat" class="example">
+<p><strong>Example 22</strong> (FOLDS signature for categories).  The signature <span class="math inline">\(\mathbf{L}_{\mathrm{Cat}}\)</span> has:</p>
+<ul>
+<li><p>Kind <span class="math inline">\(O\)</span> (objects).</p></li>
+<li><p>Kind <span class="math inline">\(A\)</span> (arrows), with two morphisms <span class="math inline">\(s,t: A\to O\)</span> (source, target). The dependency <span class="math inline">\(A\to O\times O\)</span> records that an arrow has a source and target object.</p></li>
+<li><p>Relation <span class="math inline">\(T(g,h,k)\)</span> on composable triples <span class="math inline">\((g, h, k:A)\)</span> (where <span class="math inline">\(t(g)=s(h)\)</span> and the common boundary types match) expressing “<span class="math inline">\(k\)</span> is the composite <span class="math inline">\(h\circ g\)</span>”. This relation captures composition data without committing to a function symbol.</p></li>
+<li><p>Relation <span class="math inline">\(I(f)\)</span> on <span class="math inline">\(A\)</span> expressing “<span class="math inline">\(f\)</span> is an identity arrow”. We list this relation explicitly because in FOLDS one cannot pick out identity arrows by equality with a chosen constant; instead, identities are designated via this relation, which is required to satisfy the laws <span class="math inline">\(\forall f.\, I(f)\to T(f,g,g)\)</span> and <span class="math inline">\(T(g,f,g)\)</span> for parallel <span class="math inline">\(g\)</span>.</p></li>
+<li><p>Relation <span class="math inline">\(E(f,g)\)</span> on parallel arrows expressing arrow-equality. In FOLDS the equality predicate on each kind is itself a designated relation symbol, not a primitive of the logic; this is what guarantees isomorphism-invariance of FOLDS sentences.</p></li>
+</ul>
+<p>A model is a category in the usual sense, where the three relations <span class="math inline">\(T, I, E\)</span> have distinct and complementary roles: <span class="math inline">\(T\)</span> records composition data, <span class="math inline">\(I\)</span> singles out the identity arrows, and <span class="math inline">\(E\)</span> provides arrow-equality. Together they suffice to express the category axioms (associativity, unit laws, identity laws) as FOLDS sentences.</p>
+</div>
+<h2 data-number="4.2" id="folds-equivalence"><span class="header-section-number">4.2</span> FOLDS-equivalence</h2>
+<div id="def:foldsequiv" class="definition">
+<p><strong>Definition 23</strong> (FOLDS-equivalence, Makkai <span class="citation" data-cites="Makkai1995"></span>).  Two <span class="math inline">\(\mathbf{L}\)</span>-structures <span class="math inline">\(M, N\)</span> are <em>FOLDS-equivalent</em> (written <span class="math inline">\(M\simeq_F N\)</span>) iff there exists a span of <span class="math inline">\(\mathbf{L}\)</span>-structure homomorphisms <span class="math display">\[M \xleftarrow{p} P \xrightarrow{q} N\]</span> where both <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> are <em>very surjective</em>: surjective on every kind, and on every relation symbol <span class="math inline">\(R\)</span>, the induced map <span class="math inline">\(R^P \to R^M\times_{(\text{kinds})} \cdots\)</span> is surjective.</p>
+</div>
+<div class="remark">
+<p><em>Remark 24</em>.  For the signature <span class="math inline">\(\mathbf{L}_{\mathrm{Cat}}\)</span>, <span class="math inline">\(M\simeq_F N\)</span> coincides with the classical notion of equivalence of categories <span class="math inline">\(M\simeq N\)</span> (essentially surjective and fully faithful). For higher signatures (e.g. bicategories), FOLDS-equivalence correctly generalises bi-equivalence; for <span class="math inline">\(n\)</span>-categories, <span class="math inline">\(n\)</span>-equivalence; and so on for <span class="math inline">\(\infty\)</span>-categorical signatures.</p>
+</div>
+<h2 data-number="4.3" id="makkais-invariance-theorem"><span class="header-section-number">4.3</span> Makkai’s Invariance Theorem</h2>
+<div id="thm:invariance" class="theorem">
+<p><strong>Theorem 25</strong> (Makkai’s Invariance Theorem <span class="citation" data-cites="Makkai1995"></span>).  <em>For every FOLDS signature <span class="math inline">\(\mathbf{L}\)</span> and every FOLDS sentence <span class="math inline">\(\varphi\)</span> in <span class="math inline">\(\mathcal{L}(\mathbf{L})\)</span>, and any two <span class="math inline">\(\mathbf{L}\)</span>-structures <span class="math inline">\(M,N\)</span>: <span class="math display">\[M\simeq_F N \;\Longrightarrow\; (M\models \varphi \Leftrightarrow N\models \varphi).\]</span></em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> By induction on <span class="math inline">\(\varphi\)</span>. Atomic formulas are preserved by very surjective homomorphisms, both ways, by the surjectivity on relations. Connectives and the unique quantifier <span class="math inline">\(\exists x: K\)</span> (where <span class="math inline">\(K\)</span> is a kind) preserve preservation under very surjective spans because every element on each kind in <span class="math inline">\(M\)</span> (resp. <span class="math inline">\(N\)</span>) is hit by some element of <span class="math inline">\(P\)</span>. Full induction is given in <span class="citation" data-cites="Makkai1995"></span>; an alternative homotopy-theoretic proof appears in Henry’s work on the Isomorphism Property. ◻</p>
+</div>
+<div id="cor:invariance" class="corollary">
+<p><strong>Corollary 26</strong>.  <em>No FOLDS sentence can distinguish two equivalent categories. In particular, the predicate “<span class="math inline">\(X\)</span> is the <span class="math inline">\(\in\)</span>-rank-zero element of the universe” is <em>not</em> expressible in any FOLDS signature for ZF.</em></p>
+</div>
+<h2 data-number="4.4" id="folds-as-a-fragment-of-dependent-type-theory"><span class="header-section-number">4.4</span> FOLDS as a fragment of dependent type theory</h2>
+<p>Palmgren <span class="citation" data-cites="Palmgren2016"></span> showed FOLDS embeds into intensional Martin-Löf type theory. The dependence in a FOLDS signature is captured by the dependence of types in MLTT; relations become <span class="math inline">\((-1)\)</span>-types (mere propositions).</p>
+<div id="thm:palmgren" class="theorem">
+<p><strong>Theorem 27</strong> (Palmgren <span class="citation" data-cites="Palmgren2016"></span>).  <em>There is a faithful translation <span class="math inline">\(\mathcal{T}\)</span> from FOLDS signatures over a category <span class="math inline">\(\mathbf{L}\)</span> to dependent type theories with explicit substitutions <span class="math inline">\(\mathrm{CwF}(\mathbf{L})\)</span>, such that:</em></p>
+<ol>
+<li><p><em>Every FOLDS structure <span class="math inline">\(M\)</span> on <span class="math inline">\(\mathbf{L}\)</span> corresponds to a model of <span class="math inline">\(\mathcal{T}(\mathbf{L})\)</span>.</em></p></li>
+<li><p><em>FOLDS-equivalence corresponds to equivalence of models of <span class="math inline">\(\mathcal{T}(\mathbf{L})\)</span>.</em></p></li>
+</ol>
+</div>
+<h2 data-number="4.5" id="worked-folds-proofs"><span class="header-section-number">4.5</span> Worked FOLDS proofs</h2>
+<div id="ex:catequivfolds" class="example">
+<p><strong>Example 28</strong> (Categorical equivalence is FOLDS-equivalence).  Take <span class="math inline">\(\mathbf{L} = \mathbf{L}_{\mathrm{Cat}}\)</span> and let <span class="math inline">\(F:M\to N\)</span> be a functor. Construct the cograph (mapping cylinder) <span class="math inline">\(C(F)\)</span>: objects are <span class="math inline">\(\mathrm{Ob}(M)\sqcup\mathrm{Ob}(N)\)</span>, with hom-sets given by <span class="math display">\[C(F)(x,y) := \begin{cases}
+M(x,y) &amp; x,y\in\mathrm{Ob}(M)\\
+N(x,y) &amp; x,y\in\mathrm{Ob}(N)\\
+N(F(x), y) &amp; x\in M, y\in N\\
+\emptyset &amp; \text{otherwise.}
+\end{cases}\]</span> Then both inclusions <span class="math inline">\(M\hookrightarrow C(F)\)</span> and <span class="math inline">\(N\hookrightarrow C(F)\)</span> are homomorphisms of <span class="math inline">\(\mathbf{L}_{\mathrm{Cat}}\)</span>-structures. The inclusion of <span class="math inline">\(M\)</span> is <em>very surjective</em> iff <span class="math inline">\(F\)</span> is essentially surjective and full. The inclusion of <span class="math inline">\(N\)</span> is very surjective iff <span class="math inline">\(F\)</span> is faithful. Combining, <span class="math inline">\(F\)</span> is an equivalence iff there is a zigzag of cograph cospans connecting <span class="math inline">\(M\)</span> and <span class="math inline">\(N\)</span> via very surjective maps — i.e. <span class="math inline">\(M\simeq_F N\)</span> in the FOLDS sense.</p>
+</div>
+<div id="prop:skeleton-not-folds" class="proposition">
+<p><strong>Proposition 29</strong> (Skeletality is not FOLDS-expressible).  <em>The predicate “<span class="math inline">\(\mathcal{C}\)</span> is a skeletal category” (every object is the unique representative of its isomorphism class) is not expressible by any FOLDS sentence.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> Suppose <span class="math inline">\(\varphi\)</span> is a FOLDS sentence in <span class="math inline">\(\mathbf{L}_{\mathrm{Cat}}\)</span> that holds in <span class="math inline">\(\mathcal{C}\)</span> iff <span class="math inline">\(\mathcal{C}\)</span> is skeletal. Take a non-skeletal <span class="math inline">\(\mathcal{C}_0\)</span> and a skeleton <span class="math inline">\(\mathcal{C}_1\hookrightarrow \mathcal{C}_0\)</span>. The inclusion is an equivalence (essentially surjective and fully faithful), hence the cograph construction yields <span class="math inline">\(\mathcal{C}_0 \simeq_F \mathcal{C}_1\)</span>. By Makkai’s invariance theorem (<a href="#thm:invariance" data-reference-type="ref+label" data-reference="thm:invariance">25</a>), <span class="math inline">\(\mathcal{C}_0\models \varphi \Leftrightarrow \mathcal{C}_1
+\models\varphi\)</span>. But <span class="math inline">\(\mathcal{C}_1\)</span> is skeletal and <span class="math inline">\(\mathcal{C}_0\)</span> is not, so <span class="math inline">\(\varphi\)</span> cannot distinguish them. Contradiction. ◻</p>
+</div>
+<div class="remark">
+<p><em>Remark 30</em>.  <a href="#prop:skeleton-not-folds" data-reference-type="ref+Label" data-reference="prop:skeleton-not-folds">29</a> is paradigmatic: any predicate referring to specific <em>representatives</em> of equivalence classes (rather than equivalence-classes themselves) fails to be FOLDS-expressible. This is the syntactic mechanism by which FOLDS enforces the equivalence principle: “junk” predicates cannot even be <em>stated</em>.</p>
+</div>
+<h2 data-number="4.6" id="higher-signatures-bicategories-and-infty-categories"><span class="header-section-number">4.6</span> Higher signatures: bicategories and <span class="math inline">\(\infty\)</span>-categories</h2>
+<p>The signature <span class="math inline">\(\mathbf{L}_{\mathrm{Cat}}\)</span> for ordinary categories generalises naturally to higher signatures:</p>
+<ul>
+<li><p><span class="math inline">\(\mathbf{L}_{\mathrm{Bicat}}\)</span>: kinds <span class="math inline">\(O\)</span>, <span class="math inline">\(A\)</span>, <span class="math inline">\(C\)</span> (cells), with <span class="math inline">\(s,t:A\to O\)</span>, <span class="math inline">\(s,t:C\to A\)</span>, and relations for vertical/horizontal composition, identities, and 2-cell equality. FOLDS-equivalence on <span class="math inline">\(\mathbf{L}_{\mathrm{Bicat}}\)</span> is bi-equivalence of bicategories.</p></li>
+<li><p><span class="math inline">\(\mathbf{L}_{(\infty,1)}\)</span>: an infinite tower of kinds <span class="math inline">\(A_n\)</span> for <span class="math inline">\(n\)</span>-cells, with boundary maps and a single “hcomp” relation per dimension. FOLDS-equivalence corresponds to Joyal-style <span class="math inline">\(\infty\)</span>-equivalence (DK-equivalence).</p></li>
+</ul>
+<p>Szumiło <span class="citation" data-cites="Szumilo2019"></span> extends this to a hierarchy of <span class="math inline">\(n\)</span>-FOLDS logics whose syntax converges to the syntax of HoTT.</p>
+<h1 data-number="5" id="sec:hott"><span class="header-section-number">5</span> HoTT: The unifying frame</h1>
+<h2 data-number="5.1" id="univalence-as-the-equivalence-invariance-axiom"><span class="header-section-number">5.1</span> Univalence as the equivalence-invariance axiom</h2>
+<p>Univalence (Voevodsky 2010, HoTT Book <span class="citation" data-cites="HoTTBook"></span> §2.10) is the axiom: <span class="math display">\[\mathsf{ua}: (A\simeq B) \;\xrightarrow{\sim}\; (A=_{\mathcal{U}} B)\]</span> saying that the canonical map “<span class="math inline">\(\mathrm{idtoeqv}\)</span>” from identifications between types to equivalences between them is itself an equivalence. In short: <em>equivalent types are identical</em>. The Structure Identity Principle (SIP) generalises this from raw types to typed structures: equivalent structures are identical.</p>
+<h2 data-number="5.2" id="which-structural-principles-become-theorems"><span class="header-section-number">5.2</span> Which structural principles become theorems</h2>
+<p>The following table summarises what passes from axiom-status (in ETCS, IZF, or as a metatheorem in FOLDS) to theorem-status in HoTT (Section 1 column reproduced for convenience):</p>
+<ul>
+<li><p><strong>NNO</strong> is a theorem in HoTT — the inductive type <span class="math inline">\(\mathbb{N}\)</span> is built into the type theory and contractibility of the type of NNO structures is provable (Paper V Theorem 4.4 of our series).</p></li>
+<li><p><strong>Function extensionality</strong> is a theorem in HoTT given univalence: Voevodsky’s proof shows <span class="math inline">\(\mathrm{UA}\Rightarrow \mathrm{FE}\)</span>.</p></li>
+<li><p><strong>Propositional extensionality</strong> is a theorem in HoTT given univalence, restricted to mere propositions.</p></li>
+<li><p><strong>Structure Identity Principle</strong> is a theorem in HoTT given univalence (see Paper VI Theorems 10.3–10.4 of our series).</p></li>
+<li><p><strong>FOLDS-equivalence-implies-identity</strong> is a theorem in HoTT given univalence (this is the Univalence Principle of Ahrens–North–Shulman–Tsementzis 2019).</p></li>
+</ul>
+<p>We now make this last statement precise.</p>
+<h2 data-number="5.3" id="the-univalence-principle-anst-2019"><span class="header-section-number">5.3</span> The Univalence Principle (ANST 2019)</h2>
+<div id="thm:up" class="theorem">
+<p><strong>Theorem 31</strong> (Univalence Principle, ANST <span class="citation" data-cites="ANST2019"></span>).  <em>For any FOLDS signature <span class="math inline">\(\mathbf{L}\)</span> and any two <span class="math inline">\(\mathbf{L}\)</span>-structures <span class="math inline">\(M, N\)</span> in HoTT, <span class="math display">\[(M\simeq_F N)\;\simeq\;(M=_{\mathrm{Str}(\mathbf{L})} N).\]</span> That is, FOLDS-equivalence is identification in the type of <span class="math inline">\(\mathbf{L}\)</span>-structures.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> The dependent-sort structure of <span class="math inline">\(\mathbf{L}\)</span> is encoded as a Reedy diagram of types in HoTT. Each relation symbol becomes a <span class="math inline">\((-1)\)</span>-truncated type, each kind a type of the appropriate truncation level. By induction on the Reedy structure, FOLDS-equivalence unfolds into the data of an equivalence at each level, which by repeated application of the Structure Identity Principle (a consequence of univalence) gives an identification. The full proof requires careful management of the level structure of <span class="math inline">\(\mathbf{L}\)</span> and the Reedy fibrant replacement; see ANST. ◻</p>
+</div>
+<div class="remark">
+<p><em>Remark 32</em>.  <a href="#thm:up" data-reference-type="ref+Label" data-reference="thm:up">31</a> subsumes Makkai’s Invariance Theorem: indeed if <span class="math inline">\(M\simeq_F N\)</span> then <span class="math inline">\(M=N\)</span> in HoTT, hence any predicate is preserved (by transport along the identification). But <a href="#thm:up" data-reference-type="ref+label" data-reference="thm:up">31</a> is stronger: it gives an <em>equivalence</em>, not just an implication. The strength comes from univalence.</p>
+</div>
+<h2 data-number="5.4" id="internalising-etcs-in-hott"><span class="header-section-number">5.4</span> Internalising ETCS in HoTT</h2>
+<p>We now sketch how ETCS is recovered as a theorem inside HoTT, given univalence and sufficient choice/EM where needed.</p>
+<div id="thm:setsmodel" class="theorem">
+<p><strong>Theorem 33</strong> (Sets in HoTT form a model of ETCS-AC).  <em>Within HoTT, define <span class="math inline">\(\mathrm{Set}\)</span> to be the type of <span class="math inline">\(0\)</span>-truncated types (sets in the sense of HoTT §3.1): <span class="math display">\[\mathrm{Set} := \Sigma_{X:\mathcal{U}}\,\mathrm{isSet}(X).\]</span> Then <span class="math inline">\(\mathrm{Set}\)</span>, with the obvious morphism structure (functions between sets) and identity and composition, is an elementary topos with NNO. Adding propositional resizing and the (provably independent) axioms EM and AC produces a model of ETCS.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> <strong>Finite limits</strong>: Sigma-types and product types are sets when their components are sets; equalisers are <span class="math inline">\(\Sigma_{x:A} (f(x) = g(x))\)</span>, also a set. <strong>Cartesian closure</strong>: function types <span class="math inline">\(A\to B\)</span> are sets when <span class="math inline">\(B\)</span> is a set (by FE). <strong>Subobject classifier</strong>: <span class="math inline">\(\Omega := \mathrm{hProp}\)</span>, the type of mere propositions; truth is the standard map. <strong>NNO</strong>: the inductive type <span class="math inline">\(\mathbb{N}\)</span>. <strong>Well-pointedness</strong>: function extensionality. <strong>AC</strong>: axiom (independent in HoTT). <strong>Two-valuedness</strong>: requires EM (axiom). <strong>Non-degeneracy</strong>: <span class="math inline">\(\mathbf{0}\not\simeq\mathbf{1}\)</span> holds in any non-trivial model. ◻</p>
+</div>
+<h2 data-number="5.5" id="internalising-izf-in-hott"><span class="header-section-number">5.5</span> Internalising IZF in HoTT</h2>
+<p>Aczel’s <span class="math inline">\(\mathbb{V}\)</span>-construction inside HoTT:</p>
+<div id="def:vhott" class="definition">
+<p><strong>Definition 34</strong> (The HoTT cumulative hierarchy).  Define the higher inductive type <span class="math inline">\(\mathbb{V}\)</span> with:</p>
+<ul>
+<li><p>Constructor <span class="math inline">\(\mathrm{set}: (A:\mathcal{U}) \to (A\to \mathbb{V})\to \mathbb{V}\)</span>.</p></li>
+<li><p>Path constructor: extensionality, <span class="math inline">\(\mathrm{set}(A,f) =_{\mathbb{V}} \mathrm{set}(B,g)\)</span> iff there is a bisimulation between the trees <span class="math inline">\((A,f)\)</span> and <span class="math inline">\((B,g)\)</span>.</p></li>
+<li><p><span class="math inline">\(0\)</span>-truncation.</p></li>
+</ul>
+</div>
+<div id="thm:vmodelizf" class="theorem">
+<p><strong>Theorem 35</strong> (HoTT Book §10.5).  <em><span class="math inline">\(\mathbb{V}\)</span> is a model of IZF in the following sense: every IZF axiom (Extensionality, Pairing, Union, Powerset, Infinity, Collection, Full Separation, <span class="math inline">\(\in\)</span>-Induction) translates to a provable HoTT statement about <span class="math inline">\(\mathbb{V}\)</span>, given propositional resizing.</em></p>
+</div>
+<h2 data-number="5.6" id="internalising-folds-in-hott-via-the-univalence-principle"><span class="header-section-number">5.6</span> Internalising FOLDS in HoTT via the Univalence Principle</h2>
+<p>The key observation: FOLDS signatures, qua small categories, are themselves objects of HoTT. FOLDS-structures qua functors are objects of HoTT. The Univalence Principle (<a href="#thm:up" data-reference-type="ref+label" data-reference="thm:up">31</a>) is the statement that the type of <span class="math inline">\(\mathbf{L}\)</span>-structures has the expected identity type. So FOLDS is not just <em>representable</em> in HoTT; the FOLDS metatheorem (Makkai’s Invariance Theorem) becomes an internal HoTT theorem.</p>
+<h1 data-number="6" id="sec:models"><span class="header-section-number">6</span> Models</h1>
+<h2 data-number="6.1" id="etcs-in-toposes"><span class="header-section-number">6.1</span> ETCS in toposes</h2>
+<p>A model of ETCS is a well-pointed elementary topos with NNO and AC. The category <span class="math inline">\(\mathrm{Set}\)</span> in ZFC is the prototype. Other models include:</p>
+<ul>
+<li><p><span class="math inline">\(\mathrm{Set}_{\mathrm{ZF+AC}}\)</span>: classical sets in ZF + AC.</p></li>
+<li><p><span class="math inline">\(\mathrm{Set}_{\mathrm{IZF+AC}}\)</span>: intuitionistic sets in IZF + AC (where AC implies EM via Diaconescu, hence equivalent to ZFC).</p></li>
+<li><p><span class="math inline">\(\mathrm{FinSet}\)</span>: finite sets satisfy A1–A6, fail A4 (no NNO), so not ETCS.</p></li>
+<li><p>Forcing extensions of <span class="math inline">\(\mathrm{Set}\)</span>: ETCS+CH and ETCS+<span class="math inline">\(\neg\)</span>CH.</p></li>
+</ul>
+<h2 data-number="6.2" id="izf-and-topos-valued-models"><span class="header-section-number">6.2</span> IZF and topos-valued models</h2>
+<p>Friedman–Aczel construction: in any cocomplete elementary topos <span class="math inline">\(\mathcal{E}\)</span> with NNO and a Mahlo-style universe object, the internal <span class="math inline">\(\mathbb{V}\)</span>-structure (the “cumulative hierarchy” inside <span class="math inline">\(\mathcal{E}\)</span>) gives a model of IZF.</p>
+<div class="theorem">
+<p><strong>Theorem 36</strong> (Friedman–Aczel–Joyal).  <em>The internal hierarchy <span class="math inline">\(V_{\mathcal{E}}\)</span> in a cocomplete topos with universe object satisfies all axioms of IZF.</em></p>
+</div>
+<p>The proof reduces each axiom (Extensionality, Pairing, Union, Powerset, Infinity, Collection, Full Separation, <span class="math inline">\(\in\)</span>-Induction) to a property of <span class="math inline">\(\mathcal{E}\)</span> that holds by definition of cocomplete elementary topos with universe.</p>
+<h2 data-number="6.3" id="folds-in-fibrations"><span class="header-section-number">6.3</span> FOLDS in fibrations</h2>
+<p>A FOLDS signature <span class="math inline">\(\mathbf{L}\)</span> corresponds to a discrete Conduché fibration over <span class="math inline">\(\mathbf{L}^{\mathrm{op}}\)</span>. Models of <span class="math inline">\(\mathbf{L}\)</span> are categories of elements/sections of this fibration.</p>
+<div id="thm:foldsfib" class="theorem">
+<p><strong>Theorem 37</strong> (Makkai <span class="citation" data-cites="Makkai1995"></span>).  <em>The category <span class="math inline">\(\mathrm{Mod}(\mathbf{L})\)</span> of <span class="math inline">\(\mathbf{L}\)</span>-structures and homomorphisms is the slice <span class="math inline">\(\mathrm{Set}/\mathbf{L}^{\mathrm{op}}\)</span> when <span class="math inline">\(\mathbf{L}\)</span> is direct (with appropriate naturality), with FOLDS-equivalence being the localisation along very-surjective maps.</em></p>
+</div>
+<h2 data-number="6.4" id="hott-in-infty1-toposes"><span class="header-section-number">6.4</span> HoTT in <span class="math inline">\((\infty,1)\)</span>-toposes</h2>
+<div id="thm:shulman" class="theorem">
+<p><strong>Theorem 38</strong> (Shulman <span class="citation" data-cites="Shulman2019"></span>).  <em>Every Grothendieck <span class="math inline">\((\infty,1)\)</span>-topos models HoTT with univalent universes.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> Shulman’s strategy: use simplicial categories of fibrant types to build an interpretation of MLTT in any presentable <span class="math inline">\((\infty,1)\)</span>-topos <span class="math inline">\(\mathcal{X}\)</span>, then use Reedy fibrant replacement and the local universe construction (Lumsdaine–Warren) to produce a univalent universe object. ◻</p>
+</div>
+<h2 data-number="6.5" id="the-square-of-interpretations"><span class="header-section-number">6.5</span> The square of interpretations</h2>
+<div class="center">
+
+</div>
+<p>with FOLDS sitting orthogonal to all three (FOLDS is a logic, not a set theory; it specifies which sentences are admissible). HoTT sits “above” the diagram: any model of ETCS, IZF, or FOLDS yields a model of HoTT after passage through the <span class="math inline">\((\infty,1)\)</span>-topos completion.</p>
+<h2 data-number="6.6" id="reverse-mathematical-strengths"><span class="header-section-number">6.6</span> Reverse-mathematical strengths</h2>
+<p>We summarise the proof-theoretic strength of each system:</p>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>System</strong></th>
+<th style="text-align: left;"><strong>Strength (consistency)</strong></th>
+<th style="text-align: left;"><strong>Reference</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ETCS</td>
+<td style="text-align: left;">ZFC <span class="math inline">\(-\)</span> Replacement</td>
+<td style="text-align: left;">McLarty 2004</td>
+</tr>
+<tr>
+<td style="text-align: left;">ETCS+R (ETCS with Replacement)</td>
+<td style="text-align: left;">ZFC</td>
+<td style="text-align: left;">McLarty 2004</td>
+</tr>
+<tr>
+<td style="text-align: left;">IZF</td>
+<td style="text-align: left;">ZF</td>
+<td style="text-align: left;">Friedman 1973</td>
+</tr>
+<tr>
+<td style="text-align: left;">IZF+AC</td>
+<td style="text-align: left;">ZFC</td>
+<td style="text-align: left;">Diaconescu 1975</td>
+</tr>
+<tr>
+<td style="text-align: left;">CZF</td>
+<td style="text-align: left;">MLTT <span class="math inline">\(+\)</span> universes</td>
+<td style="text-align: left;">Aczel 1978</td>
+</tr>
+<tr>
+<td style="text-align: left;">CZF <span class="math inline">\(+\)</span> Mahlo</td>
+<td style="text-align: left;">ZFC</td>
+<td style="text-align: left;">Rathjen</td>
+</tr>
+<tr>
+<td style="text-align: left;">HoTT (with UA)</td>
+<td style="text-align: left;">ZFC <span class="math inline">\(+\)</span> inaccessibles</td>
+<td style="text-align: left;">Shulman 2019</td>
+</tr>
+<tr>
+<td style="text-align: left;">HoTT (without UA)</td>
+<td style="text-align: left;">MLTT</td>
+<td style="text-align: left;">MLTT proof theory</td>
+</tr>
+<tr>
+<td style="text-align: left;">FOLDS (as logic)</td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">—</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The interesting feature: ETCS minus Replacement is strictly weaker than ZFC; recovering full ZFC strength requires a Replacement schema, in either material or structural form. HoTT with univalence and propositional resizing matches ZFC + countably many inaccessibles (Shulman <span class="citation" data-cites="Shulman2019"></span>), since each universe behaves as a Grothendieck universe.</p>
+<h1 data-number="7" id="sec:boundary"><span class="header-section-number">7</span> The univalence boundary</h1>
+<h2 data-number="7.1" id="definition"><span class="header-section-number">7.1</span> Definition</h2>
+<div id="def:boundary" class="definition">
+<p><strong>Definition 39</strong> (Univalence boundary).  A structural principle <span class="math inline">\(P\)</span> <em>lies on the far side of the univalence boundary</em> if <span class="math inline">\(P\)</span> holds in HoTT + UA but not in HoTT alone (i.e. in MLTT plus the assumption that identity types are well-behaved but without the univalence axiom). A principle lies on the <em>near side</em> if it holds in HoTT without UA. We say <span class="math inline">\(P\)</span> <em>straddles</em> the boundary if it is independent of UA in HoTT.</p>
+</div>
+<h2 data-number="7.2" id="far-side-principles"><span class="header-section-number">7.2</span> Far-side principles</h2>
+<div id="thm:sipneedsua" class="theorem">
+<p><strong>Theorem 40</strong> (Far-side: SIP needs UA).  <em>The Structure Identity Principle (SIP) is provably equivalent to univalence in HoTT.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> <span class="math inline">\(\mathrm{UA}\Rightarrow \mathrm{SIP}\)</span>: the standard structure-identity proof (HoTT Book §9.8) constructs the identification of structures using univalence applied to the underlying types and transport for the operations. <span class="math inline">\(\mathrm{SIP}\Rightarrow \mathrm{UA}\)</span>: instantiate SIP at the trivial signature (structure-free) to extract univalence as the special case where the only operation is the identity. ◻</p>
+</div>
+<div id="thm:foldsneedsua" class="theorem">
+<p><strong>Theorem 41</strong> (Far-side: FOLDS-equivalence-implies-identity needs UA).  <em>The principle “<span class="math inline">\(M\simeq_F N \Rightarrow M=_{\mathrm{Str}(\mathbf{L})}N\)</span>” for arbitrary FOLDS signatures <span class="math inline">\(\mathbf{L}\)</span> is equivalent to univalence (over MLTT with FE and PE).</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> <span class="math inline">\(\mathrm{UA}\Rightarrow\)</span> statement: this is <a href="#thm:up" data-reference-type="ref+label" data-reference="thm:up">31</a>. Statement <span class="math inline">\(\Rightarrow \mathrm{UA}\)</span>: take <span class="math inline">\(\mathbf{L}\)</span> to be the signature with one kind and no relations. A model is just a type. FOLDS-equivalence on this signature is type equivalence. The conclusion that equivalence is identification is exactly UA. ◻</p>
+</div>
+<h2 data-number="7.3" id="near-side-principles"><span class="header-section-number">7.3</span> Near-side principles</h2>
+<div id="thm:nnonear" class="theorem">
+<p><strong>Theorem 42</strong> (Near-side: NNO existence is near).  <em>The existence of an NNO in HoTT (as the inductive type <span class="math inline">\(\mathbb{N}\)</span>) does not require UA.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> <span class="math inline">\(\mathbb{N}\)</span> is generated by the constructors <span class="math inline">\(0:\mathbb{N}\)</span> and <span class="math inline">\(s:\mathbb{N}\to
+\mathbb{N}\)</span> together with the universal property given by the recursor; this is the elimination rule of MLTT inductive types and does not invoke UA. ◻</p>
+</div>
+<div id="thm:fefar" class="theorem">
+<p><strong>Theorem 43</strong> (Near-side: function extensionality is near, given univalence is far).  <em>Function extensionality (FE) holds in HoTT + UA but is independent of MLTT alone. However, FE itself does not imply UA.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> <span class="math inline">\(\mathrm{UA}\Rightarrow \mathrm{FE}\)</span>: Voevodsky’s proof. <span class="math inline">\(\mathrm{FE}\not\Rightarrow \mathrm{UA}\)</span>: the simplicial set model satisfies FE but without univalent universes (univalence requires more structure). ◻</p>
+</div>
+<h2 data-number="7.4" id="straddlers"><span class="header-section-number">7.4</span> Straddlers</h2>
+<div id="thm:straddlers" class="theorem">
+<p><strong>Theorem 44</strong> (Straddler: EM, AC are independent).  <em>The law of excluded middle EM and the axiom of choice AC are independent of UA in HoTT.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> EM: the classical model (sets) satisfies EM and UA; the topological model satisfies UA but not EM. Similarly AC. ◻</p>
+</div>
+<h2 data-number="7.5" id="the-boundary-as-a-square"><span class="header-section-number">7.5</span> The boundary as a square</h2>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: center;"><strong>Without UA</strong></th>
+<th style="text-align: center;"><strong>With UA</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>NNO</strong></td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>FE</strong></td>
+<td style="text-align: center;">independent</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PE</strong></td>
+<td style="text-align: center;">independent</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SIP</strong></td>
+<td style="text-align: center;">no</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>FOLDS-eq=id</strong></td>
+<td style="text-align: center;">no</td>
+<td style="text-align: center;">yes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>EM</strong></td>
+<td style="text-align: center;">independent</td>
+<td style="text-align: center;">independent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>AC</strong></td>
+<td style="text-align: center;">independent</td>
+<td style="text-align: center;">independent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Replacement</strong></td>
+<td style="text-align: center;">yes (small)</td>
+<td style="text-align: center;">yes (small)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 data-number="7.6" id="diagnostic-principles"><span class="header-section-number">7.6</span> Diagnostic principles</h2>
+<p>Given an arbitrary structural principle <span class="math inline">\(P\)</span>, how can one test whether <span class="math inline">\(P\)</span> lies on the near or far side of the boundary? We propose the following heuristic.</p>
+<div id="prop:diagnostic" class="proposition">
+<p><strong>Proposition 45</strong> (Diagnostic for far-side principles).  <em>A principle <span class="math inline">\(P\)</span> lies on the far side of the univalence boundary if and only if <span class="math inline">\(P\)</span> asserts that two equivalent structures are <em>equal</em>, where equality is in the sense of HoTT’s identity type.</em></p>
+</div>
+<div class="proof">
+<p><em>Heuristic argument.</em> The forward direction is clear: such principles are precisely instances of the SIP schema (or the more general Univalence Principle), and we showed in <a href="#thm:sipneedsua,thm:foldsneedsua" data-reference-type="ref+label" data-reference="thm:sipneedsua,thm:foldsneedsua">[thm:sipneedsua,thm:foldsneedsua]</a> that these need UA. The reverse direction relies on a meta-theoretic observation: principles that are not about identification are about <em>existence</em> or <em>construction</em>, and these are unaffected by UA’s content (which is about identity). A detailed proof requires formalisation of the schema, deferred to <span class="citation" data-cites="ANST2019"></span>. ◻</p>
+</div>
+<h2 data-number="7.7" id="what-is-on-the-boundary"><span class="header-section-number">7.7</span> What is on the boundary?</h2>
+<p>A principle is <em>on the boundary</em> if it is equivalent to UA in HoTT. Examples:</p>
+<ul>
+<li><p>SIP (<a href="#thm:sipneedsua" data-reference-type="ref+label" data-reference="thm:sipneedsua">40</a>).</p></li>
+<li><p>Univalence Principle for FOLDS (<a href="#thm:foldsneedsua" data-reference-type="ref+label" data-reference="thm:foldsneedsua">41</a>).</p></li>
+<li><p>Function extensionality + propositional extensionality + Voevodsky’s “equivalence-induction” rule (a known characterisation of UA, due to Voevodsky).</p></li>
+<li><p>Equivalence of <span class="math inline">\(\Pi\)</span>-types respecting equivalence of arguments (a partial characterisation).</p></li>
+</ul>
+<p>Principles strictly weaker than UA (i.e. near side or straddle):</p>
+<ul>
+<li><p>FE alone is strictly weaker than UA (the simplicial model with non-univalent universes satisfies FE).</p></li>
+<li><p>PE alone is strictly weaker than UA.</p></li>
+<li><p>NNO existence (theorem of MLTT, no UA needed).</p></li>
+</ul>
+<h1 data-number="8" id="sec:open"><span class="header-section-number">8</span> Open problems</h1>
+<h2 data-number="8.1" id="problem-1-contractibility-of-the-type-of-etcs-structures"><span class="header-section-number">8.1</span> Problem 1: Contractibility of the type of ETCS structures</h2>
+<div id="conj:etcscontract" class="conjecture">
+<p><strong>Conjecture 46</strong>.  <em>In HoTT + UA, the type <span class="math display">\[\mathrm{ETCS}\text{-Str} := \Sigma_{\mathcal{S}:\mathrm{Cat}_\infty}\,\Pi_{i=1}^{8}
+\mathrm{Ax}_i(\mathcal{S})\]</span> is contractible up to a fixed choice of universe parameter.</em></p>
+</div>
+<p>A proof would mirror Paper V Theorem 4.4 (contractibility of the NNO type) but at the level of the entire categorical universe. Tools needed: SIP for <span class="math inline">\(\infty\)</span>-toposes, internal <span class="math inline">\(\infty\)</span>-Yoneda (Riehl–Shulman directed type theory).</p>
+<h2 data-number="8.2" id="problem-2-cubical-agda-formalisation-of-folds"><span class="header-section-number">8.2</span> Problem 2: Cubical Agda formalisation of FOLDS</h2>
+<div id="conj:cubicalfolds" class="conjecture">
+<p><strong>Conjecture 47</strong>.  <em>There is a Cubical Agda library implementing FOLDS signatures, FOLDS-equivalence, and <span class="math inline">\(n\)</span>-level FOLDS (Szumiło 2019), and proving <a href="#thm:up" data-reference-type="ref+label" data-reference="thm:up">31</a> formally for <span class="math inline">\(n\le 2\)</span> (equivalence of FOLDS-equivalence and HoTT-identification at <span class="math inline">\(n=0,1,2\)</span>).</em></p>
+</div>
+<p>Partial work exists in the agda-categories library and in Tsementzis’s formalisation of the SIP. Full FOLDS in Cubical Agda would close the gap between Makkai 1995 and ANST 2019 syntactically.</p>
+<h2 data-number="8.3" id="problem-3-identifying-izf-axioms-with-hott-principles"><span class="header-section-number">8.3</span> Problem 3: Identifying IZF axioms with HoTT principles</h2>
+<div id="conj:izfhott" class="conjecture">
+<p><strong>Conjecture 48</strong>.  <em>There is a precise correspondence between the IZF axioms and HoTT principles of the following form:</em></p>
+<ul>
+<li><p><em>Extensionality <span class="math inline">\(\leftrightarrow\)</span> FE + PE.</em></p></li>
+<li><p><em>Pairing/Union <span class="math inline">\(\leftrightarrow\)</span> Sigma/Coproduct.</em></p></li>
+<li><p><em>Powerset <span class="math inline">\(\leftrightarrow\)</span> <span class="math inline">\(A\to\mathrm{hProp}\)</span> (with propositional resizing).</em></p></li>
+<li><p><em>Collection <span class="math inline">\(\leftrightarrow\)</span> Mahlo universe axiom.</em></p></li>
+<li><p><em><span class="math inline">\(\in\)</span>-Induction <span class="math inline">\(\leftrightarrow\)</span> accessibility predicate.</em></p></li>
+<li><p><em>Full Separation <span class="math inline">\(\leftrightarrow\)</span> subtype formation under propositional resizing.</em></p></li>
+</ul>
+</div>
+<p>Partial work: HoTT Book §10.5; Awodey–Warren; Rathjen–Tupailo on CZF.</p>
+<h1 data-number="9" id="sec:discussion"><span class="header-section-number">9</span> Discussion</h1>
+<h2 data-number="9.1" id="what-does-foundation-mean-today"><span class="header-section-number">9.1</span> What does “foundation” mean today?</h2>
+<p>The three-way comparison reveals that “foundations” has split into three orthogonal axes:</p>
+<ul>
+<li><p><strong>Material vs structural</strong>: ZFC (material) vs ETCS (structural).</p></li>
+<li><p><strong>Classical vs constructive</strong>: ZFC vs IZF/CZF.</p></li>
+<li><p><strong>0-categorical vs higher</strong>: ETCS (1-categorical) vs HoTT (<span class="math inline">\(\infty\)</span>-categorical).</p></li>
+</ul>
+<p>FOLDS is orthogonal to all three: it is a <em>logic</em>, applicable in any of the combinations.</p>
+<h2 data-number="9.2" id="practical-recommendations"><span class="header-section-number">9.2</span> Practical recommendations</h2>
+<p>For the working mathematician:</p>
+<ul>
+<li><p><strong>Pure category theory, classical</strong>: ETCS+AC.</p></li>
+<li><p><strong>Pure category theory, constructive</strong>: well-pointed Heyting topos.</p></li>
+<li><p><strong>Higher category theory, classical</strong>: HoTT+UA+AC (= simplicial sets model).</p></li>
+<li><p><strong>Higher category theory, constructive</strong>: HoTT+UA (= cubical model).</p></li>
+<li><p><strong>Pure logic, isomorphism-invariant</strong>: FOLDS over HoTT (Univalence Principle).</p></li>
+<li><p><strong>Reverse-mathematical strength</strong>: stay with ZFC variants.</p></li>
+</ul>
+<h2 data-number="9.3" id="limitations"><span class="header-section-number">9.3</span> Limitations</h2>
+<p>This paper does not prove the full Univalence Principle; we report the result of ANST 2019. We also do not address the predicativity issue: HoTT proper is predicative, IZF is impredicative, ETCS sits in between. A precise predicativity-comparative analysis is left to future work. Finally, the “square of interpretations” is not commutative on the nose; the diagram commutes up to bi-interpretation, a notion we have not fully formalised here.</p>
+<h1 data-number="10" id="sec:casestudy"><span class="header-section-number">10</span> Worked case study: monoid theory across the four foundations</h1>
+<p>To make the comparison concrete, we trace a single mathematical concept — the theory of monoids — through ETCS, IZF, FOLDS, and HoTT. This illustrates how “structural-ness” progresses from convention (ETCS) to enforced syntax (FOLDS) to internal theorem (HoTT+UA).</p>
+<h2 data-number="10.1" id="monoids-in-zfc-and-izf"><span class="header-section-number">10.1</span> Monoids in ZFC and IZF</h2>
+<p>In ZFC/IZF, a monoid is a 4-tuple <span class="math inline">\((M, \cdot, e, \text{laws})\)</span> where <span class="math inline">\(M\)</span> is a set, <span class="math inline">\(\cdot:
+M\times M\to M\)</span>, <span class="math inline">\(e\in M\)</span>, and the associativity and unit laws hold. The encoding of the 4-tuple uses Kuratowski pairs. Two monoids are <em>equal</em> iff they have the same underlying <span class="math inline">\(\in\)</span>-tree — a notion that depends on the choice of pair encoding. Monoid isomorphism is a derived notion: a bijection <span class="math inline">\(\phi: M\to N\)</span> commuting with operations. Junk theorems (e.g. “the underlying set of <span class="math inline">\(\mathbb{Z}\)</span> contains the empty set as an element”) depend on encoding.</p>
+<h2 data-number="10.2" id="monoids-in-etcs"><span class="header-section-number">10.2</span> Monoids in ETCS</h2>
+<p>In ETCS, a monoid is an object <span class="math inline">\(M\)</span> together with morphisms <span class="math inline">\(\cdot: M\times M\to M\)</span>, <span class="math inline">\(e: 1\to M\)</span>, and the equational axioms expressed using composition and the universal property of products. There is no encoding choice for <span class="math inline">\(\cdot\)</span> or <span class="math inline">\(e\)</span>. Two monoids are isomorphic iff there is an invertible morphism between them respecting the operations. The category <span class="math inline">\(\mathrm{Mon}(\mathrm{ETCS})\)</span> of monoids in ETCS is well-defined, and is the category of models of the algebraic theory of monoids.</p>
+<h2 data-number="10.3" id="monoids-in-folds"><span class="header-section-number">10.3</span> Monoids in FOLDS</h2>
+<p>A FOLDS signature for monoids:</p>
+<ul>
+<li><p>Kind <span class="math inline">\(M\)</span> (elements).</p></li>
+<li><p>Relation <span class="math inline">\(E(x,y)\)</span> (equality, parallel arrows from triangulation).</p></li>
+<li><p>Relation <span class="math inline">\(P(x,y,z)\)</span> (multiplication: <span class="math inline">\(z = x\cdot y\)</span>).</p></li>
+<li><p>Relation <span class="math inline">\(U(x)\)</span> (unit: <span class="math inline">\(x = e\)</span>).</p></li>
+</ul>
+<p>Axioms:</p>
+<ul>
+<li><p>Associativity: <span class="math display">\[\begin{aligned}
+\forall a,b,c,xy,yz,abc,abc&#39;: M.\;
+&amp; P(a,b,xy) \wedge P(xy,c,abc) \wedge P(b,c,yz) \\
+&amp; {} \wedge P(a,yz,abc&#39;) \;\Rightarrow\; E(abc, abc&#39;).
+\end{aligned}\]</span></p></li>
+<li><p>Left unit: <span class="math inline">\(\forall e, x, ex: M.\, U(e) \wedge P(e,x,ex) \Rightarrow E(ex, x)\)</span>.</p></li>
+<li><p>Right unit: dual.</p></li>
+</ul>
+<p>A FOLDS-equivalence between two monoids <span class="math inline">\(M, N\)</span> is a span via very surjective homomorphisms, which here coincides with the usual monoid isomorphism. Makkai’s invariance theorem guarantees: any FOLDS sentence holding in <span class="math inline">\(M\)</span> also holds in <span class="math inline">\(N\)</span>. There is no way to express “<span class="math inline">\(M\)</span> is the monoid whose elements are von Neumann ordinals <span class="math inline">\(\le 5\)</span>” in FOLDS, since this is non-isomorphism-invariant.</p>
+<h2 data-number="10.4" id="monoids-in-hott"><span class="header-section-number">10.4</span> Monoids in HoTT</h2>
+<p>In HoTT, a monoid is a Sigma-type: <span class="math display">\[\mathrm{Monoid} := \Sigma_{M:\mathrm{Set}}\Sigma_{\cdot: M\to M\to M}\Sigma_{e:M}
+\bigl(\mathrm{Assoc}(\cdot)\times \mathrm{LUnit}(\cdot,e)\times \mathrm{RUnit}(\cdot,e)\bigr).\]</span> The components are: a set, a binary operation, an identity element, and proofs (mere propositions) of the laws.</p>
+<div id="thm:sipmonoid" class="theorem">
+<p><strong>Theorem 49</strong> (Structure Identity Principle for monoids).  <em>For two monoids <span class="math inline">\(M, N: \mathrm{Monoid}\)</span>: <span class="math display">\[(M =_{\mathrm{Monoid}} N) \;\simeq\; \mathrm{MonoidIso}(M, N)\]</span> where <span class="math inline">\(\mathrm{MonoidIso}(M,N)\)</span> is the type of monoid isomorphisms.</em></p>
+</div>
+<div class="proof">
+<p><em>Sketch.</em> By Sigma-induction on <span class="math inline">\(M, N\)</span> and SIP for each component: the sets are identified by UA, the operations and identity are transported, the laws are mere propositions and so identified automatically. The full proof is a routine application of HoTT Book §9.8. ◻</p>
+</div>
+<h2 data-number="10.5" id="comparison"><span class="header-section-number">10.5</span> Comparison</h2>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"><strong>Equality</strong></th>
+<th style="text-align: left;"><strong>Iso</strong></th>
+<th style="text-align: left;"><strong>SIP-statement</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ZFC</td>
+<td style="text-align: left;">encoding-dependent</td>
+<td style="text-align: left;">derived</td>
+<td style="text-align: left;">metatheorem (sociological)</td>
+</tr>
+<tr>
+<td style="text-align: left;">IZF</td>
+<td style="text-align: left;">encoding-dependent</td>
+<td style="text-align: left;">derived</td>
+<td style="text-align: left;">metatheorem</td>
+</tr>
+<tr>
+<td style="text-align: left;">ETCS</td>
+<td style="text-align: left;">up to unique iso</td>
+<td style="text-align: left;">primitive</td>
+<td style="text-align: left;">metatheorem (categorical)</td>
+</tr>
+<tr>
+<td style="text-align: left;">FOLDS</td>
+<td style="text-align: left;">up to FOLDS-eq</td>
+<td style="text-align: left;">primitive</td>
+<td style="text-align: left;">syntactic (invariance theorem)</td>
+</tr>
+<tr>
+<td style="text-align: left;">HoTT+UA</td>
+<td style="text-align: left;">SIP-statement</td>
+<td style="text-align: left;">primitive</td>
+<td style="text-align: left;">internal theorem</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The rightmost column is the key: only HoTT+UA makes the SIP an internal theorem, expressed in the same language as the structures themselves. ETCS makes it a category-theoretic metatheorem (true of every property of the category of sets). FOLDS makes it a syntactic invariance theorem (true of every well-formed FOLDS sentence). ZFC and IZF make it a sociological convention. Each escalation reduces the “trust assumption” needed.</p>
+<h1 data-number="11" id="sec:practical"><span class="header-section-number">11</span> Practical foundational choice</h1>
+<h2 data-number="11.1" id="which-foundation-for-which-task"><span class="header-section-number">11.1</span> Which foundation for which task?</h2>
+<p>The foundational pluralism we have surveyed is not just a curiosity; it has practical consequences for formalisation projects.</p>
+<ul>
+<li><p><strong>Number theory and analysis</strong>: ZFC variants are best, due to the deep classical results requiring AC and EM. Lean/Mathlib uses ZFC (via the type-theoretic formalisation of <span class="math inline">\(\mathsf{ZFSet}\)</span> inside Lean).</p></li>
+<li><p><strong>Category theory and topos theory</strong>: ETCS or HoTT+UA. ETCS is sufficient for 1-categorical structuralism; HoTT+UA is needed for higher-categorical structuralism (the theory of <span class="math inline">\((\infty,1)\)</span>-categories).</p></li>
+<li><p><strong>Synthetic differential geometry, synthetic homotopy theory</strong>: HoTT, naturally, since the synthetic methods rely on the type-theoretic semantics.</p></li>
+<li><p><strong>Constructive analysis and computer-verified mathematics</strong>: CZF or HoTT without UA, where computational interpretation is crucial.</p></li>
+<li><p><strong>Foundations of foundations</strong> (model theory of foundations themselves): IZF and topos theory provide the best general-purpose framework.</p></li>
+<li><p><strong>Pedagogy</strong>: ETCS is arguably the cleanest entry point, since it explains “what set theory is really doing” without the encoding noise.</p></li>
+</ul>
+<h2 data-number="11.2" id="foundational-consensus-or-pluralism"><span class="header-section-number">11.2</span> Foundational consensus or pluralism?</h2>
+<p>A plausible reading of the present landscape is that no single foundation dominates; each excels in a particular domain. This contrasts with the 20th century, where ZFC was dominant. We propose to call the current situation <em>principled pluralism</em>: each foundation is correct for its target domain, and translation theorems (McLarty, Friedman–Aczel, ANST) tie them together.</p>
+<h2 data-number="11.3" id="open-foundational-debates"><span class="header-section-number">11.3</span> Open foundational debates</h2>
+<p>Several debates remain unresolved as of 2026:</p>
+<ul>
+<li><p><em>Predicativity vs impredicativity</em>: HoTT proper is predicative; IZF is impredicative. The right level of impredicativity for a unified foundation is contested.</p></li>
+<li><p><em>Constructivity vs classicality</em>: HoTT defaults to constructive but is compatible with EM; IZF is constructive; ZFC is classical; FOLDS is logic-agnostic.</p></li>
+<li><p><em>Higher coherence</em>: how high should the dimensional ladder go? HoTT goes to <span class="math inline">\(\infty\)</span>; FOLDS-Szumiło goes to arbitrary <span class="math inline">\(n\)</span>; ETCS stops at <span class="math inline">\(1\)</span>.</p></li>
+<li><p><em>The role of universes</em>: HoTT has a Russellian hierarchy; ETCS has none (the category of all sets is the universe); IZF has none (the proper class of all sets); FOLDS has small categories of structures.</p></li>
+</ul>
+<h1 data-number="12" id="sec:conclusion"><span class="header-section-number">12</span> Conclusion</h1>
+<p>We have presented ETCS, IZF, and FOLDS as three orthogonal responses to the same underlying problem: how to build a foundation in which only structurally relevant assertions are formulable or provable. ETCS attacks the problem at the level of <em>ontology</em> (replace sets-with-membership by sets-with-functions). IZF attacks the problem at the level of <em>logic</em> (move to intuitionistic logic, where structural properties are easier to certify). FOLDS attacks the problem at the level of <em>syntax</em> (build a logic in which only invariant predicates are expressible).</p>
+<p>HoTT—in particular HoTT + UA—synthesises all three. The Structure Identity Principle recapitulates the structural ontology of ETCS at the level of types. Constructive HoTT (without EM, without AC) shares the logical environment of IZF. The Univalence Principle recapitulates the syntactic invariance of FOLDS as a metatheorem.</p>
+<p>The univalence boundary precisely separates: the principles that hold in MLTT alone (the near side: NNO, induction, basic structural reasoning), and the principles requiring univalence (the far side: SIP, FOLDS-equivalence-as-identity, the full equivalence principle). Mapping out this boundary is, we suggest, one of the more illuminating exercises in 2026 foundations.</p>
+<h1 class="unnumbered" id="acknowledgements">Acknowledgements</h1>
+<p>The author thanks colleagues at the YonedaAI Research Collective for discussions on structuralism and on FOLDS-style invariance proofs. This paper continues the foundations programme of our prior series (Papers I–VI on HoTT and structural foundations), to which the reader is referred for the technical prerequisites.</p>
+<div class="thebibliography">
+<p><span>99</span></p>
+<p>F. W. Lawvere, <em>An elementary theory of the category of sets</em>, Proceedings of the National Academy of Sciences 52 (1964), 1506–1511. Reprinted with author’s commentary, TAC Reprints 11 (2005).</p>
+<p>F. W. Lawvere and R. Rosebrugh, <em>Sets for Mathematics</em>, Cambridge University Press, 2003.</p>
+<p>C. McLarty, <em>Exploring categorical structuralism</em>, Philosophia Mathematica 12 (2004), 37–53.</p>
+<p>M. Makkai, <em>First-order logic with dependent sorts, with applications to category theory</em>, Preprint, McGill University, 1995. Available at <a href="https://www.math.mcgill.ca/makkai/folds/foldsinpdf/FOLDS.pdf" class="uri">https://www.math.mcgill.ca/makkai/folds/foldsinpdf/FOLDS.pdf</a>.</p>
+<p>H. Friedman, <em>The consistency of classical set theory relative to a set theory with intuitionistic logic</em>, Journal of Symbolic Logic 38 (1973), 315–319.</p>
+<p>L. Crosilla, <em>Set theory: constructive and intuitionistic ZF</em>, Stanford Encyclopedia of Philosophy, Spring 2024 edition, ed. E. N. Zalta.</p>
+<p>P. Aczel, <em>The type theoretic interpretation of constructive set theory</em>, in Logic Colloquium ’77, North-Holland (1978), 55–66.</p>
+<p>S. Awodey, <em>Structuralism, invariance, and univalence</em>, Philosophia Mathematica 22 (2014), 1–11.</p>
+<p>The Univalent Foundations Program, <em>Homotopy Type Theory: Univalent Foundations of Mathematics</em>, Institute for Advanced Study, 2013.</p>
+<p>M. Shulman, <em>All <span class="math inline">\((\infty,1)\)</span>-toposes have strict univalent universes</em>, arXiv:1904.07004 (2019).</p>
+<p>B. Ahrens, P. R. North, M. Shulman, D. Tsementzis, <em>The Univalence Principle</em>, arXiv:2102.06275 (2019/2021).</p>
+<p>E. Palmgren, <em>Categories with families and first-order logic with dependent sorts</em>, arXiv:1605.01586 (2016).</p>
+<p>N. Rasekh, <em>Every elementary higher topos has a natural number object</em>, arXiv:1809.01734 (2018), TAC 37(13) 2021.</p>
+<p>V. Voevodsky, <em>Univalent foundations of mathematics</em>, preprint, IAS Princeton (2010).</p>
+<p>J. M. E. Hyland, <em>The effective topos</em>, in The L. E. J. Brouwer Centenary Symposium, North-Holland (1982), 165–216.</p>
+<p>J. Myhill, <em>Constructive set theory</em>, Journal of Symbolic Logic 40 (1975), 347–382.</p>
+<p>A. Joyal and I. Moerdijk, <em>Algebraic Set Theory</em>, LMS Lecture Note Series 220, Cambridge University Press (1995).</p>
+<p>D. Tsementzis, <em>First-order logic with isomorphism</em>, arXiv:1603.03092 (2016/2017).</p>
+<p>S. Awodey, <em>From sets to types to categories to sets</em>, in Foundational Theories of Classical and Constructive Mathematics, Springer (2009).</p>
+<p>E. Riehl and M. Shulman, <em>A type theory for synthetic <span class="math inline">\(\infty\)</span>-categories</em>, Higher Structures 1 (2017), 147–224, arXiv:1705.07442.</p>
+<p>K. Szumiło, <em>Frames in cofibration categories</em>, Journal of Homotopy and Related Structures 14 (2019), 345–378. See also: <em><span class="math inline">\(n\)</span>-FOLDS and Reedy fibrant diagrams</em>, preprint, 2019.</p>
+</div>

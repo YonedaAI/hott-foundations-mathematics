@@ -1,0 +1,14 @@
+cabal-version:      2.4
+name:               coalgebraic-transcendentals
+version:            0.1.0.0
+synopsis:           Coalgebraic stream demos for pi and e
+license:            BSD-3-Clause
+build-type:         Simple
+
+executable coalg-trans
+  main-is:          Main.hs
+  other-modules:    Streams, Bisimulation, Properties, Proofs
+  default-language: Haskell2010
+  ghc-options:      -Wall
+  build-depends:    base >= 4.10 && < 5
+                  , QuickCheck >= 2.13

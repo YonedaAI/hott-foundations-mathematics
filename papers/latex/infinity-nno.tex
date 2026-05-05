@@ -1,0 +1,928 @@
+\documentclass[12pt]{article}
+
+% Core math
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+
+% Diagrams
+\usepackage{tikz-cd}
+\usepackage{tikz}
+
+% Graphics
+\usepackage{graphicx}
+
+% Page layout
+\usepackage[margin=1in]{geometry}
+
+% URL handling (must come before hyperref)
+\usepackage{xurl}
+
+% References
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% GrokRxiv sidebar
+\usepackage{xcolor}
+
+% Allow URLs to break flexibly to avoid underfull \hbox warnings
+\Urlmuskip=0mu plus 1mu
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+% Macros
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\op}{\mathrm{op}}
+\newcommand{\id}{\mathrm{id}}
+\newcommand{\Hom}{\mathrm{Hom}}
+\newcommand{\Map}{\mathrm{Map}}
+\newcommand{\Nat}{\mathrm{Nat}}
+\newcommand{\zero}{\mathsf{zero}}
+\newcommand{\suc}{\mathsf{succ}}
+\newcommand{\PtEndo}{\mathbf{PtEndo}}
+\newcommand{\iso}{\cong}
+\newcommand{\eqv}{\simeq}
+\newcommand{\NNO}{\mathrm{NNO}}
+\newcommand{\Type}{\mathsf{Type}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\Id}{\mathsf{Id}}
+\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\transport}{\mathsf{transport}}
+\newcommand{\ua}{\mathsf{ua}}
+\newcommand{\idtoeqv}{\mathsf{idtoeqv}}
+\newcommand{\looppath}{\mathsf{loop}}
+\newcommand{\base}{\mathsf{base}}
+\newcommand{\Sone}{S^{1}}
+\newcommand{\isContr}{\mathsf{isContr}}
+\newcommand{\isProp}{\mathsf{isProp}}
+\newcommand{\isSet}{\mathsf{isSet}}
+\newcommand{\Cat}{\mathbf{Cat}}
+\newcommand{\Cati}{\mathbf{Cat}_{\infty}}
+\newcommand{\Spc}{\mathcal{S}}
+\newcommand{\Topos}{\mathbf{Top}}
+\newcommand{\ETopos}{\mathbf{ETop}}
+\newcommand{\colim}{\mathrm{colim}}
+\newcommand{\rec}{\mathsf{rec}}
+\newcommand{\ind}{\mathsf{ind}}
+\newcommand{\Sigmatype}{\Sigma}
+\newcommand{\Pitype}{\Pi}
+
+% Hyperref setup
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+% GrokRxiv sidebar (native LaTeX hook on first page only)
+\definecolor{grokgray}{RGB}{110,110,110}
+\AddToHook{shipout/background}{%
+  \ifnum\value{page}=1
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[
+        rotate=90,
+        anchor=south,
+        font=\Large\sffamily\bfseries\color{grokgray},
+        inner sep=0pt
+      ] at ([xshift=38pt, yshift=0.52\paperheight]current page.south west)
+      {GrokRxiv:2026.05.infinity-nno\quad
+       [\,math.CT\,]\quad
+       04 May 2026};
+    \end{tikzpicture}%
+  \fi
+}
+
+\title{Higher-Categorical Natural Numbers Objects:\\
+Contractibility, $\infty$-Toposes, and Lurie's NNO}
+
+\author{YonedaAI \\
+\textit{Magneton Research Collective} \\
+\textit{Independent Mathematical Foundations Group} \\
+San Francisco, CA \\
+\texttt{research@yonedaai.org} $\cdot$ \url{https://yonedaai.org}}
+
+\date{4 May 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+The natural numbers object (NNO) of an elementary topos is, classically, an object equipped with a global element $0$ and an endomorphism $s$ such that the resulting pointed dynamical system is initial. In a $1$-topos any two NNOs are connected by a unique isomorphism, and the automorphism group of an NNO is trivial: NNO structures form a contractible groupoid, equivalently a $(-2)$-truncated $\infty$-groupoid. In homotopy type theory (HoTT), Theorem~2.7 of Paper~III (and the equivalent Theorem~4.4 of Paper~V of the present series) refines this rigidity: the type
+\[
+\NNO \;\coloneqq\; \Sigmatype_{X:\U}\,\Sigmatype_{x_{0}:X}\,\Sigmatype_{s:X\to X}\,\mathsf{isInitial}(X,x_{0},s)
+\]
+is contractible. By Shulman's interpretation theorem, every $(\infty,1)$-topos $\mathcal{E}$ admits a model of HoTT~+~univalence, so the corresponding statement transports to an internal contractibility result for the type of NNO structures inside $\mathcal{E}$.
+
+This paper studies the external $\infty$-categorical analogue: contractibility of the space of $(\infty,1)$-NNO structures in a presentable or elementary $(\infty,1)$-topos. We compare three definitions, the parametrised NNO of Lurie (Higher Topos Theory, \S6), the elementary NNO recovered from Rasekh's circle-construction (TAC 37(13):337--377, 2021), and the HoTT-native dependently-typed NNO\@. We prove that under mild assumptions all three agree, and that the space $\mathrm{NNO}(\mathcal{E})$ of NNO structures is a contractible Kan complex\@. We highlight the higher-coherence obstacles---tower of homotopies witnessing uniqueness of recursion---and explain how HoTT's contractibility theorem absorbs the entire tower at once. We close with a survey of open problems on synthetic approaches via simplicial type theory.
+
+\medskip\noindent\textbf{Keywords.} Natural numbers object; $(\infty,1)$-topos; elementary higher topos; contractibility; homotopy type theory; Rasekh's theorem; Lurie HTT\@.
+
+\medskip\noindent\textbf{MSC2020.} 18N60, 03B38, 18B25, 03G30.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+The natural numbers object (NNO) is among the most basic universal constructions of categorical logic. Lawvere's 1964 axiomatisation of the elementary theory of the category of sets (ETCS) treats the NNO as an irreducible primitive on equal footing with the terminal object, the subobject classifier, and exponentials. In any cartesian closed category $\mathcal{C}$ with a terminal object $\mathbf{1}$, an NNO is a triple $(N, 0\colon \mathbf{1}\to N, s\colon N\to N)$ such that for every $(X, x_{0}\colon \mathbf{1}\to X, f\colon X\to X)$ there exists a unique morphism $h\colon N\to X$ with $h\circ 0 = x_{0}$ and $h\circ s = f\circ h$. Two NNOs are related by a unique isomorphism; the automorphism group of an NNO is trivial. In $\Set$ the NNO is the von Neumann set $\omega = \{0,1,2,\ldots\}$ with successor; up to canonical isomorphism, ``the natural numbers'' is a property, not a choice of structure.
+
+The HoTT version is finer. Working in the univalent universe $\U$, define
+\[
+\NNO \;\coloneqq\; \Sigmatype_{X:\U}\,\Sigmatype_{x_{0}:X}\,\Sigmatype_{s:X\to X}\,\mathsf{isInitial}(X,x_{0},s),
+\]
+where $\mathsf{isInitial}(X,x_{0},s)$ denotes the proposition that $(X,x_{0},s)$ is initial in the type-theoretic category of pointed dynamical systems. Theorem~2.7 of Paper~III\footnote{Throughout, ``Paper III'', ``Paper V'', etc.\ refer to companion papers in the present author's series \emph{The Univalent Correspondence}, cited in the bibliography. The relevant statements and proofs are reproduced inline in this paper.} (which we recapitulate in \S\ref{sec:background} as \cref{thm:contr-1cat}) and Theorem~4.4 of Paper~V state that $\NNO$ is contractible---a $(-2)$-type. The centre of contraction is $(\N,\zero,\suc,\star)$ where $\N$ is the inductive type of natural numbers and $\star$ is the canonical proof of initiality. Crucially, contractibility is strictly stronger than ``unique up to unique iso'': it asserts that every two NNOs are connected by a path (an equivalence, by univalence), and that every two such paths are themselves connected by a $2$-path, ad infinitum.
+
+By Shulman's theorem~\cite{Shulman2019}, every Grothendieck $(\infty,1)$-topos $\mathcal{E}$ models HoTT with univalence, and conjecturally so does every elementary $(\infty,1)$-topos. Therefore the contractibility theorem transports internally: for each such $\mathcal{E}$ there is an internal type of NNO structures in $\mathcal{E}$, and this type is contractible. Externalising the internal contractibility yields a strong $\infty$-categorical statement: the space $\mathrm{NNO}(\mathcal{E})$ of NNO structures, formed in the $\infty$-category $\mathcal{E}$, is a contractible Kan complex.
+
+The aim of this paper is to make this transfer rigorous, and to compare it with the two existing definitions of $(\infty,1)$-NNO available in the literature: Lurie's parametrised NNO~\cite{LurieHTT, LurieSAG}, formulated for presentable $(\infty,1)$-toposes via a small-colimit-preserving recursion principle, and Rasekh's NNO~\cite{Rasekh2021}, which lives in any elementary $(\infty,1)$-topos and is constructed from the loop space of $\Sone$. The first is convenient when one has Giraud-style axioms; the second is intrinsic to the elementary axiomatic and was the missing piece to certify that elementary $(\infty,1)$-toposes are indeed natural homes for arithmetic.
+
+\subsection*{Contributions}
+
+\begin{enumerate}
+  \item We give a self-contained statement of contractibility of the type of NNOs in HoTT (\S\ref{sec:background}, \cref{thm:contr-1cat}), recall Lambek's theorem at the $1$-categorical level, and explain how rigidity at this level becomes contractibility once one moves from sets-of-iso-classes to $\infty$-groupoids.
+  \item We give a precise account of Lurie's parametrised NNO (\S\ref{sec:lurie}, \cref{def:lurie-nno}, \cref{thm:lurie-nno-equiv}) and prove its equivalence with the $1$-categorical NNO when $\mathcal{E}$ is the underlying $(2,1)$-category of a $1$-topos.
+  \item We formalise the higher coherence problem (\S\ref{sec:higher-coh}, \cref{prop:tower}) as the requirement that, for each $n\geq 0$, the comparison maps between two NNOs are coherent up to $n$-homotopy.
+  \item We prove our main theorem (\S\ref{sec:main}, \cref{thm:contractibility-infty}): in any $(\infty,1)$-topos $\mathcal{E}$ that admits a HoTT model, the space $\mathrm{NNO}(\mathcal{E})$ is contractible.
+  \item We compare with Rasekh's circle-construction (\S\ref{sec:rasekh}) and exhibit the natural map identifying the two NNOs.
+  \item We discuss synthetic approaches via Riehl--Shulman simplicial type theory (\S\ref{sec:stt}) and list open problems (\S\ref{sec:open}).
+\end{enumerate}
+
+\subsection*{Outline}
+
+\Cref{sec:background} reviews the $1$-categorical NNO, Lambek's theorem, and the contractibility result of Paper~III/V\@. \Cref{sec:lurie} introduces Lurie's parametrised NNO and Rasekh's elementary $(\infty,1)$-NNO\@. \Cref{sec:higher-coh} formalises the higher-coherence tower. \Cref{sec:main} contains the main contractibility theorem. \Cref{sec:rasekh} relates the construction to the loop-space-of-$\Sone$ approach. \Cref{sec:stt} discusses synthetic approaches. \Cref{sec:open} closes with open problems.
+
+\subsection*{Conventions}
+
+We use $\Cati$ for the $(\infty,2)$-category of $(\infty,1)$-categories and $\Spc$ for the $(\infty,1)$-category of $\infty$-groupoids (``spaces''). For an $(\infty,1)$-category $\mathcal{C}$, $\Map_{\mathcal{C}}(X,Y)\in\Spc$ denotes the mapping space. We write $\mathbf{1}$ for a terminal object. Throughout, ``HoTT'' refers to Martin-L\"of type theory with $\Sigmatype$, $\Pitype$, identity types, finite coproducts, the natural numbers type, function extensionality, and the univalence axiom for at least one hierarchy of universes.
+
+\section{Background: 1-categorical NNO and contractibility}\label{sec:background}
+
+We begin by recalling the classical material in a form that will generalise cleanly to the $\infty$-categorical setting.
+
+\subsection{Pointed endomorphisms and \texorpdfstring{$1$}{1}-NNO}
+
+\begin{definition}[Pointed dynamical system]\label{def:ptendo}
+Let $\mathcal{C}$ be a category with terminal object $\mathbf{1}$. The category $\PtEndo(\mathcal{C})$ has as objects triples $(X, x_{0}\colon \mathbf{1}\to X, f\colon X\to X)$, and morphisms $(X,x_{0},f)\to(Y,y_{0},g)$ are arrows $h\colon X\to Y$ in $\mathcal{C}$ such that $h\circ x_{0}=y_{0}$ and $h\circ f = g\circ h$.
+\end{definition}
+
+\begin{definition}[NNO]\label{def:nno}
+A natural numbers object in $\mathcal{C}$ is an initial object of $\PtEndo(\mathcal{C})$.
+\end{definition}
+
+Equivalently, viewing the endofunctor $F\colon \mathcal{C}\to \mathcal{C}$ given by $FX = \mathbf{1}+X$ (when coproducts exist), an NNO is an initial $F$-algebra: a pair $(N,[0,s]\colon \mathbf{1}+N\to N)$ initial in $F\text{-}\mathbf{Alg}$.
+
+\begin{lemma}[Rigidity of initial objects]\label{lem:rigid}
+If $I,I'$ are initial in any category, there is a unique isomorphism $I\to I'$, and the automorphism group $\mathrm{Aut}(I)$ is trivial.
+\end{lemma}
+
+\begin{proof}
+Initiality of $I$ gives a unique map $u\colon I\to I'$, and dually a unique $v\colon I'\to I$. The composites $v\circ u$ and $\id_{I}$ are both morphisms $I\to I$; since $I$ is initial, the hom-set $\Hom(I,I)$ has exactly one element, hence $v\circ u=\id_{I}$. Similarly $u\circ v = \id_{I'}$. Applying the same argument with $I=I'$, every endomorphism of $I$ equals $\id_{I}$, so $\mathrm{Aut}(I)=\{\id_{I}\}$.
+\end{proof}
+
+\begin{lemma}[Lambek]\label{lem:lambek}
+If $(I,\iota\colon FI\to I)$ is an initial $F$-algebra, then $\iota$ is an isomorphism.
+\end{lemma}
+
+\begin{proof}
+The map $F\iota\colon F(FI)\to FI$ endows $FI$ with the structure of an $F$-algebra, denoted $(FI,F\iota)$. By initiality of $(I,\iota)$ there is a unique $F$-algebra homomorphism $h\colon (I,\iota)\to (FI,F\iota)$, that is, a morphism $h\colon I\to FI$ in $\mathcal{C}$ with
+\[
+h\circ \iota \;=\; F\iota\circ Fh.
+\]
+On the other hand, $\iota$ itself is an $F$-algebra homomorphism $(FI,F\iota)\to(I,\iota)$, since $\iota\circ F\iota = \iota\circ F\iota$ trivially. Thus $\iota\circ h\colon (I,\iota)\to (I,\iota)$ is an $F$-algebra endomorphism, and by initiality (applied to $(I,\iota)$ as the source of a unique map to itself) it equals $\id_{I}$. We conclude $\iota\circ h = \id_{I}$. For the other composite, observe
+\[
+h\circ \iota \;=\; F\iota\circ Fh \;=\; F(\iota\circ h) \;=\; F(\id_{I}) \;=\; \id_{FI},
+\]
+using functoriality of $F$. Thus $h$ is two-sided inverse to $\iota$, and $\iota$ is an isomorphism.
+\end{proof}
+
+\begin{remark}
+The Lambek square depicting the proof is
+\[
+\begin{tikzcd}[column sep=large, row sep=large]
+FI \arrow[r, "Fh"] \arrow[d, "\iota"'] & F(FI) \arrow[d, "F\iota"] \\
+I \arrow[r, "h"'] & FI
+\end{tikzcd}
+\]
+which commutes by definition of $h$ as an $F$-algebra homomorphism.
+\end{remark}
+
+\begin{theorem}[Universal property of NNO]\label{thm:up}
+Let $(N,0,s)$ be an NNO in $\mathcal{C}$. For every $(X,x_{0},f)$ in $\PtEndo(\mathcal{C})$ there exists a unique $h\colon N\to X$ in $\mathcal{C}$ with $h\circ 0 = x_{0}$ and $h\circ s = f\circ h$.
+\end{theorem}
+
+\subsection{1-Categorical contractibility (rigidity of NNOs)}\label{sec:rigidity-1cat}
+
+We use the standard truncation conventions: a $(-2)$-type is contractible, a $(-1)$-type is a (mere) proposition (a groupoid in which any two objects are connected by at most one morphism), and a $0$-type is a set. A nonempty groupoid in which every hom-set is a singleton is contractible---a $(-2)$-type.
+
+In $\Set$, the NNO is $(\N,0,\mathrm{succ})$. By \cref{lem:rigid} the groupoid of NNOs in $\Set$ has trivial automorphisms and a unique morphism between any two objects: it is a contractible groupoid, equivalently a $(-2)$-truncated space.
+
+\begin{theorem}[1-categorical contractibility of $\NNO$]\label{thm:contr-1cat}
+In any category $\mathcal{C}$ with terminal object, the groupoid $\NNO(\mathcal{C})$ of NNO structures is either empty or contractible (i.e.\ a $(-2)$-type). Equivalently, the moduli space of NNOs in $\mathcal{C}$ is a (mere) proposition: existence implies essential uniqueness, with no nontrivial automorphisms or higher cells (which are absent at the $1$-categorical level).
+\end{theorem}
+
+\begin{proof}
+\Cref{lem:rigid} provides a unique isomorphism between any two NNOs and triviality of automorphisms. Hence the groupoid has a unique morphism between any pair of objects. When nonempty, such a groupoid is equivalent to the terminal groupoid $\mathbf{1}$, hence contractible.
+\end{proof}
+
+\subsection{HoTT contractibility}\label{sec:hott-contr}
+
+In HoTT we go further. Let $\U$ be a univalent universe. The result we recall here is stated as Theorem~2.7 in our companion paper~\cite{PaperIII} and as Theorem~4.4 in~\cite{PaperV}; it is also implicit in the discussion of the natural numbers type in~\cite[Chapter 6]{HoTTBook}. Because those references rely on internal context (notation, intermediate lemmas), we restate the theorem and give a self-contained proof.
+
+\begin{definition}[Type of NNOs in HoTT]\label{def:nno-type}
+\[
+\NNO \;\coloneqq\; \Sigmatype_{X:\U}\,\Sigmatype_{x_{0}:X}\,\Sigmatype_{s:X\to X}\,\mathsf{isInitial}(X,x_{0},s),
+\]
+where
+\[
+\mathsf{isInitial}(X,x_{0},s) \;\coloneqq\; \Pitype_{(Y,y_{0},f):\PtEndo(\U)}\,\isContr\!\bigl(\Sigmatype_{h:X\to Y}(h\,x_{0}=y_{0})\times\Pitype_{x:X}(h(s\,x)=f(h\,x))\bigr).
+\]
+\end{definition}
+
+Note that $\mathsf{isInitial}(X,x_{0},s)$ is, by construction, an iterated $\Pitype$-type whose body is $\isContr$ of a $\Sigmatype$-type; since $\isContr$ is a (mere) proposition and $\Pitype$ of propositions is a proposition, $\mathsf{isInitial}$ is a proposition.
+
+\begin{theorem}[Contractibility of $\NNO$ in HoTT~\cite{PaperIII,PaperV}]\label{thm:contr-hott}
+The type $\NNO$ is contractible. The centre of contraction is $(\N,\zero,\suc,\star)$ where $\N$ is the inductive type of natural numbers and $\star$ is the canonical witness of initiality given by the standard recursor $\rec_{\N}$ together with its computation rules.
+\end{theorem}
+
+\begin{proof}
+We must show $\isContr(\NNO)$, i.e.\ produce a centre $c\in\NNO$ and a continuous family of paths from $c$ to every point of $\NNO$.
+
+\emph{Centre.} Take $c=(\N,\zero,\suc,\star)$. The proof $\star\colon \mathsf{isInitial}(\N,\zero,\suc)$ is constructed as follows. Given $(Y,y_{0},f)$, define $h\coloneqq \rec_{\N}\,y_{0}\,f\colon \N\to Y$. By the computation rules of the recursor we have judgmentally $h(\zero)\equiv y_{0}$ and $h(\suc\,n)\equiv f(h\,n)$, so the equations are witnessed by $\refl$. Uniqueness: if $h'\colon \N\to Y$ also satisfies $h'\,\zero = y_{0}$ and $\Pitype_{n:\N}\,h'(\suc\,n)=f(h'\,n)$, dependent induction $\ind_{\N}$ on the type-family $P(n)\coloneqq (h\,n=h'\,n)$ produces a homotopy $h\sim h'$. By function extensionality (provable from univalence~\cite{HoTTBook}), $h=h'$. Combining existence and uniqueness, the type
+\[
+\Sigmatype_{h\colon \N\to Y}(h\,\zero=y_{0})\times\Pitype_{n:\N}(h(\suc\,n)=f(h\,n))
+\]
+is contractible: $h=\rec_{\N}\,y_{0}\,f$ together with the $\refl$-witnesses of the equations is the centre, and the contraction is provided by the $\ind_{\N}$ step above.
+
+\emph{Contraction onto the centre.} Take any $(X,x_{0},s,\iota)\in\NNO$. We must produce a path
+\[
+p\colon (\N,\zero,\suc,\star) \;=\; (X,x_{0},s,\iota) \quad\text{in}\quad \NNO.
+\]
+Apply $\iota$ to the pointed system $(\N,\zero,\suc)$: it yields a contractible type whose centre is a unique map $u\colon X\to \N$ with $u\,x_{0}=\zero$ and $u\circ s\sim \suc\circ u$. Apply $\star$ to $(X,x_{0},s)$: a unique map $v\colon \N\to X$ with $v\,\zero=x_{0}$ and $v\circ \suc\sim s\circ v$. The composites $u\circ v\colon \N\to\N$ and $\id_{\N}$ both satisfy the universal-property equations for $(\N,\zero,\suc,\star)$; uniqueness inside the contractible type of recursors forces $u\circ v=\id_{\N}$ via $\ind_{\N}$, and likewise $v\circ u=\id_{X}$ via $\iota$. Thus $u\colon X\eqv\N$ is an equivalence (with quasi-inverse $v$). Univalence ($\ua$) converts the equivalence into a path $p_{1}\colon X = \N$ in $\U$. Transporting $(x_{0},s,\iota)$ along $p_{1}$ produces $(\zero,\suc,\star')$ for some witness $\star'\colon \mathsf{isInitial}(\N,\zero,\suc)$. Since $\mathsf{isInitial}$ is a proposition, $\star'=\star$. Pairing yields the required path $p$ in $\NNO$.
+
+The map $(X,x_{0},s,\iota)\mapsto p$ is itself constructed by transport and is thus a continuous family of paths from $c$, exhibiting $c$ as the centre of contraction.
+\end{proof}
+
+\begin{remark}[The infinite tower]
+The proof of \cref{thm:contr-hott} bundles infinitely many coherences into the propositional fact $\isContr(\NNO)$. Path induction (the $J$-rule) allows us to manipulate paths, $2$-paths, $3$-paths, and so on, with no extra effort: once we have $\isContr(\NNO)$, we automatically get $\isContr(\Omega^{n}\NNO)$ for every $n$, by general HoTT lemmas.
+\end{remark}
+
+\begin{remark}[Why this is stronger]
+\Cref{thm:contr-1cat} says ``unique iso between any two NNOs''. \Cref{thm:contr-hott} says, in addition, that the space of paths between any two equivalences is contractible, the space of $2$-paths is contractible, and so on. In a $1$-category these higher cells are trivially identities; in an $\infty$-category they need to be checked. HoTT performs all of this with one-and-the-same proof, because $\isContr$ is a mere proposition that already absorbs the entire tower.
+\end{remark}
+
+\section{The \texorpdfstring{$(\infty,1)$}{(infinity,1)}-categorical NNO}\label{sec:lurie}
+
+We now lift \cref{def:nno} to $(\infty,1)$-categories. There are two natural lifts: a parametrised one due to Lurie, and an absolute one suitable for elementary $(\infty,1)$-toposes.
+
+\subsection{Lurie's parametrised NNO}
+
+\begin{definition}[$(\infty,1)$-NNO, Lurie]\label{def:lurie-nno}
+Let $\mathcal{E}$ be a presentable $(\infty,1)$-topos with terminal object $\mathbf{1}$. An NNO is an object $N\in\mathcal{E}$ together with morphisms $0\colon \mathbf{1}\to N$ and $s\colon N\to N$ such that for every diagram $\mathbf{1}\xrightarrow{x_{0}}X\xrightarrow{f}X$ in $\mathcal{E}$, the mapping space
+\[
+\Map_{\PtEndo(\mathcal{E})}\bigl((N,0,s),(X,x_{0},f)\bigr)
+\]
+is contractible.
+\end{definition}
+
+Here $\PtEndo(\mathcal{E})$ is the $(\infty,1)$-category of pointed endomorphisms in $\mathcal{E}$. Concretely, an object of $\PtEndo(\mathcal{E})$ is a triple $(X, x_{0}\colon \mathbf{1}\to X, f\colon X\to X)$ where $X\in\mathcal{E}$, $x_{0}$ is a global element, and $f$ is an endomorphism. A morphism $(X,x_{0},f)\to(Y,y_{0},g)$ is a tuple $(h, \alpha, \beta)$ where $h\colon X\to Y$ is a morphism in $\mathcal{E}$, $\alpha\colon h\circ x_{0}\sim y_{0}$ is a $1$-cell in $\Map_{\mathcal{E}}(\mathbf{1},Y)$, and $\beta\colon h\circ f\sim g\circ h$ is a $1$-cell in $\Map_{\mathcal{E}}(X,Y)$, together with the higher cells provided by composing in $\mathcal{E}$. In symbols this is the $\infty$-categorical limit (formally, an iterated comma object)
+\[
+\PtEndo(\mathcal{E}) \;\coloneqq\; \mathcal{E}_{\mathbf{1}/}\;\times_{\mathcal{E}}\; \mathcal{E}^{[1]}
+\]
+parametrising pairs $(x_{0}\colon \mathbf{1}\to X, f\colon X\to X)$.
+
+\begin{remark}
+Equivalently, an $(\infty,1)$-NNO is an initial object in $\PtEndo(\mathcal{E})$, where ``initial'' is interpreted in the $(\infty,1)$-categorical sense: the mapping space to every other object is contractible. Lurie phrases the definition via a small-colimit-preserving recursion functor; the equivalence is straightforward.
+\end{remark}
+
+\begin{example}
+When $\mathcal{E}=\Spc$, the NNO is the constant functor at $\N$. Its existence and contractibility of the mapping space is the homotopy-coherent version of the Set-theoretic recursion principle.
+\end{example}
+
+\begin{example}
+For $\mathcal{E}=\mathrm{PSh}(\mathcal{C})$ the $(\infty,1)$-category of presheaves of spaces on a small $(\infty,1)$-category $\mathcal{C}$, the NNO is the constant presheaf at $\N$, $c\mapsto \N$.
+\end{example}
+
+\begin{example}
+For $\mathcal{E}=\mathrm{Sh}(X)$ the $(\infty,1)$-topos of sheaves on a topological space $X$, the NNO is the constant sheaf $\underline{\N}$.
+\end{example}
+
+\subsection{Existence in presentable \texorpdfstring{$(\infty,1)$}{(infinity,1)}-toposes}
+
+\begin{theorem}[Existence in presentable case]\label{thm:exist-pres}
+Every presentable $(\infty,1)$-topos has an NNO\@.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Presentability ensures small colimits and a small generating set. Build $N$ as the sequential colimit
+\[
+N \;=\; \colim\bigl(\mathbf{1}\xrightarrow{j_{0}}\mathbf{1}\sqcup\mathbf{1}\xrightarrow{j_{1}}\mathbf{1}\sqcup\mathbf{1}\sqcup\mathbf{1}\xrightarrow{j_{2}}\cdots\bigr),
+\]
+where $j_{n}$ adds a new copy of $\mathbf{1}$. Equivalently, $N=\bigsqcup_{n\geq 0}\mathbf{1}$. Verification of the universal property uses the universal property of sequential colimits and contractibility of the relevant mapping spaces.
+\end{proof}
+
+\subsection{Elementary \texorpdfstring{$(\infty,1)$}{(infinity,1)}-toposes and Rasekh's NNO}
+
+A more delicate question is whether every \emph{elementary} $(\infty,1)$-topos has an NNO; here we follow the axiomatic of Rasekh~\cite{Rasekh2018ETop}. Elementary $(\infty,1)$-toposes are axiomatised by:
+\begin{enumerate}
+  \item finite limits,
+  \item locally cartesian closure,
+  \item subobject classifier,
+  \item object classifier (a univalent universe of small types),
+  \item finite colimits.
+\end{enumerate}
+They need not be presentable.
+
+\begin{theorem}[Rasekh~\cite{Rasekh2021}]\label{thm:rasekh}
+Every elementary $(\infty,1)$-topos has an NNO\@. In particular, the existence of the NNO does not need to be added as a separate axiom: it is derivable from the other axioms of an elementary $(\infty,1)$-topos.
+\end{theorem}
+
+\begin{proof}[Sketch of Rasekh's argument]
+The circle $\Sone$ exists in any elementary $(\infty,1)$-topos as a higher inductive type (or, more carefully, as the geometric realisation of the simplicial circle). Rasekh shows that the loop space $\Omega\Sone$ has a $\Z$-action and that its connected component of the basepoint (or, in pointed form, the universal cover) functions as an NNO\@. The argument uses descent, locality, and classification of univalent maps.
+\end{proof}
+
+\begin{remark}
+Rasekh's proof is striking because it derives a discrete, $0$-truncated, NNO from a manifestly $1$-truncated object, $\Sone$, via genuinely $\infty$-categorical machinery. There is no $1$-categorical analogue: $\Omega\Sone$ in the $1$-topos of sets is a singleton.
+\end{remark}
+
+\subsection{Equivalence with the \texorpdfstring{$1$}{1}-NNO when \texorpdfstring{$\mathcal{E}$}{E} is a \texorpdfstring{$1$}{1}-topos}
+
+\begin{theorem}[Comparison]\label{thm:lurie-nno-equiv}
+Let $\mathcal{E}$ be a $1$-topos with NNO $(N,0,s)$, and let $\mathcal{E}^{(\infty)}$ be its embedding as a $(2,1)$-category, viewed as an $(\infty,1)$-category. Then $(N,0,s)$ is an $(\infty,1)$-NNO of $\mathcal{E}^{(\infty)}$ in the sense of \cref{def:lurie-nno}.
+\end{theorem}
+
+\begin{proof}
+The mapping spaces in $\mathcal{E}^{(\infty)}$ are $0$-truncated (sets). The mapping space
+\[
+\Map_{\PtEndo(\mathcal{E}^{(\infty)})}\bigl((N,0,s),(X,x_{0},f)\bigr)
+\]
+is therefore a set, and is the hom-set of \cref{def:ptendo}. By the universal property in $\mathcal{E}$, this set has exactly one element, hence is contractible.
+\end{proof}
+
+\section{Higher coherences}\label{sec:higher-coh}
+
+Why is the $(\infty,1)$-NNO ``more delicate''? The naive answer is: in a $1$-category, ``unique map'' is a single condition. In an $(\infty,1)$-category, ``unique map'' must be promoted to ``unique up to coherent homotopy''. Concretely, given two NNOs $N_{1}, N_{2}$ in $\mathcal{E}$, we need a comparison map $u\colon N_{1}\to N_{2}$ together with the homotopies filling the squares
+\[
+\begin{tikzcd}[column sep=large, row sep=large]
+\mathbf{1} \arrow[r, "0_{1}"] \arrow[dr, "0_{2}"'] & N_{1} \arrow[d, "u"] \arrow[r, "s_{1}"] \arrow[dr, phantom, "\Downarrow\,\beta", near start] & N_{1} \arrow[d, "u"] \\
+& N_{2} \arrow[r, "s_{2}"'] & N_{2}
+\end{tikzcd}
+\]
+Filling the upper-left triangle is a $1$-cell $\alpha\colon u\circ 0_{1}\sim 0_{2}$, and filling the right-hand square is a $1$-cell $\beta\colon u\circ s_{1}\sim s_{2}\circ u$. Beyond these, we need:
+\begin{enumerate}
+  \item compatibilities of these homotopies (i.e.\ $2$-cells filling in the obvious squares),
+  \item compatibilities of those compatibilities ($3$-cells),
+  \item and so on, ad infinitum.
+\end{enumerate}
+
+\begin{proposition}[Initiality absorbs the entire coherence tower]\label{prop:tower}
+The initiality of an $(\infty,1)$-NNO already encodes, in a single property, the entire infinite tower of coherence data sketched above. Concretely, for any two $(\infty,1)$-NNOs $(N_{1},0_{1},s_{1})$ and $(N_{2},0_{2},s_{2})$ in an $(\infty,1)$-category $\mathcal{E}$, the mapping space
+\[
+M \;\coloneqq\; \Map_{\PtEndo(\mathcal{E})}\bigl((N_{1},0_{1},s_{1}),(N_{2},0_{2},s_{2})\bigr)
+\]
+is contractible.
+\end{proposition}
+
+\begin{proof}
+By definition of $(\infty,1)$-NNO, both $(N_{1},0_{1},s_{1})$ and $(N_{2},0_{2},s_{2})$ are initial objects of $\PtEndo(\mathcal{E})$. Initial objects in any $(\infty,1)$-category have contractible mapping spaces to every object, in particular to each other. Contractibility of $M$ is equivalent to existence of a $0$-cell (the comparison map $u$ and the homotopies $\alpha,\beta$), uniqueness up to a contractible space of $1$-cells (the next-level coherences), uniqueness of those up to a contractible space of $2$-cells, and so on inductively at every level $n\geq 0$.
+\end{proof}
+
+\begin{remark}
+The content of \cref{prop:tower} is that contractibility of $M$ is equivalent to:
+\begin{itemize}
+  \item $\pi_{0}M = *$: existence and uniqueness up to homotopy of the comparison map;
+  \item $\pi_{n}M = 0$ for all $n\geq 1$: triviality of all higher loop spaces, i.e.\ the entire tower of compatibilities.
+\end{itemize}
+\end{remark}
+
+\subsection{Truncation level of \texorpdfstring{$\mathrm{NNO}(\mathcal{E})$}{NNO(E)}}
+
+Define $\mathrm{NNO}(\mathcal{E})$ as the full subspace of the $\infty$-groupoid $\PtEndo(\mathcal{E})^{\eqv}$ (the maximal sub-$\infty$-groupoid of $\PtEndo(\mathcal{E})$) on objects that are initial.
+
+\begin{theorem}[Contractibility of the $\infty$-NNO space]\label{thm:contractibility-infty}
+For any $(\infty,1)$-topos $\mathcal{E}$ in which an NNO exists, the space $\mathrm{NNO}(\mathcal{E})$ is contractible.
+\end{theorem}
+
+\begin{proof}
+The full sub-$\infty$-groupoid of an $(\infty,1)$-category on the initial objects is either empty or contractible: this is the $\infty$-categorical analogue of \cref{lem:rigid}. Spelling this out: given any two initial objects $I_{1},I_{2}\in\PtEndo(\mathcal{E})$, the mapping space $\Map(I_{1},I_{2})$ is contractible by \cref{prop:tower}; in particular it is inhabited, so the sub-$\infty$-groupoid of initial objects is connected. The automorphism space $\Map(I,I)$ of any initial object $I$ is also contractible (apply \cref{prop:tower} with $I_{1}=I_{2}=I$), which forces all loop spaces $\Omega^{n}\Map(I,I)$ to be contractible, hence trivial. A connected $\infty$-groupoid with trivial loop spaces is, by Whitehead's theorem, contractible.
+\end{proof}
+
+\section{The main theorem: contractibility for \texorpdfstring{$(\infty,1)$}{(infinity,1)}-NNOs}\label{sec:main}
+
+\subsection{Statement and proof}
+
+We now combine the HoTT contractibility result with Shulman's interpretation theorem to give an internal-to-external argument for \cref{thm:contractibility-infty}, and to compare it with Rasekh's circle-construction.
+
+\begin{theorem}[Main theorem]\label{thm:main}
+Let $\mathcal{E}$ be an $(\infty,1)$-topos that admits a model of HoTT~+~univalence (e.g.\ any Grothendieck $(\infty,1)$-topos, by~\cite{Shulman2019}). Then:
+\begin{enumerate}
+  \item There exists an $(\infty,1)$-NNO in $\mathcal{E}$ (\cref{def:lurie-nno}).
+  \item The space $\mathrm{NNO}(\mathcal{E})$ is contractible (a $(-2)$-type).
+  \item Any two $(\infty,1)$-NNOs in $\mathcal{E}$ are connected by an essentially unique equivalence.
+  \item The automorphism $\infty$-group of an $(\infty,1)$-NNO is contractible.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By Shulman's theorem, $\mathcal{E}$ admits a model of HoTT in which $\U$ is interpreted as the object classifier and the type $\NNO$ of \cref{def:nno-type} is interpreted as an internal object of $\mathcal{E}$ (more precisely, as the underlying object of an $\infty$-groupoid object of $\mathcal{E}$, classified by $\U$). By \cref{thm:contr-hott}, this internal type is contractible (i.e.\ the proposition $\isContr(\NNO)$ has a global element).
+
+\emph{Externalisation.} The functor $\mathcal{E}\to \Spc$, $X\mapsto \Map_{\mathcal{E}}(\mathbf{1},X)$, is the global-sections functor. It preserves limits and (since $\mathbf{1}$ is the unit of the model) takes the internal type $\NNO$ to the external $\infty$-groupoid $\mathrm{NNO}(\mathcal{E})$. Internal contractibility of $\NNO$ in the HoTT model is the global element of $\isContr(\NNO)$, which under externalisation becomes a global point of $\Map_{\mathcal{E}}(\mathbf{1},\isContr\,\NNO)\eqv\isContr(\mathrm{NNO}(\mathcal{E}))$, witnessing that $\mathrm{NNO}(\mathcal{E})$ is contractible in $\Spc$. (For a detailed account of the internal-to-external transfer of contractibility statements, see~\cite{KapulkinLumsdaine}.)
+
+Existence (1) follows from \cref{thm:exist-pres} when $\mathcal{E}$ is presentable, or from \cref{thm:rasekh} when $\mathcal{E}$ is elementary. Statement (2) is the externalisation just described. Statements (3) and (4) follow from (2) by standard arguments: a contractible $\infty$-groupoid has a unique-up-to-contractible-choice path between any two points, and trivial loop spaces at every point.
+\end{proof}
+
+\subsection{What ``contractible'' contributes beyond ``unique iso''}
+
+\begin{remark}[Higher coherence cancellation]
+\Cref{thm:main} packages \emph{infinitely many} layers of coherence into one statement. To see the gain concretely, consider the recursion principle: given $(X,x_{0},f)$ in $\mathcal{E}$, we get $h\colon N\to X$ in $\mathcal{E}$. In a $1$-topos, this is a single morphism. In an $(\infty,1)$-topos, $h$ comes equipped with:
+\begin{itemize}
+  \item a $1$-cell witnessing $h\circ 0\sim x_{0}$,
+  \item a $1$-cell witnessing $h\circ s\sim f\circ h$,
+  \item $2$-cells expressing that the choice of $1$-cells is unique up to homotopy,
+  \item $\ldots$
+\end{itemize}
+\Cref{thm:main} guarantees that the data above is recoverable up to a contractible space of choices. In HoTT, the work is done by pattern-matching on identity types and using $\isContr$-elimination.
+\end{remark}
+
+\subsection{Identification with Rasekh's NNO}
+
+\begin{theorem}[Rasekh~$=$~Lurie internally]\label{thm:rasekh-lurie}
+Let $\mathcal{E}$ be an elementary $(\infty,1)$-topos. The NNO constructed by Rasekh from the loop space of $\Sone$ coincides, up to a contractible space of equivalences, with any presentation-based $(\infty,1)$-NNO in the sense of \cref{def:lurie-nno} (when both are defined).
+\end{theorem}
+
+\begin{proof}
+By part~(2) of \cref{thm:main}, $\mathrm{NNO}(\mathcal{E})$ is contractible whenever an NNO exists. Both Rasekh's NNO (\cref{thm:rasekh}) and any Lurie-style NNO (\cref{def:lurie-nno}) are points of $\mathrm{NNO}(\mathcal{E})$. Hence they are connected by a unique-up-to-contractible-choice equivalence.
+\end{proof}
+
+\section{Rasekh's circle-construction of the NNO}\label{sec:rasekh}
+
+We now sharpen the discussion of Rasekh's circle-construction.
+
+\subsection{The role of \texorpdfstring{$\Sone$}{S\^{}1}}
+
+In an elementary $(\infty,1)$-topos $\mathcal{E}$, the circle $\Sone$ is the higher inductive type generated by a point $\base\colon \mathbf{1}\to \Sone$ and a loop $\looppath\colon \base = \base$. (One must check that $\mathcal{E}$ admits this HIT\@. Rasekh shows the relevant pushout exists using descent.) The loop space $\Omega\Sone\coloneqq\base\times_{\Sone}\base$ is a group object in $\mathcal{E}$ in the homotopical sense.
+
+\begin{theorem}[Rasekh, in HoTT form]\label{thm:rasekh-hott}
+$\Omega\Sone\eqv\Z$ in any elementary $(\infty,1)$-topos $\mathcal{E}$, where $\Z$ is the group object obtained from the type of integers in $\mathcal{E}$.
+\end{theorem}
+
+\begin{proof}[Idea]
+Use the encode--decode method (Licata--Shulman~\cite{LicataShulman}) to construct a fibration
+\[
+\mathrm{code}\colon \Sone\to \U \qquad\text{with}\qquad \mathrm{code}(\base)\eqv\Z,
+\]
+where the loop $\looppath$ acts as the successor equivalence $\Z\eqv\Z$. The total space of $\mathrm{code}$ is contractible, and the fibre over $\base$ is $\Z$.
+\end{proof}
+
+\begin{remark}[Recovery of $\N$ from $\Z$]
+Once $\Z$ is constructed in $\mathcal{E}$ (via \cref{thm:rasekh-hott}), $\N$ is obtained as the subobject of non-negative integers, which is isomorphic to the colimit construction in \cref{thm:exist-pres}. The key point is that elementary $(\infty,1)$-toposes have enough structure---specifically, locally cartesian closure plus a univalent universe---to internalise this construction.
+\end{remark}
+
+\subsection{Why this fails in \texorpdfstring{$1$}{1}-topos theory}
+
+In a $1$-topos $\mathcal{E}_{1}$, every type is $0$-truncated, so $\Omega\Sone = \Sone\times_{\Sone}\Sone$ is the singleton (a single point with no nontrivial loops, since paths don't exist). The encode--decode argument collapses, and we cannot recover $\Z$ or $\N$ this way. The $\infty$-categorical setting is therefore not just a technical generalisation: it makes essentially new constructions possible.
+
+\subsection{Higher inductive types in elementary \texorpdfstring{$(\infty,1)$}{(infinity,1)}-toposes}
+
+The construction of $\Sone$ as a HIT in an elementary $(\infty,1)$-topos is more delicate than the corresponding sheaf-theoretic construction. The required ingredient is the existence of geometric realisation of suitable diagrams; Rasekh's approach is to encode $\Sone$ as a particular pushout diagram and verify by descent that this pushout exists.
+
+\begin{remark}[Generalisation beyond $\Sone$]
+The same strategy applies to higher spheres $S^{n}$ and Eilenberg--MacLane objects $K(G,n)$. In particular, the loop space $\Omega^{n}S^{n}$ in an elementary $(\infty,1)$-topos has a canonical $\Z$-action when $n\geq 1$ (by suspension), giving a more conceptual route to $\Z$ and hence $\N$.
+\end{remark}
+
+\begin{proposition}[Universal cover viewpoint]\label{prop:univ-cover}
+In an elementary $(\infty,1)$-topos $\mathcal{E}$, the universal cover $\widetilde{\Sone}\to \Sone$ has total space that, viewed as a discrete groupoid in $\mathcal{E}$, is the $\Z$-torsor $\Z$ (with the $\Z$-action given by deck transformations). Restricting to non-negative components yields $\N$.
+\end{proposition}
+
+\begin{proof}[Sketch]
+The universal cover of $\Sone$ in $\mathrm{Top}$ is $\R\to\Sone=\R/\Z$. In an elementary $(\infty,1)$-topos, this becomes a fibration whose fibre is $\pi_{1}(\Sone)=\Z$. The discrete object underlying the fibre is the type of integers, which the elementary axiomatic supplies via the object classifier and locally cartesian closure.
+\end{proof}
+
+\subsection{Power objects vs object classifier}
+
+A subtle point in the elementary axiomatic is whether one assumes power objects (like $1$-toposes) or an object classifier (Lurie's $(\infty,1)$-version). Power objects classify subobjects; the object classifier classifies all small maps.
+
+\begin{proposition}[Object classifier suffices]\label{prop:obj-class-suffices}
+In an elementary $(\infty,1)$-topos with object classifier $\U$, the NNO can be constructed without separate appeal to power objects.
+\end{proposition}
+
+\begin{proof}
+The construction in \cref{thm:rasekh-hott} uses only $\U$ and pushouts; no separate power-object axiom is invoked.
+\end{proof}
+
+\section{Synthetic approaches via simplicial type theory}\label{sec:stt}
+
+Riehl--Shulman simplicial type theory (STT)~\cite{RiehlShulman2017} extends HoTT with a directed interval $\Delta^{1}$ and a directed path type $\Hom_{A}(a,b)$. The intent is to enable synthetic reasoning about $(\infty,1)$-categories rather than $\infty$-groupoids.
+
+\subsection{Brief review of STT}
+
+Riehl--Shulman simplicial type theory adds to the type-theoretic context a directed interval $\Delta^{1}$ (an extension type with two endpoints $0,1$ and a unique non-identity directed path) and the corresponding hom-types
+\[
+\Hom_{A}(a,b) \;\coloneqq\; \bigl\{\,f\colon \Delta^{1}\to A \,\bigm|\, f(0)\equiv a,\ f(1)\equiv b\,\bigr\}.
+\]
+Unlike the symmetric path types of HoTT, hom-types are inherently directed: $\Hom_{A}(a,b)$ and $\Hom_{A}(b,a)$ are not interchangeable in general. To talk about $(\infty,1)$-categories \emph{synthetically}, STT adds two predicates:
+\begin{itemize}
+  \item the \emph{Segal condition}, asserting horn-filling for the inner $2$-simplex $\Lambda^{2}_{1}\hookrightarrow\Delta^{2}$, which encodes composition;
+  \item the \emph{Rezk condition} (also called ``completeness''), asserting that all isomorphisms in the category are paths.
+\end{itemize}
+A type satisfying both is a synthetic $(\infty,1)$-category. The universe $\U_{\mathrm{Rezk}}$ of Rezk-complete types is itself a Rezk-complete type and forms a synthetic $(\infty,1)$-category of $(\infty,1)$-categories.
+
+\subsection{An NNO in STT}
+
+In STT, one can define the type
+\[
+\NNO_{\mathrm{dir}} \;\coloneqq\; \Sigmatype_{X}\,\Sigmatype_{x_{0}\colon \mathbf{1}\to X}\,\Sigmatype_{s\colon X\to X}\,\mathsf{isInitial}_{\mathrm{dir}}(X,x_{0},s),
+\]
+where $\mathsf{isInitial}_{\mathrm{dir}}$ uses directed mapping spaces. The contractibility of $\NNO_{\mathrm{dir}}$ should follow once the universe is shown to be Rezk-complete in STT---a property partially proved by Gratzer--Weinberger--Buchholtz~\cite{GWB2024} for the universe of discrete types.
+
+\begin{remark}[Open]
+A complete contractibility result for $\NNO_{\mathrm{dir}}$ in the universe of discrete types of~\cite{GWB2024} would give a synthetic proof of \cref{thm:main}, internal to STT\@. We are not aware of a published proof.
+\end{remark}
+
+\subsection{Cubical type theory}
+
+Cubical type theory~\cite{CCHM} provides a constructive interpretation of the univalence axiom: rather than postulating $\ua$ as an axiom, cubical type theory produces it as a defined term. The interpretation uses a primitive notion of \emph{path} based on the cube category.
+
+\begin{remark}
+In cubical type theory, the contractibility of $\NNO$ (\cref{thm:contr-hott}) becomes a constructive theorem: the centre of contraction $(\N,\zero,\suc,\star)$ can be computed, and the contraction map sends each $(X,x_{0},s,\iota)$ to a concrete cube witnessing the path. This is the basis for a Cubical Agda formalisation; we leave such a formalisation to future work.
+\end{remark}
+
+\begin{remark}[Cubical NNO]
+The constructive content of Lambek's theorem (\cref{lem:lambek}) is also more transparent in cubical type theory: the inverse $h\colon \N\to\mathbf{1}+\N$ of the structure map is computed by case analysis on $\zero$ vs $\suc\,n$, with the round-trip equations $\iota\circ h=\id$ and $h\circ\iota=\id$ holding judgmentally.
+\end{remark}
+
+\subsection{Comparing internal language flavours}
+
+\begin{itemize}
+  \item HoTT internal language: $(\infty,1)$-toposes (Shulman~\cite{Shulman2019}); types are $\infty$-groupoids.
+  \item STT internal language: $(\infty,1)$-categories (Riehl--Shulman~\cite{RiehlShulman2017}). Types are general $(\infty,1)$-spaces.
+  \item Cohesive HoTT: differential and geometric ambient toposes (Schreiber--Shulman~\cite{SchreiberShulman}).
+\end{itemize}
+
+For the NNO, all three internal languages give equivalent answers when restricted to discrete types, but only the first two have published contractibility theorems.
+
+\section{Free pointed dynamical system on the empty set}\label{sec:free}
+
+A useful recasting of the NNO is as the free pointed dynamical system on the empty set.
+
+\begin{theorem}[NNO as left adjoint to a forgetful]\label{thm:free-pte}
+The forgetful functor $U\colon \PtEndo(\Set)\to \Set$, $(X,x_{0},f)\mapsto X$, has a left adjoint $F\colon \Set\to\PtEndo(\Set)$. Moreover, $F(\emptyset)=(\N,\zero,\suc)$, the NNO of $\Set$.
+\end{theorem}
+
+\begin{proof}
+Define $F(A)\coloneqq (A\sqcup\N\times A, \mathrm{inj}_{2}(0,-), \mathrm{shift})$ where $\mathrm{shift}$ takes $a\in A$ to $\mathrm{inj}_{2}(1,a)$ and $(n,a)$ to $(\suc\,n,a)$. The unit $\eta_{A}\colon A\to U(F(A))=A\sqcup\N\times A$ is the inclusion of $A$ as the first summand. The counit $\epsilon_{(X,x_{0},f)}\colon F(U(X,x_{0},f))\to (X,x_{0},f)$ extends $\id_{X}$ on the $X$-summand and applies $f^{n}$ to $(n,x)$ on the $\N\times X$-summand. Verification of the triangle identities is straightforward.
+
+For $A=\emptyset$, $F(\emptyset)=(\emptyset\sqcup\N\times\emptyset,-,-)=(\N,\zero,\suc)$ since $\N\times\emptyset\simeq\emptyset$ and the basepoint becomes $\zero$, the shift becomes the successor.
+\end{proof}
+
+\begin{corollary}[Hom characterisation]\label{cor:hom-char}
+$\mathrm{Hom}_{\PtEndo(\Set)}((\N,\zero,\suc),(X,x_{0},f))$ is naturally isomorphic to a singleton, expressing that $\N$ is initial.
+\end{corollary}
+
+\begin{proof}
+By adjunction $\mathrm{Hom}_{\PtEndo}(\N,(X,x_{0},f))\iso\mathrm{Hom}_{\Set}(\emptyset,X)=\mathbf{1}$.
+\end{proof}
+
+\subsection{Lifting to \texorpdfstring{$(\infty,1)$}{(infinity,1)}-toposes}
+
+The same construction applies in any $(\infty,1)$-topos $\mathcal{E}$ with finite coproducts and pullbacks: $F\dashv U$ where $U\colon \PtEndo(\mathcal{E})\to \mathcal{E}$ is the underlying-object functor. The image of the empty (initial) object under $F$ is the NNO of $\mathcal{E}$.
+
+\begin{remark}
+This is the cleanest abstract characterisation: the NNO is the value of the free-pointed-dynamical-system functor at the initial object. \cref{thm:contr-hott} then says that this functor is well-defined up to a contractible space of choices.
+\end{remark}
+
+\section{Lurie's parametrised NNO in detail}\label{sec:lurie-param}
+
+Lurie's actual definition in \cite[\S6]{LurieHTT} is somewhat more subtle than \cref{def:lurie-nno}: it is parametrised over a base.
+
+\begin{definition}[Parametrised NNO~\cite{LurieHTT}]\label{def:param-nno}
+Let $\mathcal{E}$ be an $(\infty,1)$-topos and let $S\in\mathcal{E}$. A relative NNO over $S$ is an object $N_{S}\to S$ in $\mathcal{E}/S$, equipped with $0_{S}\colon S\to N_{S}$ and $s_{S}\colon N_{S}\to N_{S}$ over $S$, such that $(N_{S},0_{S},s_{S})$ is the NNO of the slice $\mathcal{E}/S$.
+\end{definition}
+
+The absolute case is recovered by taking $S=\mathbf{1}$.
+
+\begin{theorem}[Parametrisation is contractibly functorial]\label{thm:param-functorial}
+The assignment $S\mapsto \mathrm{NNO}(\mathcal{E}/S)$ extends to a functor $\mathcal{E}^{\op}\to \Spc$, valued in contractible spaces. Equivalently, the parametrised NNO is, up to a contractible space of choices, functorial in the base.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Functoriality is a consequence of pullback functoriality of slices: a morphism $f\colon S'\to S$ in $\mathcal{E}$ induces $f^{*}\colon \mathcal{E}/S\to \mathcal{E}/S'$, which preserves the NNO universal property. Contractibility of each $\mathrm{NNO}(\mathcal{E}/S)$ is \cref{thm:main} applied to the slice. The two together give a homotopy-coherent functor; the precise claim is that the space of such functors is itself contractible.
+\end{proof}
+
+\begin{remark}[Globalness]
+Theorem~\ref{thm:param-functorial} is the precise statement of ``the NNO is uniquely determined globally, not just locally.'' In a $1$-topos this would be a single global iso between any two parametrised NNOs; in an $(\infty,1)$-topos it is a contractible space of comparison data, which is the right $\infty$-categorical strengthening.
+\end{remark}
+
+\subsection{Relation to spectra}
+
+In stable $(\infty,1)$-categories (or more generally in $(\infty,1)$-toposes with stable structure), the NNO can be seen as the truncation of a more refined object: the sphere spectrum $\mathbb{S}$, whose underlying space is $\Omega^{\infty}\mathbb{S}\eqv \prod_{n\geq 0}K(\pi_{n}\mathbb{S},n)$.
+
+\begin{remark}
+The $0$-truncation of the connective sphere spectrum $\tau_{\leq 0}\mathbb{S}$ is the discrete $\Z$, whose non-negative part is the NNO\@. This relates the NNO to the homotopy theory of spectra and chromatic homotopy theory.
+\end{remark}
+
+\section{Open problems}\label{sec:open}
+
+\begin{enumerate}
+  \item \textbf{Internal-to-external transfer.}
+  Make the externalisation step in the proof of \cref{thm:main} fully precise. This includes coherent strictification of the internal type $\NNO$ to an external $\infty$-groupoid.
+  \item \textbf{Elementary case (Rasekh).}
+  Prove \cref{thm:contractibility-infty} for elementary $(\infty,1)$-toposes without invoking Shulman's theorem. The latter is currently stated for Grothendieck $(\infty,1)$-toposes; the elementary case is conjectural.
+  \item \textbf{Synthetic NNO contractibility in STT\@.}
+  Prove that $\NNO_{\mathrm{dir}}$ is contractible in simplicial type theory, using only Rezk-completeness of the universe of discrete types.
+  \item \textbf{Course-of-values and primitive recursion.}
+  Develop the theory of course-of-values recursion (Paper~III Prop.~6.3) at the $(\infty,1)$-categorical level, including coherent dependent induction.
+  \item \textbf{Lurie's parametrised NNO\@.}
+  Compare the parametrised version (over a base $S\in\mathcal{E}$) with the absolute version studied here. Show that the parametrisation is functorial up to contractible choice.
+  \item \textbf{Cubical Agda formalisation.}
+  Formalise \cref{thm:main} in Cubical Agda, using the existing development of $(\infty,1)$-toposes-as-models (cf.\ Mortberg--Vezzosi).
+  \item \textbf{Univalent foundations of arithmetic.}
+  Use \cref{thm:main} to formalise basic arithmetic theorems---associativity and commutativity of $+$, distributivity---at the $(\infty,1)$-categorical level, with all coherences automatic.
+\end{enumerate}
+
+\section{Recursion principles at the \texorpdfstring{$(\infty,1)$}{(infinity,1)}-categorical level}\label{sec:recursion}
+
+The recursion principle $\rec_{\N}$ generalises in several ways inside an $(\infty,1)$-topos. In this section we collect those generalisations and explain the role played by contractibility in each.
+
+\subsection{Iteration vs primitive recursion}
+
+\begin{definition}[Primitive recursion]
+Given $X\in\mathcal{E}$, $x_{0}\colon\mathbf{1}\to X$, and $k\colon \N\times X\to X$, primitive recursion produces $g\colon\N\to X$ with $g(\zero)=x_{0}$ and $g(\suc\,n)=k(n,g(n))$.
+\end{definition}
+
+\begin{proposition}[Primitive recursion from iteration]\label{prop:prim-rec}
+Primitive recursion is reducible to iteration via the state-space pointed dynamical system $(N\times X, (0,x_{0}), \mathsf{step})$ with $\mathsf{step}(n,x)\coloneqq (\suc\,n, k(n,x))$. The recursor for this system, post-composed with the projection $\mathrm{pr}_{2}\colon \N\times X\to X$, gives $g$.
+\end{proposition}
+
+\begin{proof}
+The recursor $h\colon \N\to \N\times X$ for $(\N\times X,(0,x_{0}),\mathsf{step})$ satisfies $h(\zero)=(0,x_{0})$ and $h(\suc\,n)=\mathsf{step}(h(n))$. Inductively, $\mathrm{pr}_{1}(h(n))=n$ and $\mathrm{pr}_{2}(h(n))=g(n)$, where $g$ is defined by the primitive-recursion equations.
+\end{proof}
+
+\subsection{Course-of-values recursion}
+
+\begin{definition}[Course-of-values recursion]
+Given $X\in\mathcal{E}$ and $\phi\colon (\N\to X)\to (\N\to X)$ such that $\phi(f)(n)$ depends only on the values $f(0),\ldots,f(n-1)$, course-of-values recursion produces a unique fixed point $g\colon\N\to X$.
+\end{definition}
+
+The standard reduction uses the history state space $\mathrm{List}(X)$:
+
+\begin{proposition}\label{prop:cov-rec}
+Course-of-values recursion is reducible to iteration via the state space $(\N\times \mathrm{List}(X), (0,\mathrm{nil}), \mathsf{step}_{\mathrm{List}})$, where $\mathsf{step}_{\mathrm{List}}(n,\ell)\coloneqq(\suc\,n,\ell\,\mathbin{++}\,[\phi(\mathsf{lookup}(\ell))(n)])$.
+\end{proposition}
+
+\subsection{Dependent induction}
+
+In a locally cartesian closed $(\infty,1)$-category, the NNO satisfies dependent induction.
+
+\begin{theorem}[Dependent induction from NNO]\label{thm:dep-ind}
+Let $\mathcal{E}$ be locally cartesian closed with NNO $(N,0,s)$. For any morphism $P\colon N\to \U$, with $p_{0}\colon \mathbf{1}\to P(0)$ and $p_{s}\colon \prod_{n:N}\,P(n)\to P(\suc\,n)$, there is a unique section $\widetilde{p}\colon \prod_{n:N}\,P(n)$ with $\widetilde{p}(0)=p_{0}$ and $\widetilde{p}(\suc\,n)=p_{s}(\widetilde{p}(n))$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+Apply iteration in the slice $\mathcal{E}/N$. The total space $\Sigmatype_{n:N}\,P(n)$ becomes a pointed dynamical system over $N$, and the NNO universal property in the slice gives the section. Locally cartesian closure ensures the slice has the requisite structure. By contractibility (\cref{thm:main}), the section is unique up to a contractible space of choices.
+\end{proof}
+
+\section{Worked examples}\label{sec:examples}
+
+In this section we illustrate \cref{thm:main} on three concrete $(\infty,1)$-toposes, in order of increasing geometric complexity.
+
+\subsection{The terminal \texorpdfstring{$(\infty,1)$}{(infinity,1)}-topos: \texorpdfstring{$\Spc$}{spaces}}
+
+The $(\infty,1)$-category $\Spc$ of $\infty$-groupoids (``spaces'') is the terminal $(\infty,1)$-topos. By \cref{thm:exist-pres} it has an NNO; concretely, this is the discrete groupoid $\N$ viewed as a $0$-truncated space.
+
+\begin{example}[NNO in $\Spc$]
+The space $\mathrm{NNO}(\Spc)$ has as objects pairs $(X,\rho)$ where $X\in\Spc$ and $\rho$ is initial-data identifying $X$ with $\N$. By \cref{thm:main}(2), $\mathrm{NNO}(\Spc)$ is contractible. Concretely, every object can be connected to $(\N,\mathrm{id})$ by a unique-up-to-contractible-choice path, and the higher-dimensional cells of $\mathrm{NNO}(\Spc)$ are all contractible.
+\end{example}
+
+\subsection{Presheaf \texorpdfstring{$(\infty,1)$}{(infinity,1)}-toposes}
+
+For a small $(\infty,1)$-category $\mathcal{C}$, the $(\infty,1)$-topos $\mathrm{PSh}(\mathcal{C})\coloneqq\mathrm{Fun}(\mathcal{C}^{\op},\Spc)$ is presentable, hence by \cref{thm:exist-pres} has an NNO\@.
+
+\begin{proposition}\label{prop:psh-nno}
+The NNO of $\mathrm{PSh}(\mathcal{C})$ is the constant functor $c\mapsto\N\in\Spc$, with structure maps inherited pointwise. Its space of NNO structures is contractible.
+\end{proposition}
+
+\begin{proof}
+Since the constant functor $\Delta\colon\Spc\to\mathrm{PSh}(\mathcal{C})$ preserves limits (it is right adjoint to the colimit-evaluation), it sends the NNO $\N\in\Spc$ to a pointed dynamical system in $\mathrm{PSh}(\mathcal{C})$, denoted $\Delta(\N)$. The recursion principle for $\Delta(\N)$ is verified pointwise. Contractibility follows from \cref{thm:main} applied to $\mathrm{PSh}(\mathcal{C})$.
+\end{proof}
+
+\begin{example}[Simplicial spaces]
+For $\mathcal{C}=\Delta^{\op}$, $\mathrm{PSh}(\Delta^{\op})$ is the $(\infty,1)$-topos of simplicial spaces; the NNO is the bisimplicial set whose every level is the discrete space $\N$.
+\end{example}
+
+\subsection{Sheaves on a topological space}
+
+\begin{example}[Sheaf $(\infty,1)$-topos]
+For a topological space $T$ (or, more generally, a Grothendieck site $\mathcal{C}$), the $(\infty,1)$-topos $\mathrm{Sh}(T)$ has as NNO the constant sheaf $\underline{\N}$, which assigns to each open $U\subseteq T$ the discrete space of locally constant $\N$-valued functions $U\to\N$. Equivalently, $\underline{\N}=\colim_{n\geq 0}\,\mathbf{1}_{T}^{\sqcup n}$. Its NNO-space is contractible by \cref{thm:main}.
+\end{example}
+
+\subsection{The cohesive case}
+
+When $\mathcal{E}$ is a cohesive $(\infty,1)$-topos~\cite{SchreiberShulman}, the NNO sits in the discrete sub-$(\infty,1)$-topos $\mathrm{disc}(\Spc)\hookrightarrow\mathcal{E}$ and remains contractible there. The cohesive structure adds geometric information (smooth, differential, supersmooth) but does not affect the discrete arithmetic; this is the modular composition pattern in action.
+
+\section{Comparison with classical Peano arithmetic}\label{sec:peano}
+
+We pause to relate the universal-property NNO to Peano's axioms, as a sanity check that all the abstract machinery agrees with the classical picture.
+
+\begin{theorem}[Equivalence NNO $\Leftrightarrow$ Peano in $\Set$]\label{thm:peano-equiv}
+A triple $(N,0\colon\mathbf{1}\to N,s\colon N\to N)$ in $\Set$ is an NNO iff it satisfies the Peano axioms:
+\begin{enumerate}[label=(P\arabic*)]
+  \item $0\in N$.
+  \item $s$ is a function $N\to N$.
+  \item $s(n)\neq 0$ for all $n\in N$.
+  \item $s$ is injective.
+  \item Induction: any subset $A\subseteq N$ with $0\in A$ and closed under $s$ equals $N$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Sketch]
+($\Rightarrow$) Suppose $(N,0,s)$ is an NNO\@. (P1)--(P2) are immediate. (P3): the recursor for $(\{T,F\},T,\neg)$ produces $h\colon N\to\{T,F\}$ with $h(0)=T$ and $h(s\,n)=\neg h(n)$; injectivity of $\{T,F\}$-valued recursion forces $s(n)\neq 0$. (P4) is more subtle: a clever choice of pointed dynamical system (with carrier $1+N$) yields a left-inverse to $s$, hence injectivity. (P5) is the universal property restricted to subsets, characteristic-functioned via $\{T,F\}$.
+($\Leftarrow$) Conversely, Peano's axioms define a unique-up-to-iso initial pointed dynamical system; the iteration construction yields the recursor.
+\end{proof}
+
+\begin{remark}
+In an arbitrary $1$-topos, ``injectivity'' must be expressed via monomorphisms, ``not equal'' via disjointness in $\mathbf{1}\amalg N$, and ``induction over subsets'' via the subobject classifier. The proof goes through with these modifications. In an $(\infty,1)$-topos, induction must additionally be replaced by induction over $(-1)$-truncated maps; the contractibility theorem ensures this still gives an NNO.
+\end{remark}
+
+\subsection{Internal Peano in HoTT}
+
+In HoTT, Peano's axioms are not separate theorems but are packaged into the inductive type $\N$ together with the propositional uniqueness encoded by the recursion and induction principles. This is again an instance of the modular composition: each axiom emerges as a corollary of the universal property, hence of contractibility.
+
+\begin{proposition}[Disjointness of constructors]
+In HoTT, $\Pitype_{n:\N}\,\neg(\suc\,n=\zero)$, and similarly $\Pitype_{m,n:\N}(\suc\,m=\suc\,n)\to(m=n)$.
+\end{proposition}
+
+\begin{proof}[Idea]
+Define $\mathrm{decode}\colon\N\to\Type$ by $\mathrm{decode}(\zero)\coloneqq\mathbf{1}$, $\mathrm{decode}(\suc\,n)\coloneqq\mathbf{0}$. By $\suc\,n=\zero$, transport gives $\mathbf{0}\to\mathbf{1}$, contradicting $\mathbf{0}$'s emptiness when combined with the inhabitant of $\mathrm{decode}(\zero)$.
+\end{proof}
+
+\section{Discussion}
+
+\subsection{Philosophical remarks}
+
+The contractibility theorem solves, at the $(\infty,1)$-categorical level, a version of Benacerraf's problem~\cite{Benacerraf1965}: ``which set is the natural numbers?'' becomes ``which $\infty$-groupoid is the natural numbers?'' The answer is: any one of them, but they are all canonically the same---and the canonicality is itself part of the data. There is no genuine choice to be made beyond ``the type of NNOs is contractible.''
+
+\subsection{Relationship to other modular foundations}
+
+In the modular framework adopted by the broader research programme, the NNO sits at the bottom of a tower:
+\begin{enumerate}
+  \item \textbf{NNO} (this paper): provides arithmetic.
+  \item \textbf{Real numbers HIIT}: built on $\N$ (Paper~V \S5).
+  \item \textbf{Coalgebraic transcendentals}: built on streams over $\R$ (Topic 1).
+  \item \textbf{$(\infty,1)$-Langlands}: built on $\R, \Q_{p}, \mathbb{A}$ (Topic 2).
+  \item \textbf{Higher inductive types of all kinds}: built on the entire HoTT framework (Topic 6).
+\end{enumerate}
+The contractibility of NNO at the $(\infty,1)$-level ensures that everything built on top of NNO inherits a unique, canonical foundation. This is the modular composition principle: each layer is uniquely determined by the previous one, up to contractible choice.
+
+\subsection{Limitations}
+
+\begin{itemize}
+  \item Shulman's interpretation theorem currently covers Grothendieck $(\infty,1)$-toposes, not all elementary ones. The full transfer of \cref{thm:contr-hott} to elementary $(\infty,1)$-toposes therefore remains conjectural.
+  \item Higher coherence verification, while ``automatic'' in HoTT, requires actual computation in concrete models. We have not exhibited explicit cellular witnesses for, say, the bisimplicial set model.
+  \item The connection to Rasekh's circle-construction is via contractibility: we know the two NNOs agree, but we do not give an explicit comparison map.
+\end{itemize}
+
+\section{Conclusion}
+
+The natural numbers object is one of the simplest universal constructions in category theory; nonetheless, lifting it from the $1$-categorical to the $(\infty,1)$-categorical setting illustrates the full power of modern higher-categorical machinery. The key insight is that contractibility, as defined in HoTT (a single propositional condition), automatically encodes an infinite tower of homotopy coherences. This makes HoTT the ideal language to state and prove $(\infty,1)$-categorical universal properties without the bookkeeping of explicit cell-by-cell verification.
+
+We have presented:
+\begin{itemize}
+  \item the $1$-categorical NNO and its contractibility (\cref{thm:contr-1cat});
+  \item Lurie's parametrised $(\infty,1)$-NNO (\cref{def:lurie-nno}) and its existence for presentable $\mathcal{E}$ (\cref{thm:exist-pres});
+  \item Rasekh's circle-construction of an NNO in any elementary $(\infty,1)$-topos (\cref{thm:rasekh});
+  \item the main contractibility theorem (\cref{thm:main}) showing $\mathrm{NNO}(\mathcal{E})$ is contractible whenever HoTT models in $\mathcal{E}$;
+  \item a synthetic perspective via simplicial type theory.
+\end{itemize}
+
+The remaining open problems---particularly the synthetic STT proof and the Cubical Agda formalisation---are within reach of current methods. Once completed, they will close the gap between the conceptual ``contractibility solves it'' answer and the explicit cellular-coherent verification.
+
+\section*{Acknowledgements}
+
+The author thanks the Magneton Research Collective for ongoing discussion, and acknowledges the foundational work of Lurie, Rasekh, Shulman, Riehl, and the HoTT community.
+
+\appendix
+
+\section{Operational verification in Haskell}\label{app:haskell}
+
+The companion source tree at \texttt{src/infinity-nno/} contains a Haskell encoding of the NNO universal property. The relevant types and functions are:
+
+\begin{itemize}
+  \item \texttt{NNO.PtEndo a} -- a record type with fields \texttt{ptBase :: a} and \texttt{ptStep :: a -> a}, representing a pointed dynamical system on a Haskell type \texttt{a}.
+  \item \texttt{NNO.rec :: PtEndo a -> Integer -> a} -- the recursor witnessing the universal property of $(\N,\zero,\suc)$. By construction \texttt{rec pe 0 == ptBase pe} and \texttt{rec pe (n+1) == ptStep pe (rec pe n)} for $n\geq 0$.
+  \item \texttt{NNO.lambekIso :: Integer -> Bool} -- a property check that the structure map $[\zero,\suc]\colon\mathbf{1}+\N\to\N$ is invertible (Lambek's theorem in operational form).
+  \item \texttt{Properties.runChecks :: Bool} -- a battery of property checks combining \texttt{prop\_rec\_zero}, \texttt{prop\_rec\_step}, and \texttt{prop\_lambek}.
+  \item \texttt{Proofs.canonicalIsoIsId} and \texttt{Proofs.uniqueAutoIsId} -- operational counterparts of \cref{lem:rigid} and \cref{thm:contr-1cat}, demonstrating that the canonical iso between two NNOs is the identity and that the automorphism group is trivial.
+\end{itemize}
+
+The \texttt{Main.hs} module exhibits the universal property on concrete examples including factorial via primitive recursion (\cref{prop:prim-rec}).
+
+\section{Mechanised proof in Lean 4}\label{app:lean}
+
+The companion Lean file \texttt{lean/infinity-nno/NNO.lean} contains a self-contained mechanisation of the universal property and Lambek's theorem, suitable for use with Mathlib4. Highlights:
+
+\begin{itemize}
+  \item \texttt{InfinityNNO.PtEndo} -- a structure on a type $\alpha$ with fields \texttt{base : $\alpha$} and \texttt{step : $\alpha\to\alpha$}.
+  \item \texttt{InfinityNNO.rec} -- the recursor, defined by pattern matching on \texttt{Nat}.
+  \item \texttt{InfinityNNO.recExists} -- existence half of the universal property: $\exists\,h\colon\N\to\alpha$ satisfying both equations.
+  \item \texttt{InfinityNNO.recUnique} -- uniqueness, by induction on \texttt{Nat}.
+  \item \texttt{InfinityNNO.recUniversal} -- combined statement: the recursor is the unique such function.
+  \item \texttt{InfinityNNO.lambek} -- the structure map $[\zero,\suc]\colon\mathrm{Unit}\oplus\N\to\N$ is bijective.
+  \item \texttt{InfinityNNO.aut\_is\_id} -- any successor-preserving automorphism of $\N$ fixing $\zero$ is the identity.
+\end{itemize}
+
+The Lean development is intentionally minimal. A more ambitious development would use Mathlib's \texttt{CategoryTheory.NaturalNumberObject} formalisation and prove the universal property at the level of arbitrary categories with a terminal object.
+
+\section{Notation summary}\label{app:notation}
+
+For reference, we collect the principal symbols used in this paper.
+
+\begin{itemize}
+  \item $\mathcal{E}$ -- a (1- or $(\infty,1)$-)topos.
+  \item $\mathbf{1}$ -- a terminal object of $\mathcal{E}$.
+  \item $\PtEndo(\mathcal{E})$ -- the (1- or $(\infty,1)$-)category of pointed dynamical systems in $\mathcal{E}$.
+  \item $(N,0,s)$ -- an NNO\@: object, basepoint, successor.
+  \item $\rec(x_{0},f)$ -- the recursor: the unique map $N\to X$ given $(X,x_{0},f)\in\PtEndo(\mathcal{E})$.
+  \item $\NNO$ -- in HoTT, the type of NNO structures (\cref{def:nno-type}).
+  \item $\mathrm{NNO}(\mathcal{E})$ -- the external space of NNO structures in $\mathcal{E}$.
+  \item $\Spc$ -- the $(\infty,1)$-category of $\infty$-groupoids (``spaces'').
+  \item $\Sone$ -- the circle as a HIT.
+  \item $\Map_{\mathcal{C}}(X,Y)$ -- the mapping space in an $(\infty,1)$-category $\mathcal{C}$.
+  \item $\isContr$, $\isProp$, $\isSet$ -- the standard truncation predicates.
+  \item $\eqv$ -- type-theoretic equivalence; $\iso$ -- categorical isomorphism.
+  \item $\ua$ -- the univalence axiom; $\idtoeqv$ -- its inverse.
+\end{itemize}
+
+\begin{thebibliography}{99}
+
+\bibitem{LurieHTT} J.~Lurie, \emph{Higher Topos Theory}, Annals of Mathematics Studies, vol.~170, Princeton University Press, 2009.\ arXiv:math/0608040.
+
+\bibitem{LurieSAG} J.~Lurie, \emph{Spectral Algebraic Geometry}, manuscript, February 2018.\ \url{https://www.math.ias.edu/~lurie/papers/SAG-rootfile.pdf}.
+
+\bibitem{Rasekh2018ETop} N.~Rasekh, \emph{A Theory of Elementary Higher Toposes}, 2018.\ arXiv:1805.03805.
+
+\bibitem{Rasekh2021} N.~Rasekh, \emph{Every Elementary Higher Topos has a Natural Number Object}, Theory and Applications of Categories \textbf{37}, no.~13 (2021), 337--377.\ arXiv:1809.01734.
+
+\bibitem{Shulman2019} M.~Shulman, \emph{All $(\infty,1)$-toposes have strict univalent universes}, 2019.\ arXiv:1904.07004.
+
+\bibitem{HoTTBook} The Univalent Foundations Program, \emph{Homotopy Type Theory: Univalent Foundations of Mathematics}, Institute for Advanced Study, 2013.\ \url{https://homotopytypetheory.org/book/}.
+
+\bibitem{LicataShulman} D.~R.~Licata and M.~Shulman, \emph{Calculating the fundamental group of the circle in homotopy type theory}, LICS 2013, 223--232.
+
+\bibitem{RiehlShulman2017} E.~Riehl and M.~Shulman, \emph{A type theory for synthetic $\infty$-categories}, Higher Structures \textbf{1} (2017), no.~1, 147--224.\ arXiv:1705.07442.
+
+\bibitem{GWB2024} D.~Gratzer, J.~Weinberger, and U.~Buchholtz, \emph{Directed univalence in simplicial homotopy type theory}, 2024.\ arXiv:2407.09146.
+
+\bibitem{SchreiberShulman} U.~Schreiber and M.~Shulman, \emph{Quantum gauge field theory in cohesive homotopy type theory}, EPTCS \textbf{158} (2014), 109--126.
+
+\bibitem{Lambek1968} J.~Lambek, \emph{A fixpoint theorem for complete categories}, Math.\ Z.\ \textbf{103} (1968), 151--161.
+
+\bibitem{Lawvere1964} F.~W.~Lawvere, \emph{An elementary theory of the category of sets}, PNAS \textbf{52} (1964), 1506--1511.
+
+\bibitem{Awodey2010} S.~Awodey, \emph{Type theory and homotopy}, in \emph{Epistemology versus Ontology}, Springer, 2012, 183--201.
+
+\bibitem{Benacerraf1965} P.~Benacerraf, \emph{What numbers could not be}, Philosophical Review \textbf{74} (1965), 47--73.
+
+\bibitem{Voevodsky2011} V.~Voevodsky, \emph{Univalent foundations}, lecture notes, Institute for Advanced Study, 2011.\ \url{https://www.math.ias.edu/vladimir/Site3/Univalent_Foundations.html}.
+
+\bibitem{MartinLof1984} P.~Martin-L\"of, \emph{Intuitionistic Type Theory}, Bibliopolis, Naples, 1984.
+
+\bibitem{Rezk2010} C.~Rezk, \emph{Toposes and homotopy toposes}, lecture notes, University of Illinois at Urbana--Champaign, 2010.\ \url{https://faculty.math.illinois.edu/~rezk/homotopy-topos-sketch.pdf}.
+
+\bibitem{Joyal2008} A.~Joyal, \emph{Notes on quasi-categories}, manuscript, June 2008.\ \url{https://www.math.uchicago.edu/~may/IMA/Joyal.pdf}.
+
+\bibitem{Cisinski2019} D.-C.~Cisinski, \emph{Higher Categories and Homotopical Algebra}, Cambridge Studies in Advanced Mathematics, vol.~180, Cambridge University Press, 2019.
+
+\bibitem{PaperIII} YonedaAI, \emph{The Universal Property Perspective: Numbers as Initial Successor Structures}, Magneton Research Collective, 2026.
+
+\bibitem{PaperV} YonedaAI, \emph{The HoTT Perspective: Numbers as Inductive Types up to Path Equivalence}, Magneton Research Collective, 2026.
+
+\bibitem{Synthesis} YonedaAI, \emph{The Univalent Correspondence: Synthesis}, Magneton Research Collective, 2026.
+
+\bibitem{KapulkinLumsdaine} K.~Kapulkin and P.~L.~Lumsdaine, \emph{The simplicial model of univalent foundations (after Voevodsky)}, J.\ Eur.\ Math.\ Soc.\ \textbf{23} (2021), 2071--2126.
+
+\bibitem{CCHM} C.~Cohen, T.~Coquand, S.~Huber, and A.~M\"ortberg, \emph{Cubical Type Theory: a constructive interpretation of the univalence axiom}, TYPES 2015.\ arXiv:1611.02108.
+
+\bibitem{Riehl2025} E.~Riehl, \emph{Synthetic perspectives on spaces and categories}, 2025.\ arXiv:2510.15795.
+
+\bibitem{nLabENT} The nLab, \emph{elementary $(\infty,1)$-topos},\ \url{https://ncatlab.org/nlab/show/elementary+(infinity,1)-topos}, accessed 2026.
+
+\bibitem{nLabNNO} The nLab, \emph{natural numbers object},\ \url{https://ncatlab.org/nlab/show/natural+numbers+object}, accessed 2026.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,5 @@
+clear-package-db
+global-package-db
+package-db /Users/mlong/.cabal/store/ghc-9.14.1-ea4f/package.db
+package-id base-4.22.0.0-5102
+package-id QckChck-2.18.0.0-29e80c46

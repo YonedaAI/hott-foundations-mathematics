@@ -1,0 +1,551 @@
+<h1 data-number="1" id="sec:intro"><span class="header-section-number">1</span> Introduction</h1>
+<p>The constructive real numbers occupy a privileged position in the foundations of analysis. In a setting without the law of excluded middle, no canonical definition of <span class="math inline">\(\mathbb{R}\)</span> exists; instead, several non-equivalent candidates compete: <em>Cauchy reals</em> <span class="math inline">\(\mathbb{R}_{c}\)</span>, defined as a quotient of Cauchy sequences of rationals; <em>Dedekind reals</em> <span class="math inline">\(\mathbb{R}_{d}\)</span>, defined as located cuts; and <em>streams</em> or <em>redundant binary signed-digit representations</em>, definable as final coalgebras (Paper III, §5). In classical mathematics these collapse to a single object, but constructively they differ by countable choice, fan-theorem-like principles, or modulus-of-convergence considerations <span class="citation" data-cites="BridgesRichman"></span>. The <em>Cauchy</em> presentation is the most useful for executable analysis: it admits a direct definition of limits, supports the unique-existence definitions of transcendentals via Picard-style fixed points, and yields an Archimedean ordered field on the nose.</p>
+<p>In Homotopy Type Theory (HoTT) <span class="citation" data-cites="HoTTBook"></span>, an additional dimension is available: the <em>path</em> structure of identity types. §11.3 of the HoTT Book, refined by Booij <span class="citation" data-cites="Booij2020"></span>, defines <span class="math inline">\(\mathbb{R}_{c}\)</span> not as a <em>quotient</em> but as a <em>higher inductive–inductive type</em> (HIIT): the carrier <span class="math inline">\(\mathbb{R}_{c}\)</span> and a parameterised closeness relation <span class="math inline">\(\mathrel{\sim}_{\varepsilon} : \mathbb{R}_{c}\to \mathbb{R}_{c}\to \mathsf{Type}\)</span> are introduced <em>simultaneously</em>, with constructors that include both points and <em>path constructors</em> identifying close-enough representatives. The result is an h-set on which the limit operation <span class="math inline">\(\mathsf{lim}: (\mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}) \to \mathbb{R}_{c}\)</span> exists <em>by construction</em>, with no choice principle invoked.</p>
+<p>This Book HoTT construction is the foundation of Paper V’s treatment of <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span> (Definitions 8.1, 8.2, here recalled in Section <a href="#sec:hott-recap" data-reference-type="ref" data-reference="sec:hott-recap">3</a>), which expresses each as the centre of a contractible type of solutions to its characteristic structural condition. As long as <span class="math inline">\(\mathbb{R}_{c}\)</span> is a <em>type</em>—and not merely a proposition—these definitions are mathematically meaningful even before one has computational content for the rationals approximating <span class="math inline">\(\pi\)</span> to a given precision.</p>
+<h4 data-number="1.0.0.1" id="the-gap."><span class="header-section-number">1.0.0.1</span> The gap.</h4>
+<p>The synthesis of the prior series <span class="citation" data-cites="SynthesisHoTT"></span> flagged the following gap:</p>
+<blockquote>
+<p><em>The Cauchy reals construction of Paper V is given in Book HoTT; a clean cubical version (in Cubical Agda) is in progress but incomplete.</em></p>
+</blockquote>
+<p>The gap matters for three reasons. First, Book HoTT is a postulational extension of MLTT: path constructors are added with their <span class="math inline">\(\beta\)</span>-rules postulated, breaking canonicity in the absence of a model with a computational interpretation. Cubical type theory (CCHM, <span class="citation" data-cites="CCHM"></span>) restores canonicity by introducing the <em>interval</em> <span class="math inline">\(\mathbb{I}\)</span> as a primitive judgemental object with a de Morgan algebra structure and replacing path postulates with operations on <span class="math inline">\(\mathbb{I}\)</span>-functions. Second, in Cubical Agda <span class="citation" data-cites="CubicalAgda"></span>, univalence is <em>not</em> an axiom but a <em>theorem</em>: <span class="math inline">\(\mathsf{ua}\)</span> is a defined term whose <span class="math inline">\(\beta\)</span>-rule reduces. The same machinery suggests that <span class="math inline">\(\mathbb{R}_{c}\)</span> should be expressible as an honest cubical HIIT, with all of its eliminators computing. Third, downstream applications (transcendentals, complex analysis, <span class="math inline">\(\zeta\)</span>-as-HoTT-native-statement; cf. <span class="citation" data-cites="SynthesisHoTT"></span>) need a <em>computational</em> <span class="math inline">\(\mathbb{R}_{c}\)</span>, not a postulated one.</p>
+<h4 data-number="1.0.0.2" id="what-we-do."><span class="header-section-number">1.0.0.2</span> What we do.</h4>
+<p>We give a Cubical Agda specification of <span class="math inline">\((\mathbb{R}_{c},\mathrel{\sim})\)</span> as a HIIT with four constructors: <code>rat</code>, <code>lim</code>, <code>eq</code> (closeness-induced path), and a square constructor expressing propositional truncation of <span class="math inline">\(\mathrel{\sim}\)</span>. The novelty over the Book HoTT presentation is that <em>every</em> constructor is given as either a <span class="math inline">\(\mathsf{Type}\)</span>, a <span class="math inline">\(\mathsf{Path}\)</span>, or a <span class="math inline">\(\mathsf{PathP}\)</span> (a path over a path); we never invoke set-truncation or propositional-truncation as black boxes. The closeness predicate is defined simultaneously by an inductive-inductive scheme whose well-formedness in Cubical Agda we justify by reduction to the inductive-inductive schema of Altenkirch–Kaposi <span class="citation" data-cites="AltenkirchKaposi"></span>.</p>
+<p>We then prove four results, <em>cubically</em>:</p>
+<ol>
+<li><p><strong><span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set.</strong> (Theorem <a href="#thm:Rc-isSet" data-reference-type="ref" data-reference="thm:Rc-isSet">14</a>)</p></li>
+<li><p><strong><span class="math inline">\(\mathbb{R}_{c}\)</span> has the universal property of the Cauchy completion of <span class="math inline">\(\mathbb{Q}\)</span>.</strong> (Theorem <a href="#thm:Rc-univ" data-reference-type="ref" data-reference="thm:Rc-univ">15</a>)</p></li>
+<li><p><strong>There is a cubical equivalence <span class="math inline">\(\mathbb{R}_{c}\simeq\mathbb{R}_{d}^{\text{loc}}\)</span>, where <span class="math inline">\(\mathbb{R}_{d}^{\text{loc}}\)</span> is the type of located Dedekind cuts.</strong> (Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a>)</p></li>
+<li><p><strong><span class="math inline">\(\mathbb{R}_{c}\)</span> extracts: the rational approximants to <span class="math inline">\(\sqrt{2}\)</span>, <span class="math inline">\(\pi\)</span>, and <span class="math inline">\(e\)</span> are computed by reduction of normal forms in Cubical Agda.</strong> (Section <a href="#sec:extraction" data-reference-type="ref" data-reference="sec:extraction">9</a>)</p></li>
+</ol>
+<p>The remainder of the paper makes (R1)–(R4) precise, gives the Cubical Agda code for the central definitions and theorems, and identifies the remaining gaps—chiefly the absence of a fully judgemental <span class="math inline">\(\eta\)</span>-rule for the closeness constructor and the lack of an integrated <code>Cubical.HITs.CauchyReals</code> module in the standard library <span class="citation" data-cites="CubicalAgdaLib"></span>.</p>
+<h4 data-number="1.0.0.3" id="outline."><span class="header-section-number">1.0.0.3</span> Outline.</h4>
+<p>Section <a href="#sec:hott-recap" data-reference-type="ref" data-reference="sec:hott-recap">3</a> recalls the Book HoTT construction of <span class="math inline">\(\mathbb{R}_{c}\)</span> from <span class="citation" data-cites="HoTTBook Booij2020"></span>. Section <a href="#sec:cchm" data-reference-type="ref" data-reference="sec:cchm">4</a> reviews CCHM cubical type theory: the interval, Kan operations, Glue types, computational univalence. Section <a href="#sec:cubical-hiits" data-reference-type="ref" data-reference="sec:cubical-hiits">5</a> discusses cubical HIITs in general, focusing on what changes when one moves from Book HoTT path-constructors to Cubical Agda <code>Path</code>/<code>PathP</code> constructors. Section <a href="#sec:cubical-cauchy" data-reference-type="ref" data-reference="sec:cubical-cauchy">6</a> gives the Cubical Agda HIIT of <span class="math inline">\(\mathbb{R}_{c}\)</span>. Section <a href="#sec:dedekind" data-reference-type="ref" data-reference="sec:dedekind">7</a> sketches the equivalence with located Dedekind cuts. Section <a href="#sec:extraction" data-reference-type="ref" data-reference="sec:extraction">9</a> discusses computational content and extraction of rational approximants. Section <a href="#sec:open" data-reference-type="ref" data-reference="sec:open">10</a> lists open problems and the path forward.</p>
+<h4 data-number="1.0.0.4" id="audience."><span class="header-section-number">1.0.0.4</span> Audience.</h4>
+<p>We assume familiarity with HoTT at the level of <span class="citation" data-cites="HoTTBook"></span>, Chapters 1–3 and 6, and basic constructive analysis at the level of <span class="citation" data-cites="BridgesRichman"></span>. Cubical type theory at the level of <span class="citation" data-cites="CCHM"></span> is helpful but is reviewed here. Familiarity with Cubical Agda <span class="citation" data-cites="CubicalAgda"></span> is helpful for reading the code blocks but is not strictly required.</p>
+<h1 data-number="2" id="sec:framework"><span class="header-section-number">2</span> Mathematical Framework and Notation</h1>
+<p>This section fixes notation and recalls the type-theoretic vocabulary used throughout. Readers familiar with the HoTT Book may safely skip to Section <a href="#sec:hott-recap" data-reference-type="ref" data-reference="sec:hott-recap">3</a>.</p>
+<h2 data-number="2.1" id="universes-and-truncation-levels"><span class="header-section-number">2.1</span> Universes and Truncation Levels</h2>
+<p>We work in a tower of universes <span class="math inline">\(\mathcal{U}_0 : \mathcal{U}_1 : \mathcal{U}_2 : \dots\)</span>, with the Tarski-style cumulativity <span class="math inline">\(\mathcal{U}_n \subseteq \mathcal{U}_{n+1}\)</span>. We write <span class="math inline">\(\mathsf{Type}\)</span> for the generic universe; the index is left implicit unless required.</p>
+<p>For <span class="math inline">\(X : \mathsf{Type}\)</span>, the predicates <span class="math inline">\(\mathsf{isContr}(X), \mathsf{isProp}(X), \mathsf{isSet}(X)\)</span> are defined as in <span class="citation" data-cites="HoTTBook"></span>: <span class="math display">\[\begin{align*}
+\mathsf{isContr}(X) &amp;:\equiv \Sigma_{x : X}\, \Pi_{y : X}\, x = y, \\
+\mathsf{isProp}(X)  &amp;:\equiv \Pi_{x, y : X}\, x = y, \\
+\mathsf{isSet}(X)   &amp;:\equiv \Pi_{x, y : X}\, \mathsf{isProp}(x = y).
+\end{align*}\]</span> A type <span class="math inline">\(X\)</span> with <span class="math inline">\(\mathsf{isSet}(X)\)</span> is called an <em>h-set</em> (homotopy set). The type <span class="math inline">\(\mathbb{R}_{c}\)</span> to be defined will be an h-set, but its definition crucially uses the path structure between paths: it is not just a quotient.</p>
+<h2 data-number="2.2" id="identity-types-and-path-types"><span class="header-section-number">2.2</span> Identity Types and Path Types</h2>
+<p>In Book HoTT, the identity type <span class="math inline">\(a =_A b\)</span> is generated by reflexivity and eliminated by the J-rule. In Cubical Agda, the type <span class="math inline">\(\mathsf{Path}\,A\,a\,b\)</span> replaces this and is judgmentally <span class="math inline">\(\mathbb{I}\to A\)</span> with <span class="math inline">\(a, b\)</span> at the endpoints. The two are equivalent (<span class="citation" data-cites="CCHM"></span>), but the cubical formulation makes function extensionality, univalence, and HIT <span class="math inline">\(\beta\)</span>-rules computable.</p>
+<div id="def:equiv" class="definition">
+<p><strong>Definition 1</strong> (Equivalence).  For <span class="math inline">\(f : A \to B\)</span>, <span class="math inline">\(\mathsf{isEquiv}(f) :\equiv \Pi_{b : B}\, \mathsf{isContr}(\Sigma_{a : A}\, f\,a = b)\)</span>. The type of equivalences is <span class="math inline">\(A \simeq B :\equiv \Sigma_{f : A \to B}\, \mathsf{isEquiv}(f)\)</span>.</p>
+</div>
+<h2 data-number="2.3" id="higher-inductive-types-and-hiits"><span class="header-section-number">2.3</span> Higher Inductive Types and HIITs</h2>
+<p>A <em>higher inductive type</em> (HIT) is presented by a list of point constructors and path constructors (paths in the resulting type), with an eliminator that respects all of these. The canonical example is the circle <span class="math inline">\(S^1\)</span>, with <span class="math inline">\(\mathsf{base} : S^1\)</span> and <span class="math inline">\(\mathsf{loop} : \mathsf{base} = \mathsf{base}\)</span>.</p>
+<p>A <em>higher inductive–inductive type</em> (HIIT) introduces both a type <span class="math inline">\(A\)</span> and a family <span class="math inline">\(B\)</span> over <span class="math inline">\(A\)</span> (or over <span class="math inline">\(A \times A\)</span>, etc.) with constructors that may reference inhabitants of either. The formal schema for HIITs in Book HoTT is given by Altenkirch–Kaposi <span class="citation" data-cites="AltenkirchKaposi"></span> via quotient inductive–inductive types (QIITs); the cubical version is treated by <span class="citation" data-cites="CCHM"></span> for QITs and extended in <span class="citation" data-cites="CubicalAgda"></span> to handle the HIIT case.</p>
+<h2 data-number="2.4" id="conventions"><span class="header-section-number">2.4</span> Conventions</h2>
+<ul>
+<li><p><span class="math inline">\(\Pi_{x : A}\, B(x)\)</span> is the dependent product (function) type, also written <span class="math inline">\((x : A) \to B(x)\)</span> in Agda syntax.</p></li>
+<li><p><span class="math inline">\(\Sigma_{x : A}\, B(x)\)</span> is the dependent sum (pair) type.</p></li>
+<li><p>We write <span class="math inline">\(f \circ g\)</span> for function composition, <span class="math inline">\(f^{-1}\)</span> for the inverse of an equivalence.</p></li>
+<li><p>We use the convention that bound variables in <span class="math inline">\(\Pi\)</span> and <span class="math inline">\(\Sigma\)</span> types may be introduced silently when no ambiguity arises (so we write <span class="math inline">\(\Pi q.\, P\,q\)</span> for <span class="math inline">\(\Pi_{q : T}\, P\,q\)</span> when <span class="math inline">\(T\)</span> is clear from context).</p></li>
+</ul>
+<h1 data-number="3" id="sec:hott-recap"><span class="header-section-number">3</span> The Book HoTT Cauchy Reals: Recap of Paper V</h1>
+<p>We follow <span class="citation" data-cites="HoTTBook"></span>, reorganising slightly to align with Booij’s PhD thesis <span class="citation" data-cites="Booij2020"></span>, which is the most detailed source for this construction.</p>
+<h2 data-number="3.1" id="rationals-and-closeness"><span class="header-section-number">3.1</span> Rationals and Closeness</h2>
+<p>We assume the type <span class="math inline">\(\mathbb{Q}\)</span> of rational numbers is given as a set quotient <span class="math inline">\((\mathbb{Z}\times \mathbb{Z}_{&gt;0}) /\!\!\sim\)</span>, where <span class="math inline">\(\sim\)</span> is the cross-multiplication equivalence. We write <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span> for the type of strictly positive rationals, equivalently <span class="math inline">\(\Sigma_{q : \mathbb{Q}}\, q &gt; 0\)</span>. The standard operations <span class="math inline">\(+, -, \cdot, |\cdot|\)</span> are inherited from <span class="math inline">\(\mathbb{Q}\)</span>; we treat them as judgmentally well-defined.</p>
+<div id="def:close-Q" class="definition">
+<p><strong>Definition 2</strong> (<span class="math inline">\(\varepsilon\)</span>-closeness on <span class="math inline">\(\mathbb{Q}\)</span>).  For <span class="math inline">\(\varepsilon : \mathbb{Q}^{&gt;0}\)</span> and <span class="math inline">\(p, q : \mathbb{Q}\)</span>, define <span class="math inline">\(p \mathrel{\sim}_{\varepsilon} q :\equiv |p - q| &lt; \varepsilon\)</span>.</p>
+</div>
+<h2 data-number="3.2" id="the-hiit-presentation"><span class="header-section-number">3.2</span> The HIIT Presentation</h2>
+<p>A brief orientation. The Cauchy condition we use, <span class="math inline">\(x_{\delta} \mathrel{\sim}_{\delta + \varepsilon} x_{\varepsilon}\)</span> for all <span class="math inline">\(\delta, \varepsilon : \mathbb{Q}^{&gt;0}\)</span>, is the <em>constructive</em> formulation: a sequence carries with it an <em>explicit modulus of convergence</em>, given by the index <span class="math inline">\(\varepsilon\)</span> itself. Classically, one writes “<span class="math inline">\(\forall \varepsilon\,\exists N\,\forall n \geq N\,|x_n - x_m| &lt;
+\varepsilon\)</span>,” but this requires both choice (to extract <span class="math inline">\(N\)</span> from the existence claim) and a <span class="math inline">\(\mathbb{N}\)</span>-indexed sequence. We avoid both: the sequence is indexed by <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span> (so the rate of convergence is encoded in the indexing itself), and the Cauchy condition is <span class="math inline">\(\Pi\)</span>-typed (so the modulus is an internal datum, not extracted via choice). This is the formulation adopted by Booij <span class="citation" data-cites="Booij2020"></span> and by the HoTT Book <span class="citation" data-cites="HoTTBook"></span>.</p>
+<div id="def:Rc-book" class="definition">
+<p><strong>Definition 3</strong> (Cauchy reals as a HIIT, Booij).  The pair <span class="math inline">\((\mathbb{R}_{c}, \mathrel{\sim})\)</span> is the simultaneous higher inductive–inductive type with the following constructors.</p>
+<p><strong>Carrier constructors of <span class="math inline">\(\mathbb{R}_{c}\)</span>:</strong></p>
+<ul>
+<li><p><span class="math inline">\(\mathsf{rat}: \mathbb{Q}\to \mathbb{R}_{c}\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{lim}: \Pi_{x : \mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}}\,
+       \mathsf{isCauchyApprox}(x) \to \mathbb{R}_{c}\)</span>, where <span class="math display">\[\mathsf{isCauchyApprox}(x) :\equiv
+\Pi_{\delta, \varepsilon : \mathbb{Q}^{&gt;0}}\,
+   x_{\delta} \mathrel{\sim}_{\delta + \varepsilon} x_{\varepsilon}.\]</span></p></li>
+<li><p><span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}} : \Pi_{u, v : \mathbb{R}_{c}}\,
+        (\Pi_{\varepsilon : \mathbb{Q}^{&gt;0}}\, u \mathrel{\sim}_{\varepsilon} v) \to u = v\)</span>.</p></li>
+</ul>
+<p><strong>Constructors of <span class="math inline">\(\mathrel{\sim}_{\varepsilon}\)</span> (one per pair-shape).</strong> A small but crucial detail: the constructors below take subtractions of strictly positive rationals as <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span>-precisions, so each is implicitly conditioned on the relevant strict inequality (<span class="math inline">\(\varepsilon &gt; \delta\)</span>, <span class="math inline">\(\varepsilon &gt; \delta + \eta\)</span>). We carry these preconditions along throughout the paper; equivalently, one may reparameterise so that the gap is given as an additional <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span> argument.</p>
+<ul>
+<li><p><strong><span class="math inline">\(\mathsf{rat\text{-}rat}\)</span>.</strong> <span class="math display">\[\Pi_{q, r : \mathbb{Q}}\,\Pi_{\varepsilon : \mathbb{Q}^{&gt;0}}\,
+   |q - r| &lt; \varepsilon \;\longrightarrow\;
+   \mathsf{rat}\,q \mathrel{\sim}_{\varepsilon} \mathsf{rat}\,r.\]</span></p></li>
+<li><p><strong><span class="math inline">\(\mathsf{rat\text{-}lim}\)</span>.</strong> <span class="math display">\[\begin{aligned}
+&amp;\Pi_{q : \mathbb{Q}}\,\Pi_{y, \mathsf{cy}}\,
+\Pi_{\varepsilon, \delta : \mathbb{Q}^{&gt;0}}\,
+\Pi_{h_{&gt;} : \delta &lt; \varepsilon}, \\
+&amp;\quad \mathsf{rat}\,q \mathrel{\sim}_{\varepsilon - \delta} y_{\delta} \;\longrightarrow\;
+   \mathsf{rat}\,q \mathrel{\sim}_{\varepsilon} \mathsf{lim}(y, \mathsf{cy}).
+\end{aligned}\]</span></p></li>
+<li><p><strong><span class="math inline">\(\mathsf{lim\text{-}rat}\)</span>.</strong> Symmetric, with precondition <span class="math inline">\(\delta &lt; \varepsilon\)</span>.</p></li>
+<li><p><strong><span class="math inline">\(\mathsf{lim\text{-}lim}\)</span>.</strong> <span class="math display">\[\begin{aligned}
+&amp;\Pi_{x, \mathsf{cx}, y, \mathsf{cy}}\,
+\Pi_{\varepsilon, \delta, \eta : \mathbb{Q}^{&gt;0}}\,
+\Pi_{h_{&gt;} : \delta + \eta &lt; \varepsilon}, \\
+&amp;\quad x_{\delta} \mathrel{\sim}_{\varepsilon - \delta - \eta} y_{\eta}
+   \;\longrightarrow\;
+   \mathsf{lim}(x,\mathsf{cx}) \mathrel{\sim}_{\varepsilon} \mathsf{lim}(y,\mathsf{cy}).
+\end{aligned}\]</span></p></li>
+</ul>
+<p>The preconditions are essential: <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span> is not closed under subtraction, and <span class="math inline">\(\varepsilon - \delta\)</span> is well-defined in <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span> exactly when <span class="math inline">\(\delta &lt; \varepsilon\)</span>. Booij’s thesis <span class="citation" data-cites="Booij2020"></span> carries these inequalities as part of the constructor signatures; we adopt the same convention. An alternative formulation, equivalent up to coercion, takes the <em>positive gap</em> <span class="math inline">\(\theta : \mathbb{Q}^{&gt;0}\)</span> as an explicit argument and writes <span class="math inline">\(\varepsilon = \delta + \theta\)</span> in place of <span class="math inline">\(\varepsilon - \delta\)</span>; this avoids the precondition entirely.</p>
+<p><strong>Path constructor of <span class="math inline">\(\mathrel{\sim}\)</span>:</strong></p>
+<ul>
+<li><p>For each <span class="math inline">\(\varepsilon, u, v\)</span>, the type <span class="math inline">\(u \mathrel{\sim}_{\varepsilon} v\)</span> is a proposition: any two inhabitants are equal.</p></li>
+</ul>
+<p><strong>Set-truncation:</strong></p>
+<ul>
+<li><p><span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set: for any <span class="math inline">\(u, v : \mathbb{R}_{c}\)</span> and <span class="math inline">\(p, q : u = v\)</span>, <span class="math inline">\(p = q\)</span>.</p></li>
+</ul>
+</div>
+<p>The dependent eliminator for <span class="math inline">\((\mathbb{R}_{c}, \mathrel{\sim})\)</span> provides simultaneous induction principles for any motive <span class="math inline">\(A : \mathbb{R}_{c}\to \mathsf{Type}\)</span> and <span class="math inline">\(B : \Pi_{u, v : \mathbb{R}_{c}}\, A(u) \to A(v) \to \mathbb{Q}^{&gt;0} \to \mathsf{Type}\)</span> respecting all the constructors and path constructors. For a full statement, see <span class="citation" data-cites="HoTTBook"></span>.</p>
+<h2 data-number="3.3" id="universal-property"><span class="header-section-number">3.3</span> Universal Property</h2>
+<div id="thm:UP-book" class="theorem">
+<p><strong>Theorem 4</strong> (Universal property of <span class="math inline">\(\mathbb{R}_{c}\)</span>, <span class="citation" data-cites="HoTTBook"></span> Thm. 11.3.5).  <em>For any complete metric space <span class="math inline">\(Y\)</span> over <span class="math inline">\(\mathbb{Q}\)</span> that is an h-set, every <span class="math inline">\(\mathbb{Q}\)</span>-uniformly continuous map <span class="math inline">\(f : \mathbb{Q}\to Y\)</span> extends uniquely to <span class="math inline">\(\bar f : \mathbb{R}_{c}\to Y\)</span>.</em></p>
+</div>
+<p>This is the Cauchy-completion universal property and the core technical result needed for the unique-existence definitions of <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span>.</p>
+<h2 data-number="3.4" id="why-a-hiit-and-not-a-quotient"><span class="header-section-number">3.4</span> Why a HIIT and Not a Quotient</h2>
+<p>In <em>set-theoretic</em> foundations one defines <span class="math inline">\(\mathbb{R}_{c}\)</span> as a quotient of Cauchy sequences of rationals modulo the equivalence <span class="math inline">\(x \sim y \iff \forall \varepsilon\, \exists N\, \forall n \geq N\,
+  |x_n - y_n| &lt; \varepsilon\)</span>. In type theory <em>without</em> countable choice (e.g. propositions-as-types MLTT), this quotient is <em>not</em> Cauchy-complete: lifting a Cauchy sequence of equivalence classes to a Cauchy sequence of representatives requires the choice principle. The HIIT construction of Definition <a href="#def:Rc-book" data-reference-type="ref" data-reference="def:Rc-book">3</a> avoids this problem by introducing <span class="math inline">\(\mathsf{lim}\)</span> as a <em>primitive constructor</em> and identifying representatives via the path constructor <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\)</span>.</p>
+<h2 data-number="3.5" id="pi-and-e-as-unique-existence-centres"><span class="header-section-number">3.5</span> <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span> as Unique Existence Centres</h2>
+<div id="def:pi" class="definition">
+<p><strong>Definition 5</strong> (<span class="math inline">\(\pi\)</span>, after <span class="citation" data-cites="HoTTBook"></span> 11.3 and Paper V Def. 8.1).  <span class="math inline">\(\pi : \mathbb{R}_{c}\)</span> is the centre of the contractible type <span class="math display">\[P_{\pi} :\equiv
+\Sigma_{p : \mathbb{R}_{c}}\,
+ (\sin p =_{\mathbb{R}_{c}} 0) \times (p &gt; 0) \times
+ (\Pi_{x : \mathbb{R}_{c}}\, 0 &lt; x &lt; p \to \sin x &gt; 0).\]</span> Here <span class="math inline">\(\sin : \mathbb{R}_{c}\to \mathbb{R}_{c}\)</span> is the unique solution of <span class="math inline">\(\sin&#39;&#39; + \sin = 0,\, \sin\,0 = 0,\, \sin&#39;\,0 = 1\)</span>, again presented as a unique-existence centre.</p>
+</div>
+<div id="def:e" class="definition">
+<p><strong>Definition 6</strong> (<span class="math inline">\(e\)</span>, after Paper V Def. 8.2).  <span class="math inline">\(e :\equiv \exp\,1\)</span>, where <span class="math inline">\(\exp : \mathbb{R}_{c}\to \mathbb{R}_{c}\)</span> is the centre of <span class="math display">\[P_{\exp} :\equiv
+\Sigma_{f : \mathbb{R}_{c}\to \mathbb{R}_{c}}\,
+ (f&#39; = f) \times (f\,0 = 1).\]</span></p>
+</div>
+<p>The crucial property of these definitions is that, although <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span> are introduced as <em>centres of contractible types</em>, the centres are <em>terms of type <span class="math inline">\(\mathbb{R}_{c}\)</span></em>; in Book HoTT, this term is well-typed but <em>has no canonical form</em>. To extract approximating rationals one must either move outside Book HoTT (an external interpretation) or move to a type theory where <span class="math inline">\(\mathbb{R}_{c}\)</span> has computational content. The latter route is the one we pursue here.</p>
+<h2 data-number="3.6" id="what-cubical-has-that-book-hott-lacks"><span class="header-section-number">3.6</span> What Cubical Has That Book HoTT Lacks</h2>
+<ul>
+<li><p><strong>Computational univalence.</strong> In Book HoTT, <span class="math inline">\(\mathsf{ua}\)</span> is an axiom; <span class="math inline">\(\mathsf{transport}\)</span> along <span class="math inline">\(\mathsf{ua}\,(e : A \simeq B)\)</span> does <em>not</em> reduce to <span class="math inline">\(e\)</span> definitionally. Cubical Agda makes this reduction judgmental (<span class="citation" data-cites="Paper05HoTT"></span>).</p></li>
+<li><p><strong>HIT canonicity.</strong> The <span class="math inline">\(\beta\)</span>-rules of HIT path constructors in Book HoTT hold only propositionally. In Cubical Agda, the rules hold <em>definitionally</em> for points and <em>up to higher coherence</em> for paths; this is the source of the canonicity theorem of Huber <span class="citation" data-cites="Huber"></span>.</p></li>
+<li><p><strong>Function extensionality.</strong> A theorem in cubical type theory, not an axiom: <code>funExt</code> is the application of the path operation to <span class="math inline">\(i \mapsto \lambda x.\, p\,x\,i\)</span>.</p></li>
+</ul>
+<h1 data-number="4" id="sec:cchm"><span class="header-section-number">4</span> CCHM Cubical Type Theory</h1>
+<p>We summarise the features of CCHM <span class="citation" data-cites="CCHM"></span> that we will use; this section is meant as orientation, not a self-contained development.</p>
+<h2 data-number="4.1" id="the-interval"><span class="header-section-number">4.1</span> The Interval</h2>
+<p>The CCHM type theory adds a primitive object <span class="math inline">\(\mathbb{I}\)</span>, the <em>interval</em>, together with constants <span class="math inline">\(0, 1 : \mathbb{I}\)</span> and de Morgan algebra operations <span class="math inline">\(\sqcap, \sqcup : \mathbb{I}\to \mathbb{I}\to \mathbb{I}\)</span> and <span class="math inline">\(\neg : \mathbb{I}\to \mathbb{I}\)</span> satisfying: <span class="math display">\[i \sqcap 0 = 0,\quad i \sqcup 1 = 1,\quad \neg(\neg i) = i,\quad
+\neg(i \sqcap j) = \neg i \sqcup \neg j, \ldots\]</span> The interval is <em>not</em> a type in the universe; rather, it is a sort with its own variable bindings.</p>
+<h2 data-number="4.2" id="path-types"><span class="header-section-number">4.2</span> Path Types</h2>
+<p>For <span class="math inline">\(A : \mathsf{Type}\)</span> and <span class="math inline">\(a, b : A\)</span>, the path type <span class="math inline">\(\mathsf{Path}_A\,a\,b\)</span> is the type of functions <span class="math inline">\(p : \mathbb{I}\to A\)</span> with <span class="math inline">\(p\,0 \equiv a\)</span> and <span class="math inline">\(p\,1 \equiv b\)</span> <em>judgmentally</em>. Identity is recovered by abbreviation.</p>
+<div id="def:path-pathp" class="definition">
+<p><strong>Definition 7</strong> (<span class="math inline">\(\mathsf{Path}\)</span> vs <span class="math inline">\(\mathsf{PathP}\)</span>).  <span class="math inline">\(\mathsf{PathP}\,A\,a\,b\)</span>, where <span class="math inline">\(A : \mathbb{I}\to \mathsf{Type}\)</span>, is the type of dependent paths: <span class="math inline">\(p : (i : \mathbb{I}) \to A\,i\)</span> with <span class="math inline">\(p\,0 \equiv a : A\,0\)</span> and <span class="math inline">\(p\,1 \equiv b : A\,1\)</span>. We have <span class="math inline">\(\mathsf{Path}_X = \mathsf{PathP}\,(\lambda i.\,X)\)</span>.</p>
+</div>
+<h2 data-number="4.3" id="kan-operations-mathsfhcomp-and-mathsftransp"><span class="header-section-number">4.3</span> Kan Operations: <span class="math inline">\(\mathsf{hcomp}\)</span> and <span class="math inline">\(\mathsf{transp}\)</span></h2>
+<p>The two primitive Kan operations are:</p>
+<ul>
+<li><p><span class="math inline">\(\mathsf{hcomp}\)</span>: <em>homogeneous composition</em>. Given a partial element of <span class="math inline">\(A\)</span> defined on a set of faces <span class="math inline">\(\varphi\)</span> of an open box, together with a “floor” agreeing on the intersection, <span class="math inline">\(\mathsf{hcomp}\)</span> produces an element of <span class="math inline">\(A\)</span> giving the lid of the box.</p></li>
+<li><p><span class="math inline">\(\mathsf{transp}\)</span>: <em>transport along a path of types</em>. Given <span class="math inline">\(A : \mathbb{I}\to \mathsf{Type}\)</span> and <span class="math inline">\(a : A\,0\)</span>, <span class="math inline">\(\mathsf{transp}\,A\,a : A\,1\)</span>.</p></li>
+</ul>
+<p>These two operations together implement what classical homotopy theory calls <em>Kan filling</em>: every horn has a lifting to a simplex.</p>
+<h2 data-number="4.4" id="glue-types-and-univalence"><span class="header-section-number">4.4</span> Glue Types and Univalence</h2>
+<div id="def:glue" class="definition">
+<p><strong>Definition 8</strong> (Glue, sketched).  Given <span class="math inline">\(A : \mathsf{Type}\)</span> and a partial type <span class="math inline">\(T\)</span> defined on a face <span class="math inline">\(\varphi\)</span> together with a partial equivalence <span class="math inline">\(f : T \simeq A\)</span> on <span class="math inline">\(\varphi\)</span>, the type <span class="math inline">\(\mathsf{Glue}\,A\,[\varphi \mapsto (T, f)]\)</span> extends <span class="math inline">\(A\)</span> outside <span class="math inline">\(\varphi\)</span> and equals <span class="math inline">\(T\)</span> on <span class="math inline">\(\varphi\)</span>. There is a definable map <span class="math inline">\(\mathsf{unglue} : \mathsf{Glue}\,A\,[\dots] \to A\)</span> that on <span class="math inline">\(\varphi\)</span> agrees with <span class="math inline">\(f\)</span>.</p>
+</div>
+<div id="thm:cubical-ua" class="theorem">
+<p><strong>Theorem 9</strong> (Cubical univalence, <span class="citation" data-cites="CCHM"></span> Thm. 7.2).  <em>For <span class="math inline">\(A, B : \mathsf{Type}\)</span> and <span class="math inline">\(e : A \simeq B\)</span>, define <span class="math display">\[\mathsf{ua}\,e :\equiv \lambda i.\, \mathsf{Glue}\,B\,[(i = 0) \mapsto (A, e),\,
+                                   (i = 1) \mapsto (B, \mathsf{idEqv})].\]</span> Then <span class="math inline">\(\mathsf{transport}^{\mathsf{ua}\,e}\,a \equiv e\,a\)</span> definitionally, and <span class="math inline">\(\mathsf{idtoeqv}\circ \mathsf{ua}\equiv \mathsf{id}\)</span>.</em></p>
+</div>
+<p>This is the <em>computational</em> content of univalence: the inverse of <span class="math inline">\(\mathsf{idtoeqv}\)</span> is given by the <span class="math inline">\(\mathsf{Glue}\)</span> construction, and the <span class="math inline">\(\beta\)</span>-rule <em>reduces</em>.</p>
+<h2 data-number="4.5" id="coercion-and-filling"><span class="header-section-number">4.5</span> Coercion and Filling</h2>
+<p>A subtlety we shall need: the operation <span class="math inline">\(\mathsf{transp}\)</span> in CCHM is governed by a face condition <span class="math inline">\(\varphi\)</span> that controls when transport is the identity. A typical signature is <span class="math display">\[\mathsf{transp}: (A : \mathbb{I}\to \mathsf{Type})\,(\varphi : \mathbb{F})\,(a_0 : A\,0) \to A\,1,\]</span> with the rule that if <span class="math inline">\(\varphi\)</span> is true then <span class="math inline">\(A\)</span> is constant on <span class="math inline">\(\mathbb{I}\)</span> and <span class="math inline">\(\mathsf{transp}\)</span> is the identity. This is what makes <span class="math inline">\(\mathsf{transp}\)</span> behave like Kan filling rather than being a black box. For our purposes, the relevant consequence is that transport along the constant path is the identity <em>judgmentally</em>; this is critical for the proofs of Theorems <a href="#thm:Rc-isSet" data-reference-type="ref" data-reference="thm:Rc-isSet">14</a> and <a href="#thm:Rc-univ" data-reference-type="ref" data-reference="thm:Rc-univ">15</a>, where many path constructors are filled by reflexivity.</p>
+<h2 data-number="4.6" id="the-de-morgan-structure-on-the-interval"><span class="header-section-number">4.6</span> The de Morgan Structure on the Interval</h2>
+<p>The interval <span class="math inline">\(\mathbb{I}\)</span> in CCHM has a de Morgan algebra structure: <span class="math inline">\(\sqcap, \sqcup : \mathbb{I}\times \mathbb{I}\to \mathbb{I}\)</span> satisfy associativity, commutativity, idempotence, distributivity, and de Morgan’s laws via <span class="math inline">\(\neg\)</span>. This is <em>strictly weaker</em> than the Boolean algebra structure that one would get if the interval had complementation: <span class="math inline">\(i \sqcup \neg i \neq 1\)</span> in general. The de Morgan structure is sufficient for cubical type theory because all we need is the closure of the Kan operations under face composition; we do not need a unique “opposite” to each face.</p>
+<div id="rem:cartesian" class="remark">
+<p><em>Remark 10</em> (Cartesian vs CCHM cubical).  An alternative cubical type theory, the <em>cartesian</em> cubical theory of Angiuli–Brunerie–Coquand–Harper–Hou–Licata <span class="citation" data-cites="ABCHHL"></span>, drops the de Morgan operations and uses only <span class="math inline">\(\sqcap, \sqcup\)</span> as primitive. The two theories are equivalent at the level of definitional equality on closed terms, but differ in how diagonal squares (paths <span class="math inline">\(i \mapsto p\,i\,i\)</span>) are formed. Cubical Agda uses the CCHM presentation; we follow that throughout.</p>
+</div>
+<h2 data-number="4.7" id="cubical-agda"><span class="header-section-number">4.7</span> Cubical Agda</h2>
+<p>Cubical Agda <span class="citation" data-cites="CubicalAgda"></span> is a mode of the Agda proof assistant that natively supports CCHM-style operations. The interval is a sort <code>I</code>; <code>Path</code> and <code>PathP</code> are primitive; <code>hcomp</code> and <code>transp</code> reduce. The standard library |cubical/cubical| <span class="citation" data-cites="CubicalAgdaLib"></span> provides set quotients (|Cubical.HITs.SetQuotients|), propositional truncation (|Cubical.HITs.PropositionalTruncation|), and several other HITs.</p>
+<h1 data-number="5" id="sec:cubical-hiits"><span class="header-section-number">5</span> Cubical Higher Inductive–Inductive Types</h1>
+<p>We now address the specific challenge of moving from Book HoTT HIITs to Cubical Agda HIITs. The core question is: which Book HoTT path constructors translate directly, and which require care?</p>
+<h2 data-number="5.1" id="cubical-hits-vs-book-hott-hits"><span class="header-section-number">5.1</span> Cubical HITs vs Book HoTT HITs</h2>
+<p>In Book HoTT, a HIT is presented by a list of point and path constructors and an eliminator with <span class="math inline">\(\beta\)</span>-rules postulated. In Cubical Agda, an inductive–inductive type with point and path constructors <em>also</em> has the constructors as primitives—but the <span class="math inline">\(\beta\)</span>-rule for path constructors becomes a <em>judgemental</em> rule (the eliminator applied to a path constructor reduces) modulo Kan operations.</p>
+<p>The key difference is in the <em>type</em> of path constructors. In Book HoTT, a path constructor between <span class="math inline">\(a, b : A\)</span> has type <span class="math inline">\(a = b\)</span>. In Cubical Agda, the same constructor has type <span class="math inline">\(\mathsf{Path}\,A\,a\,b\)</span>, i.e. a function <span class="math inline">\(\mathbb{I}\to A\)</span>. This means a Cubical Agda path constructor takes one <em>additional argument</em>: an element of <span class="math inline">\(\mathbb{I}\)</span>.</p>
+<div class="example">
+<p><strong>Example 11</strong> (Circle).  The Book HoTT presentation of <span class="math inline">\(S^1\)</span> has: <span class="math display">\[\mathsf{base} : S^1, \qquad \mathsf{loop} : \mathsf{base} = \mathsf{base}.\]</span> The Cubical Agda presentation has: <span class="math display">\[\mathsf{base} : S^1, \qquad
+\mathsf{loop} : \mathbb{I}\to S^1
+\quad \text{with}\quad \mathsf{loop}\,0 \equiv \mathsf{base},\,
+\mathsf{loop}\,1 \equiv \mathsf{base}.\]</span></p>
+</div>
+<h2 data-number="5.2" id="the-iit-layer"><span class="header-section-number">5.2</span> The IIT Layer</h2>
+<p>Inductive–inductive types add a second layer: along with the carrier <span class="math inline">\(A\)</span>, one defines a family <span class="math inline">\(B : A \to \mathsf{Type}\)</span> (or <span class="math inline">\(A \to A \to \mathsf{Type}\)</span> in our case) <em>simultaneously</em> with <span class="math inline">\(A\)</span>. The constructors of <span class="math inline">\(A\)</span> may take arguments of type <span class="math inline">\(B\)</span>, and conversely. The well-formedness of such schemes was established by Altenkirch–Kaposi <span class="citation" data-cites="AltenkirchKaposi"></span>; their results lift to the cubical setting under mild assumptions on the absence of negative occurrences.</p>
+<div id="rem:coherence" class="remark">
+<p><em>Remark 12</em> (Coherence in cubical IITs).  The non-trivial coherence problem for cubical HIITs arises when path constructors in <span class="math inline">\(A\)</span> depend on inhabitants of <span class="math inline">\(B\)</span>, <em>and</em> <span class="math inline">\(B\)</span> has its own path constructors. In our case, <span class="math inline">\(\mathbb{R}_{c}\)</span> has <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\)</span> depending on <span class="math inline">\(\mathrel{\sim}\)</span>, while <span class="math inline">\(\mathrel{\sim}\)</span> is proposition-truncated. Cubically, this means we must ensure that the <span class="math inline">\(\mathsf{PathP}\)</span>-typed equation <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\)</span> respects the truncation of <span class="math inline">\(\mathrel{\sim}\)</span>. We make this precise in Section <a href="#sec:cubical-cauchy" data-reference-type="ref" data-reference="sec:cubical-cauchy">6</a>.</p>
+</div>
+<h2 data-number="5.3" id="truncation-as-squares"><span class="header-section-number">5.3</span> Truncation as Squares</h2>
+<p>In Cubical Agda, propositional truncation <span class="math inline">\(\| A \|_{-1}\)</span> is implemented via a constructor <span class="math inline">\(\mathsf{squash} : (x, y : \| A \|_{-1}) \to \mathsf{Path}\,\| A \|_{-1}\,x\,y\)</span>, i.e. a 2-cell witnessing that the truncated type is a proposition. Set-truncation <span class="math inline">\(\| A \|_0\)</span> similarly uses a square (2-dimensional path) constructor witnessing that all 1-paths are equal.</p>
+<p>For our HIIT, set-truncation of <span class="math inline">\(\mathbb{R}_{c}\)</span> is implemented by a constructor <span class="math display">\[\mathsf{Rc\text{-}isSet} :
+(u, v : \mathbb{R}_{c})\,(p, q : \mathsf{Path}\,\mathbb{R}_{c}\,u\,v)\,(i, j : \mathbb{I}) \to \mathbb{R}_{c}\]</span> satisfying the four obvious face conditions. This is a single 2-square constructor; in Cubical Agda syntax it is written using the <code>Square</code> abbreviation.</p>
+<h1 data-number="6" id="sec:cubical-cauchy"><span class="header-section-number">6</span> The Cauchy Real HIIT in Cubical Agda</h1>
+<p>We now give the central construction. Module organisation:</p>
+<pre><code>module Cubical.HITs.CauchyReals where
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
+open import Cubical.Data.Rationals using (Q ; Q+)</code></pre>
+<p>The <code>Q+</code> type is the type of strictly positive rationals; we will write <span class="math inline">\(\varepsilon, \delta, \eta\)</span> for its inhabitants throughout.</p>
+<h2 data-number="6.1" id="the-mutual-block"><span class="header-section-number">6.1</span> The Mutual Block</h2>
+<p>The carrier and the relator are introduced in a single mutual block:</p>
+<pre><code>mutual
+  data Rc : Type where
+    rat       : Q -&gt; Rc
+    lim       : (x : Q+ -&gt; Rc)
+              -&gt; (cx : (delta epsilon : Q+) -&gt;
+                       close (delta + epsilon) (x delta) (x epsilon))
+              -&gt; Rc
+    eq        : (u v : Rc)
+              -&gt; ((epsilon : Q+) -&gt; close epsilon u v)
+              -&gt; Path Rc u v
+    Rc-isSet  : isSet Rc
+
+  data close : Q+ -&gt; Rc -&gt; Rc -&gt; Type where
+    rat-rat  : (q r : Q) (epsilon : Q+)
+             -&gt; abs (q - r) &lt; epsilon
+             -&gt; close epsilon (rat q) (rat r)
+    rat-lim  : (q : Q)
+               (y  : Q+ -&gt; Rc)
+               (cy : (delta epsilon : Q+) -&gt;
+                     close (delta + epsilon) (y delta) (y epsilon))
+               (epsilon delta : Q+)
+             -&gt; (h&gt; : delta &lt; epsilon)
+             -&gt; close (Q+sub epsilon delta h&gt;) (rat q) (y delta)
+             -&gt; close epsilon (rat q) (lim y cy)
+    lim-rat  : (q : Q)
+               (x  : Q+ -&gt; Rc)
+               (cx : (delta epsilon : Q+) -&gt;
+                     close (delta + epsilon) (x delta) (x epsilon))
+               (epsilon delta : Q+)
+             -&gt; (h&gt; : delta &lt; epsilon)
+             -&gt; close (Q+sub epsilon delta h&gt;) (x delta) (rat q)
+             -&gt; close epsilon (lim x cx) (rat q)
+    lim-lim  : (x : Q+ -&gt; Rc)
+               (cx : (delta epsilon : Q+) -&gt;
+                     close (delta + epsilon) (x delta) (x epsilon))
+               (y : Q+ -&gt; Rc)
+               (cy : (delta epsilon : Q+) -&gt;
+                     close (delta + epsilon) (y delta) (y epsilon))
+               (epsilon delta eta : Q+)
+             -&gt; (h&gt; : (delta + eta) &lt; epsilon)
+             -&gt; close (Q+sub2 epsilon delta eta h&gt;) (x delta) (y eta)
+             -&gt; close epsilon (lim x cx) (lim y cy)
+    close-isProp : (epsilon : Q+) (u v : Rc)
+                   -&gt; isProp (close epsilon u v)</code></pre>
+<p>The auxiliary functions <code>Q+sub : (a b : Q+) -&gt; b &lt; a -&gt; Q+</code> and <code>Q+sub2 : (a b c : Q+) -&gt; b + c &lt; a -&gt; Q+</code> compute the positive remainder of <span class="math inline">\(a - b\)</span> (resp. <span class="math inline">\(a - b - c\)</span>) when the inequality is given. Both are direct consequences of the order structure on <span class="math inline">\(\mathbb{Q}\)</span> and the embedding <span class="math inline">\(\mathbb{Q}^{&gt;0} \hookrightarrow \mathbb{Q}\)</span>. Without the inequality witnesses <code>h&gt;</code>, the subtraction <span class="math inline">\(\varepsilon - \delta\)</span> is not in <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span>, and the constructor would be ill-typed.</p>
+<h2 data-number="6.2" id="reading-the-cubical-constructors"><span class="header-section-number">6.2</span> Reading the Cubical Constructors</h2>
+<p>The constructor <span class="math inline">\(\mathsf{eq} : \Pi_{u, v : \mathbb{R}_{c}}\,(\Pi\varepsilon.\, u \mathrel{\sim}_\varepsilon v) \to \mathsf{Path}\,\mathbb{R}_{c}\,u\,v\)</span> replaces the Book HoTT path constructor with a <span class="math inline">\(\mathsf{Path}\)</span>-typed one. In Cubical Agda syntax, <span class="math inline">\(\mathsf{Path}\,\mathbb{R}_{c}\,u\,v \equiv (i : \mathbb{I}) \to \mathbb{R}_{c}\)</span> with <span class="math inline">\(u, v\)</span> as endpoints. The eliminator on <span class="math inline">\(\mathsf{eq}\,u\,v\,h\)</span> takes one more argument (an element of <span class="math inline">\(\mathbb{I}\)</span>) than the Book HoTT eliminator on <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\,u\,v\,h\)</span>.</p>
+<p>The constructor <span class="math inline">\(\mathsf{Rc\text{-}isSet}\)</span> is, strictly, a square constructor as in Section <a href="#sec:cubical-hiits" data-reference-type="ref" data-reference="sec:cubical-hiits">5</a>. We follow the <code>Cubical.Foundations.HLevels</code> convention of writing it as <span class="math inline">\(\mathsf{isSet}\,\mathbb{R}_{c}\)</span>, which unfolds to the four-face square constructor.</p>
+<h2 data-number="6.3" id="the-closeness-predicate"><span class="header-section-number">6.3</span> The Closeness Predicate</h2>
+<p>The closeness predicate has four primary constructors and a proposition-truncation constructor. In Cubical Agda, the proposition-truncation is encoded as a path constructor:</p>
+<pre><code>close-isProp : (epsilon : Q+) (u v : Rc)
+            -&gt; (p q : close epsilon u v)
+            -&gt; Path (close epsilon u v) p q</code></pre>
+<p>This says: any two proofs of <span class="math inline">\(u \mathrel{\sim}_\varepsilon v\)</span> are <span class="math inline">\(\mathsf{Path}\)</span>-equal. By a standard lemma, this is equivalent to <span class="math inline">\(\mathsf{isProp}\)</span>.</p>
+<div id="lem:close-isProp" class="lemma">
+<p><strong>Lemma 13</strong> (Closeness is a proposition).  <em>For all <span class="math inline">\(\varepsilon, u, v\)</span>, <span class="math inline">\(\mathsf{isProp}(u \mathrel{\sim}_\varepsilon v)\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> By construction, the constructor <code>close-isProp</code> is exactly the inhabitant. Cubically, <span class="math inline">\(\mathsf{isProp}\,X \simeq(X \to X \to X)\)</span> (the proof-relevant version), and the latter is provided by <code>close-isProp</code>. ◻</p>
+</div>
+<h2 data-number="6.4" id="eliminator"><span class="header-section-number">6.4</span> Eliminator</h2>
+<p>The simultaneous eliminator takes motives: <span class="math display">\[P : \mathbb{R}_{c}\to \mathsf{Type}, \qquad
+R : \Pi_{u, v : \mathbb{R}_{c}}\, P\,u \to P\,v \to \mathbb{Q}^{&gt;0} \to \mathsf{Type},\]</span> together with methods for each constructor. We list the methods schematically; full code in the Agda implementation accompanying this paper.</p>
+<ul>
+<li><p><span class="math inline">\(\mathsf{m_{rat}} : \Pi q.\, P(\mathsf{rat}\,q)\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{m_{lim}} : \Pi(x, \mathsf{cx}, p_x, r_x).\, P(\mathsf{lim}\,x\,\mathsf{cx})\)</span>, where <span class="math inline">\(p_x : \Pi\delta.\, P(x\,\delta)\)</span> and <span class="math inline">\(r_x\)</span> provides <span class="math inline">\(R\)</span> on the prefiltered family.</p></li>
+<li><p><span class="math inline">\(\mathsf{m_{eq}}\)</span>: takes <span class="math inline">\(u, v, h, p_u : P\,u, p_v : P\,v, r\)</span> providing <span class="math inline">\(R(u,v,p_u,p_v,\varepsilon)\)</span> for all <span class="math inline">\(\varepsilon\)</span>, and returns <span class="math inline">\(\mathsf{PathP}\,(\lambda i.\, P(\mathsf{eq}\,u\,v\,h\,i))\,p_u\,p_v\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{m_{Rc\text{-}isSet}}\)</span>: provides h-set property of <span class="math inline">\(P\)</span> on the lifted square.</p></li>
+<li><p>Methods for <span class="math inline">\(\mathsf{rat\text{-}rat}, \mathsf{rat\text{-}lim},
+\mathsf{lim\text{-}rat}, \mathsf{lim\text{-}lim}, \mathsf{close\text{-}isProp}\)</span>, analogously.</p></li>
+</ul>
+<h2 data-number="6.5" id="mathbbr_c-is-an-h-set"><span class="header-section-number">6.5</span> <span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set</h2>
+<div id="thm:Rc-isSet" class="theorem">
+<p><strong>Theorem 14</strong> (<span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set).  <em><span class="math inline">\(\mathsf{isSet}(\mathbb{R}_{c})\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> The constructor <span class="math inline">\(\mathsf{Rc\text{-}isSet}\)</span> provides a square exhibiting <span class="math inline">\(\mathbb{R}_{c}\)</span> as an h-set; this is exactly the cubical formulation. Since <span class="math inline">\(\mathsf{isSet}(X) \simeq\Pi_{x, y}\, \mathsf{isProp}(x = y)\)</span> and the square constructor witnesses both faces, the result is by direct application. ◻</p>
+</div>
+<h2 data-number="6.6" id="universal-property-1"><span class="header-section-number">6.6</span> Universal Property</h2>
+<div id="thm:Rc-univ" class="theorem">
+<p><strong>Theorem 15</strong> (Universal property of cubical <span class="math inline">\(\mathbb{R}_{c}\)</span>).  <em>For any h-set <span class="math inline">\(Y\)</span> equipped with a <span class="math inline">\(\mathbb{Q}^{&gt;0}\)</span>-indexed closeness relation <span class="math inline">\(\mathrel{\sim}^Y\)</span> satisfying the four closeness axioms (<strong>rat-rat</strong>-style constraints transcribed for <span class="math inline">\(Y\)</span>), and any <span class="math inline">\(\mathbb{Q}\)</span>-uniformly continuous map <span class="math inline">\(f : \mathbb{Q}\to Y\)</span>, there exists a unique <span class="math inline">\(\bar f : \mathbb{R}_{c}\to Y\)</span> such that <span class="math inline">\(\bar f \circ \mathsf{rat}\equiv f\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Existence follows by applying the simultaneous eliminator with motives <span class="math inline">\(P :\equiv \lambda \_.\, Y\)</span> and <span class="math inline">\(R(u, v, y_u, y_v, \varepsilon) :\equiv y_u \mathrel{\sim}^Y_\varepsilon y_v\)</span>. The methods are: <span class="math inline">\(\mathsf{m_{rat}}\,q :\equiv f\,q\)</span>; <span class="math inline">\(\mathsf{m_{lim}}\,x\,\mathsf{cx}\,p_x\,r_x :\equiv \mathsf{lim}^Y(p_x, r_x)\)</span>; <span class="math inline">\(\mathsf{m_{eq}}\)</span> uses the assumption that <span class="math inline">\(Y\)</span> is an h-set so the path goal between <span class="math inline">\(\mathsf{lim}^Y\)</span>-constructed elements reduces to a propositional equality between rationals. Uniqueness follows from the same eliminator applied to the type <span class="math inline">\(\Sigma_{g : \mathbb{R}_{c}\to Y}\, g \circ \mathsf{rat}\equiv f\)</span>, which we show contractible by the standard Structure Identity Principle (SIP) argument (cf. Paper V §9.1; the SIP is the HoTT-internal statement that paths between structures coincide with structure-preserving equivalences <span class="citation" data-cites="HoTTBook"></span>). ◻</p>
+</div>
+<h2 data-number="6.7" id="closeness-implies-path"><span class="header-section-number">6.7</span> Closeness Implies Path</h2>
+<div id="lem:close-path" class="lemma">
+<p><strong>Lemma 16</strong> (<span class="math inline">\(\mathrel{\sim}\)</span>-induced paths).  <em>For all <span class="math inline">\(u, v : \mathbb{R}_{c}\)</span>, if <span class="math inline">\(\Pi\varepsilon.\, u \mathrel{\sim}_\varepsilon v\)</span>, then <span class="math inline">\(u = v\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> This is the constructor <span class="math inline">\(\mathsf{eq}\)</span>, applied with the given hypothesis and abstracted at <span class="math inline">\(\mathbb{I}\)</span>. ◻</p>
+</div>
+<h1 data-number="7" id="sec:dedekind"><span class="header-section-number">7</span> Equivalence with the Dedekind Reals</h1>
+<p>We sketch an equivalence between <span class="math inline">\(\mathbb{R}_{c}\)</span> and a suitable cubical version of the Dedekind reals.</p>
+<h2 data-number="7.1" id="cubical-dedekind-reals"><span class="header-section-number">7.1</span> Cubical Dedekind Reals</h2>
+<div id="def:dedekind" class="definition">
+<p><strong>Definition 17</strong> (Located Dedekind cuts).  A <em>located Dedekind cut</em> is a pair <span class="math inline">\((L, U)\)</span> of subsets of <span class="math inline">\(\mathbb{Q}\)</span> satisfying:</p>
+<ol>
+<li><p>Inhabited: <span class="math inline">\(\exists q.\, q \in L\)</span> and <span class="math inline">\(\exists q.\, q \in U\)</span>.</p></li>
+<li><p>Disjoint: <span class="math inline">\(\Pi q.\, \neg (q \in L \wedge q \in U)\)</span>.</p></li>
+<li><p>Located: <span class="math inline">\(\Pi q &lt; r.\, q \in L \vee r \in U\)</span>.</p></li>
+<li><p>Open: <span class="math inline">\(\Pi q.\, q \in L \to \exists r &gt; q.\, r \in L\)</span>, and dually for <span class="math inline">\(U\)</span>.</p></li>
+</ol>
+<p>We write <span class="math inline">\(\mathbb{R}_{d}^{\text{loc}}\)</span> for the type of located Dedekind cuts. In Cubical Agda, subsets are represented as <span class="math inline">\(\mathbb{Q}\to \mathsf{hProp}\)</span>, with <span class="math inline">\(\mathsf{hProp}\)</span> the universe of propositions.</p>
+</div>
+<h2 data-number="7.2" id="the-equivalence"><span class="header-section-number">7.2</span> The Equivalence</h2>
+<div id="thm:dedekind" class="theorem">
+<p><strong>Theorem 18</strong> (<span class="math inline">\(\mathbb{R}_{c}\simeq\mathbb{R}_{d}^{\text{loc}}\)</span>).  <em>There is a cubical equivalence <span class="math display">\[\Phi : \mathbb{R}_{c}\xrightarrow{\simeq} \mathbb{R}_{d}^{\text{loc}}.\]</span></em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch, cubical version.</em> Define <span class="math inline">\(\Phi\)</span> by simultaneous induction:</p>
+<ul>
+<li><p><span class="math inline">\(\Phi(\mathsf{rat}\,q) :\equiv (\{r : r &lt; q\}, \{r : r &gt; q\})\)</span>.</p></li>
+<li><p><span class="math inline">\(\Phi(\mathsf{lim}\,x\,\mathsf{cx}) :\equiv\)</span> the cut whose lower set is <span class="math inline">\(\{r : \exists \varepsilon &gt; 0.\, r + \varepsilon \in L(\Phi(x_\varepsilon))\}\)</span>, upper set dually.</p></li>
+<li><p>Methods on <span class="math inline">\(\mathsf{eq}\)</span>: by <span class="math inline">\(\mathsf{isSet}(\mathbb{R}_{d}^{\text{loc}})\)</span>, which is itself proved by a <span class="math inline">\(\Sigma\)</span>-of-<span class="math inline">\(\Pi\)</span> analysis.</p></li>
+</ul>
+<p>The inverse <span class="math inline">\(\Phi^{-1}\)</span> is constructed using the locatedness assumption: given a cut <span class="math inline">\((L, U)\)</span>, one extracts a Cauchy sequence by bisection. Locatedness is exactly what makes bisection work.</p>
+<p>In cubical, the equivalence is packaged as a <span class="math inline">\(\mathsf{Glue}\)</span> type <span class="math inline">\(\mathsf{ua}\,(\Phi, \Phi^{-1}, \ldots)\)</span>, providing both the equivalence <em>and</em> the path <span class="math inline">\(\mathbb{R}_{c}= \mathbb{R}_{d}^{\text{loc}}\)</span> at the level of types in the universe. ◻</p>
+</div>
+<div id="rem:no-located" class="remark">
+<p><em>Remark 19</em> (Without locatedness).  Without locatedness, the equivalence fails: the unrestricted Dedekind reals contain elements not realised by any Cauchy sequence in non-classical settings. This is a well-known phenomenon in constructive mathematics; cf. <span class="citation" data-cites="BridgesRichman"></span>.</p>
+</div>
+<h2 data-number="7.3" id="the-bisection-argument"><span class="header-section-number">7.3</span> The Bisection Argument</h2>
+<p>We elaborate the inverse direction <span class="math inline">\(\Phi^{-1} : \mathbb{R}_{d}^{\text{loc}} \to \mathbb{R}_{c}\)</span>, since locatedness is the heart of the matter.</p>
+<div id="lem:bisect" class="lemma">
+<p><strong>Lemma 20</strong> (Bisection).  <em>Given <span class="math inline">\((L, U) : \mathbb{R}_{d}^{\text{loc}}\)</span>, the type <span class="math display">\[\Sigma_{f : \mathbb{Q}^{&gt;0} \to \mathbb{Q}^2}\,
+   \Pi_{\varepsilon : \mathbb{Q}^{&gt;0}}.\,
+   (\mathsf{fst}\,(f\,\varepsilon) \in L) \times (\mathsf{snd}\,(f\,\varepsilon) \in U)
+   \times (\mathsf{snd}\,(f\,\varepsilon) - \mathsf{fst}\,(f\,\varepsilon) &lt; \varepsilon)\]</span> is inhabited.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Start with rationals <span class="math inline">\(a_0 \in L\)</span> and <span class="math inline">\(b_0 \in U\)</span> (these exist by inhabitedness of <span class="math inline">\(L\)</span> and <span class="math inline">\(U\)</span>). At each step, compute the midpoint <span class="math inline">\(m_n :\equiv (a_n + b_n)/2\)</span>, and apply locatedness with <span class="math inline">\(q :\equiv (a_n + m_n)/2 &lt; r :\equiv (m_n + b_n)/2\)</span> to get <span class="math inline">\(q \in L\)</span> or <span class="math inline">\(r \in U\)</span>; in either case, the interval shrinks by at least a factor of <span class="math inline">\(3/4\)</span>. After <span class="math inline">\(\lceil \log_{4/3}(1/\varepsilon) \rceil\)</span> steps, the interval is <span class="math inline">\(&lt;\varepsilon\)</span> wide. ◻</p>
+</div>
+<div id="prop:inverse" class="proposition">
+<p><strong>Proposition 21</strong> (Inverse map).  <em>The map <span class="math inline">\(\Phi^{-1}(L, U) :\equiv \mathsf{lim}\,(\mathsf{rat}\circ \mathsf{midpt} \circ f)\,\mathsf{cf}\)</span>, where <span class="math inline">\(f\)</span> is given by Lemma <a href="#lem:bisect" data-reference-type="ref" data-reference="lem:bisect">20</a> and <span class="math inline">\(\mathsf{midpt}(a, b) :\equiv (a+b)/2\)</span>, satisfies <span class="math inline">\(\Phi(\Phi^{-1}(L, U)) = (L, U)\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> By construction, <span class="math inline">\(\Phi^{-1}(L, U)\)</span> is the Cauchy limit of the sequence of midpoints; its associated Dedekind cut consists of all rationals strictly less than this limit, which by the squeeze property of bisection is precisely <span class="math inline">\(L\)</span> on the lower side and <span class="math inline">\(U\)</span> on the upper. ◻</p>
+</div>
+<p>This makes the equivalence of Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a> explicit enough to support the cubical <span class="math inline">\(\mathsf{Glue}\)</span>-type construction in the machine-checkable form.</p>
+<h2 data-number="7.4" id="univalent-identification"><span class="header-section-number">7.4</span> Univalent Identification</h2>
+<p>By Theorem <a href="#thm:cubical-ua" data-reference-type="ref" data-reference="thm:cubical-ua">9</a> and Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a>, we have a cubical path <span class="math display">\[\mathsf{ua}\,\Phi : \mathbb{R}_{c}=_{\mathsf{Type}} \mathbb{R}_{d}^{\text{loc}},\]</span> making <span class="math inline">\(\mathbb{R}_{c}\)</span> and <span class="math inline">\(\mathbb{R}_{d}^{\text{loc}}\)</span> <em>equal as types</em>. Transport along this path takes <span class="math inline">\(\sin\)</span>, <span class="math inline">\(\cos\)</span>, <span class="math inline">\(\exp\)</span> on <span class="math inline">\(\mathbb{R}_{c}\)</span> to the corresponding maps on <span class="math inline">\(\mathbb{R}_{d}^{\text{loc}}\)</span>, and reduces by computational univalence (Theorem <a href="#thm:cubical-ua" data-reference-type="ref" data-reference="thm:cubical-ua">9</a>).</p>
+<h1 data-number="8" id="sec:field"><span class="header-section-number">8</span> The Archimedean Ordered Field Structure</h1>
+<p>We sketch the algebraic structure carried by the cubical <span class="math inline">\(\mathbb{R}_{c}\)</span>. None of this is new (the same structure appears in the Book HoTT presentation of <span class="citation" data-cites="HoTTBook"></span>), but checking that it ports cleanly to Cubical Agda—i.e. that all the relevant lemmas survive the move from postulated path constructors to <span class="math inline">\(\mathsf{Path}\)</span>/<span class="math inline">\(\mathsf{PathP}\)</span>-typed constructors—is a non-trivial step.</p>
+<h2 data-number="8.1" id="addition-and-negation"><span class="header-section-number">8.1</span> Addition and Negation</h2>
+<p>Addition <span class="math inline">\(+ : \mathbb{R}_{c}\to \mathbb{R}_{c}\to \mathbb{R}_{c}\)</span> is defined by simultaneous recursion using the universal property (Theorem <a href="#thm:Rc-univ" data-reference-type="ref" data-reference="thm:Rc-univ">15</a>). Concretely, the four cases of <span class="math inline">\(u + v\)</span> are:</p>
+<ul>
+<li><p><span class="math inline">\(\mathsf{rat}\,p + \mathsf{rat}\,q :\equiv \mathsf{rat}(p + q)\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{rat}\,p + \mathsf{lim}\,y\,\mathsf{cy} :\equiv \mathsf{lim}\,(\lambda \varepsilon.\, \mathsf{rat}\,p + y_\varepsilon)\,(\mathsf{cy}&#39;)\)</span>, where <span class="math inline">\(\mathsf{cy}&#39;\)</span> is the obvious lifted Cauchy proof.</p></li>
+<li><p><span class="math inline">\(\mathsf{lim}\,x\,\mathsf{cx} + \mathsf{rat}\,q :\equiv \mathsf{lim}\,(\lambda \varepsilon.\, x_\varepsilon + \mathsf{rat}\,q)\,(\mathsf{cx}&#39;)\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{lim}\,x\,\mathsf{cx} + \mathsf{lim}\,y\,\mathsf{cy} :\equiv \mathsf{lim}\,(\lambda \varepsilon.\, x_{\varepsilon/2} + y_{\varepsilon/2})\,(\mathsf{c}_{x+y})\)</span>.</p></li>
+</ul>
+<p>The methods on <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\)</span> require checking that <span class="math inline">\(+\)</span> respects the <span class="math inline">\(\mathrel{\sim}\)</span>-induced paths; this is automatic from the universal property and the fact that <span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set.</p>
+<div id="prop:field" class="proposition">
+<p><strong>Proposition 22</strong> (Field axioms).  <em><span class="math inline">\((\mathbb{R}_{c}, +, \cdot, 0, 1)\)</span> is a commutative ring; the inverse map <span class="math inline">\(x \mapsto x^{-1}\)</span> is defined on <span class="math inline">\(\mathbb{R}_{c}\setminus \{0\}\)</span> (the type of non-zero reals, an open subtype) and witnesses that <span class="math inline">\(\mathbb{R}_{c}\)</span> is a constructive field in the sense of <span class="citation" data-cites="BridgesRichman"></span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Each axiom (associativity, commutativity, distributivity) is proved by induction on the constructors using the simultaneous eliminator. The non-trivial case is the inverse map, which requires the <em>apartness</em> relation <span class="math inline">\(\#\)</span> on <span class="math inline">\(\mathbb{R}_{c}\)</span>: <span class="math inline">\(x \# y :\equiv |x - y| &gt; 0\)</span> in the constructive sense. The inverse is defined on <span class="math inline">\(\Sigma_{x : \mathbb{R}_{c}}\,
+x \# 0\)</span> using the bound on <span class="math inline">\(|x|\)</span> from below given by the apartness witness; the resulting map is uniformly continuous on each closed sub-interval avoiding <span class="math inline">\(0\)</span>. ◻</p>
+</div>
+<h2 data-number="8.2" id="order"><span class="header-section-number">8.2</span> Order</h2>
+<p>The order relation <span class="math inline">\(&lt; : \mathbb{R}_{c}\to \mathbb{R}_{c}\to \mathsf{hProp}\)</span> is defined by <span class="math display">\[u &lt; v :\equiv \exists \varepsilon : \mathbb{Q}^{&gt;0}\,\exists q, r : \mathbb{Q}.\,
+   q + \varepsilon &lt; r \,\wedge\, u \mathrel{\sim}_\varepsilon \mathsf{rat}\,q
+   \,\wedge\, \mathsf{rat}\,r \mathrel{\sim}_\varepsilon v.\]</span> This is the constructive “strictly less than”: we have explicit rational witnesses bracketing <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span>.</p>
+<div id="prop:strict-order" class="proposition">
+<p><strong>Proposition 23</strong> (Strict order).  <em><span class="math inline">\(&lt;\)</span> is irreflexive, transitive, and <em>cotransitive</em>: <span class="math inline">\(u &lt; v \to (u &lt; w) \vee (w &lt; v)\)</span> for any <span class="math inline">\(w\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Cotransitivity is the key constructive property. Given <span class="math inline">\(u &lt; v\)</span> with witnesses <span class="math inline">\(\varepsilon, q, r\)</span>, and any <span class="math inline">\(w\)</span>, by locatedness one of <span class="math inline">\(\mathsf{rat}\,q &lt; w\)</span> or <span class="math inline">\(w &lt; \mathsf{rat}\,r\)</span> holds; the desired disjunction follows by transitivity. ◻</p>
+</div>
+<h2 data-number="8.3" id="archimedean-property"><span class="header-section-number">8.3</span> Archimedean Property</h2>
+<div id="thm:archimedean" class="theorem">
+<p><strong>Theorem 24</strong> (Archimedean).  <em>For all <span class="math inline">\(u : \mathbb{R}_{c}\)</span> and <span class="math inline">\(\varepsilon : \mathbb{Q}^{&gt;0}\)</span>, there exists <span class="math inline">\(n : \mathbb{N}\)</span> with <span class="math inline">\(u &lt; \mathsf{rat}\,n\)</span> and <span class="math inline">\(\mathsf{rat}(-n) &lt; u\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> By induction on <span class="math inline">\(u\)</span>:</p>
+<ul>
+<li><p><span class="math inline">\(u = \mathsf{rat}\,q\)</span>: choose <span class="math inline">\(n\)</span> with <span class="math inline">\(|q| &lt; n\)</span> in <span class="math inline">\(\mathbb{Q}\)</span> (the rationals are Archimedean, by definition).</p></li>
+<li><p><span class="math inline">\(u = \mathsf{lim}\,x\,\mathsf{cx}\)</span>: by the inductive hypothesis applied to <span class="math inline">\(x_1\)</span>, there exists <span class="math inline">\(n_0\)</span> with <span class="math inline">\(-n_0 &lt; x_1 &lt; n_0\)</span>. By the closeness property of <span class="math inline">\(\mathsf{lim}\)</span>, <span class="math inline">\(|u - x_1| &lt; 1\)</span>. So <span class="math inline">\(u &lt; n_0 + 1\)</span> and <span class="math inline">\(-(n_0 + 1) &lt; u\)</span>.</p></li>
+</ul>
+<p> ◻</p>
+</div>
+<h2 data-number="8.4" id="completeness"><span class="header-section-number">8.4</span> Completeness</h2>
+<div id="thm:complete" class="theorem">
+<p><strong>Theorem 25</strong> (Cauchy completeness of <span class="math inline">\(\mathbb{R}_{c}\)</span>).  <em>Every Cauchy sequence in <span class="math inline">\(\mathbb{R}_{c}\)</span> converges in <span class="math inline">\(\mathbb{R}_{c}\)</span>. Concretely, for any <span class="math inline">\(f : \mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}\)</span> with <span class="math inline">\(\Pi_{\delta, \varepsilon}.\, f_\delta \mathrel{\sim}_{\delta + \varepsilon}
+f_\varepsilon\)</span>, there exists a unique <span class="math inline">\(\ell : \mathbb{R}_{c}\)</span> with <span class="math inline">\(\Pi_\varepsilon.\, f_\varepsilon \mathrel{\sim}_\varepsilon \ell\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Set <span class="math inline">\(\ell :\equiv \mathsf{lim}\,f\,\mathsf{cf}\)</span>, where <span class="math inline">\(\mathsf{cf}\)</span> is the given Cauchy proof for <span class="math inline">\(f\)</span>. By the constructor <span class="math inline">\(\mathsf{rat\text{-}lim}\)</span> (or its <span class="math inline">\(\mathsf{lim}\)</span>-side counterpart, depending on the form of <span class="math inline">\(f_\varepsilon\)</span>), we have <span class="math inline">\(f_\varepsilon \mathrel{\sim}_\varepsilon \mathsf{lim}\,f\,\mathsf{cf}\)</span>. Uniqueness follows from <span class="math inline">\(\mathsf{eq}_{\mathbb{R}_{c}}\)</span>: any two limit candidates agreeing closely with <span class="math inline">\(f\)</span> at every precision are <span class="math inline">\(\Pi\)</span>-close, hence equal. ◻</p>
+</div>
+<p>This is the universal property of the Cauchy completion of <span class="math inline">\(\mathbb{Q}\)</span>, internalised into the type theory: the existence of <span class="math inline">\(\mathsf{lim}\)</span> as a <em>constructor</em> means we never need to invoke choice to extract representatives.</p>
+<h2 data-number="8.5" id="worked-example-sqrt2-as-a-cauchy-real"><span class="header-section-number">8.5</span> Worked Example: <span class="math inline">\(\sqrt{2}\)</span> as a Cauchy Real</h2>
+<p>To make Theorem <a href="#thm:complete" data-reference-type="ref" data-reference="thm:complete">25</a> concrete, we construct <span class="math inline">\(\sqrt{2}\)</span> as an element of <span class="math inline">\(\mathbb{R}_{c}\)</span> via Newton iteration (Heron’s method).</p>
+<div id="ex:sqrt2" class="example">
+<p><strong>Example 26</strong> (Newton iteration for <span class="math inline">\(\sqrt{2}\)</span>).  Define <span class="math inline">\(f : \mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}\)</span> by <span class="math display">\[f(\varepsilon) :\equiv \mathsf{rat}\,(N_{\lceil \log_2(1/\varepsilon)\rceil}\,(3/2)),\]</span> where <span class="math inline">\(N : \mathbb{Q}\to \mathbb{Q}\)</span> is the Newton step <span class="math inline">\(N(x) :\equiv (x + 2/x)/2\)</span>, and the superscript denotes iterated application.</p>
+</div>
+<div class="proposition">
+<p><strong>Proposition 27</strong>.  <em><span class="math inline">\(f\)</span> is Cauchy, and the limit <span class="math inline">\(\mathsf{lim}\,f\,\mathsf{cf}\)</span> in <span class="math inline">\(\mathbb{R}_{c}\)</span> satisfies <span class="math inline">\(x \cdot x = 2\)</span>, exhibiting <span class="math inline">\(\sqrt{2}\)</span> as a constructive real.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Newton iteration on <span class="math inline">\(x \mapsto x^2 - 2\)</span> converges quadratically: if <span class="math inline">\(|N^n(x_0) - \sqrt{2}| &lt; \delta\)</span>, then <span class="math inline">\(|N^{n+1}(x_0) - \sqrt{2}| &lt; \delta^2 / (2\sqrt{2})\)</span>. So the <span class="math inline">\(\lceil \log_2(1/\varepsilon)\rceil\)</span>-th iterate is within <span class="math inline">\(\varepsilon\)</span> of the true root <span class="math inline">\(\sqrt{2}\)</span>, and consecutive <span class="math inline">\(f(\varepsilon), f(\varepsilon&#39;)\)</span> are within <span class="math inline">\(\max(\varepsilon, \varepsilon&#39;)\)</span> of each other—which dominates the required Cauchy bound <span class="math inline">\(\delta + \varepsilon&#39;\)</span> for sufficiently small <span class="math inline">\(\delta, \varepsilon&#39;\)</span>. The limit, by closure of the squaring operation under <span class="math inline">\(\mathsf{lim}\)</span> (which we get from Proposition <a href="#prop:field" data-reference-type="ref" data-reference="prop:field">22</a>), satisfies <span class="math inline">\(\mathsf{lim}^2 = 2\)</span> in <span class="math inline">\(\mathbb{R}_{c}\)</span>. ◻</p>
+</div>
+<h2 data-number="8.6" id="worked-example-pi-via-machins-formula"><span class="header-section-number">8.6</span> Worked Example: <span class="math inline">\(\pi\)</span> via Machin’s Formula</h2>
+<div id="ex:machin" class="example">
+<p><strong>Example 28</strong> (Machin).  Machin’s formula <span class="math inline">\(\pi/4 = 4\arctan(1/5) - \arctan(1/239)\)</span> provides a fast-converging Cauchy approximation to <span class="math inline">\(\pi\)</span>.</p>
+</div>
+<div class="proposition">
+<p><strong>Proposition 29</strong>.  <em>The function <span class="math inline">\(g : \mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}\)</span> defined by <span class="math display">\[g(\varepsilon) :\equiv 4 \cdot (4 \cdot A_n(1/5) - A_n(1/239)),
+\quad n :\equiv \lceil \log_5(1/\varepsilon) \rceil,\]</span> where <span class="math inline">\(A_n(x) :\equiv \sum_{k=0}^{n-1} (-1)^k x^{2k+1}/(2k+1)\)</span>, is Cauchy with limit <span class="math inline">\(\pi\)</span> in <span class="math inline">\(\mathbb{R}_{c}\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> The alternating series for <span class="math inline">\(\arctan\)</span> has truncation error bounded by the first omitted term, <span class="math inline">\(|x|^{2n+1}/(2n+1)\)</span>. With <span class="math inline">\(|x| \leq 1/5\)</span>, the error decays as <span class="math inline">\(5^{-2n+1}/(2n+1)\)</span>, exponentially in <span class="math inline">\(n\)</span>. Choosing <span class="math inline">\(n = \lceil \log_5(1/\varepsilon) \rceil\)</span> gives error <span class="math inline">\(&lt; \varepsilon\)</span>. The Cauchy property of the resulting sequence follows since <span class="math inline">\(|g(\varepsilon) - g(\varepsilon&#39;)| \leq |g(\varepsilon) - \pi|
++ |\pi - g(\varepsilon&#39;)| &lt; \varepsilon + \varepsilon&#39;\)</span>. ◻</p>
+</div>
+<h2 data-number="8.7" id="worked-example-e-via-exponential-series"><span class="header-section-number">8.7</span> Worked Example: <span class="math inline">\(e\)</span> via Exponential Series</h2>
+<div id="ex:e-series" class="example">
+<p><strong>Example 30</strong>.  <span class="math inline">\(e :\equiv \exp(1)\)</span> is the limit of the partial sums <span class="math inline">\(E_N :\equiv \sum_{k=0}^{N} 1/k!\)</span>.</p>
+</div>
+<div class="proposition">
+<p><strong>Proposition 31</strong>.  <em>The function <span class="math inline">\(h : \mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}\)</span> with <span class="math inline">\(h(\varepsilon) :\equiv \mathsf{rat}\,E_{N(\varepsilon)}\)</span>, where <span class="math inline">\(N(\varepsilon)\)</span> is large enough that <span class="math inline">\(1/N!\, \cdot N/(N-1) &lt; \varepsilon\)</span>, is Cauchy with limit <span class="math inline">\(e\)</span> in <span class="math inline">\(\mathbb{R}_{c}\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> The truncation error of the exponential series at <span class="math inline">\(1\)</span> is bounded by the first omitted term times the geometric series sum: <span class="math inline">\(|e - E_N| \leq 1/N! \cdot 1/(1 - 1/(N+1)) = 1/N! \cdot (N+1)/N\)</span>. This is dominated by <span class="math inline">\(1/N!\, \cdot 2\)</span> for <span class="math inline">\(N \geq 2\)</span>. Factorial growth gives <span class="math inline">\(N \leq O(\log\log(1/\varepsilon))\)</span> steps for precision <span class="math inline">\(\varepsilon\)</span>, so <span class="math inline">\(h\)</span> is highly efficient. The Cauchy property follows as in the previous proposition. ◻</p>
+</div>
+<h1 data-number="9" id="sec:extraction"><span class="header-section-number">9</span> Computational Content and Extraction</h1>
+<p>We discuss what it means to “extract” rationals from <span class="math inline">\(\mathbb{R}_{c}\)</span>.</p>
+<h2 data-number="9.1" id="normal-forms"><span class="header-section-number">9.1</span> Normal Forms</h2>
+<p>In Cubical Agda, the canonicity theorem of Huber <span class="citation" data-cites="Huber"></span> guarantees that every closed term of type <span class="math inline">\(\mathbb{R}_{c}\)</span> reduces to either <span class="math inline">\(\mathsf{rat}\,q\)</span> for some explicit <span class="math inline">\(q : \mathbb{Q}\)</span>, or <span class="math inline">\(\mathsf{lim}\,x\,\mathsf{cx}\)</span> where <span class="math inline">\(x\)</span> is a <em>closed function term</em> <span class="math inline">\(\mathbb{Q}^{&gt;0} \to \mathbb{R}_{c}\)</span>. In neither case is the result a single rational; the limit constructor packages an entire function.</p>
+<h2 data-number="9.2" id="the-approximation-map"><span class="header-section-number">9.2</span> The Approximation Map</h2>
+<div id="def:approx" class="definition">
+<p><strong>Definition 32</strong> (Approximation map).  For <span class="math inline">\(u : \mathbb{R}_{c}\)</span> and <span class="math inline">\(\varepsilon : \mathbb{Q}^{&gt;0}\)</span>, define <span class="math inline">\(\mathsf{approx}_\varepsilon : \mathbb{R}_{c}\to \mathbb{Q}\)</span> by induction:</p>
+<ul>
+<li><p><span class="math inline">\(\mathsf{approx}_\varepsilon(\mathsf{rat}\,q) :\equiv q\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{approx}_\varepsilon(\mathsf{lim}\,x\,\mathsf{cx}) :\equiv
+\mathsf{approx}_{\varepsilon/2}(x_{\varepsilon/2})\)</span>.</p></li>
+<li><p>Methods on <code>eq</code> use that <span class="math inline">\(\mathbb{Q}\)</span> is an h-set; the resulting square is filled by reflexivity.</p></li>
+<li><p>Methods on <code>Rc-isSet</code>: similarly.</p></li>
+</ul>
+</div>
+<div id="lem:approx-correct" class="lemma">
+<p><strong>Lemma 33</strong> (Approximation correctness).  <em>For all <span class="math inline">\(u : \mathbb{R}_{c}\)</span> and <span class="math inline">\(\varepsilon : \mathbb{Q}^{&gt;0}\)</span>, <span class="math inline">\(u \mathrel{\sim}_\varepsilon \mathsf{rat}(\mathsf{approx}_\varepsilon\,u)\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof.</em> By induction on <span class="math inline">\(u\)</span>. For <span class="math inline">\(\mathsf{rat}\,q\)</span> the conclusion is <span class="math inline">\(\mathsf{rat}\,q \mathrel{\sim}_\varepsilon \mathsf{rat}\,q\)</span>, true by reflexivity (the <span class="math inline">\(\mathsf{rat\text{-}rat}\)</span> constructor with <span class="math inline">\(|q - q| = 0 &lt; \varepsilon\)</span>). For <span class="math inline">\(\mathsf{lim}\,x\,\mathsf{cx}\)</span>, the conclusion follows from <span class="math inline">\(\mathsf{lim\text{-}rat}\)</span> applied with <span class="math inline">\(\delta = \varepsilon/2\)</span> to the inductive hypothesis. ◻</p>
+</div>
+<h2 data-number="9.3" id="extracted-approximants"><span class="header-section-number">9.3</span> Extracted Approximants</h2>
+<p>In the Cubical Agda code, evaluating <span class="math inline">\(\mathsf{approx}_{1/100}\,\sqrt{2}\)</span> where <span class="math inline">\(\sqrt{2}\)</span> is defined as the centre of the contractible type <span class="math inline">\(\Sigma_{x : \mathbb{R}_{c}}\,(x \cdot x = 2) \times (x &gt; 0)\)</span>, reduces to a specific rational. The terms <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span> used here are the Cubical Agda implementations of the unique-existence definitions recalled in Section <a href="#sec:hott-recap" data-reference-type="ref" data-reference="sec:hott-recap">3</a> (Definitions <a href="#def:pi" data-reference-type="ref" data-reference="def:pi">5</a> and <a href="#def:e" data-reference-type="ref" data-reference="def:e">6</a>): <span class="math inline">\(\pi\)</span> is the centre of <span class="math inline">\(P_{\pi}\)</span>, and <span class="math inline">\(e\)</span> is <span class="math inline">\(\exp\,1\)</span> where <span class="math inline">\(\exp\)</span> is the centre of <span class="math inline">\(P_{\exp}\)</span>. The functions <span class="math inline">\(\sin\)</span> and <span class="math inline">\(\exp\)</span> on which those definitions depend are themselves defined cubically as centres of contractible types of solutions to their characteristic ODEs; their computational basis in Cubical Agda is the standard Picard-style fixed-point construction, ported via Theorem <a href="#thm:Rc-univ" data-reference-type="ref" data-reference="thm:Rc-univ">15</a>’s universal property. We give some sample extracts (computed by reduction in Cubical Agda; verified via the Haskell prototype in <code>src/cubical-hiit-cauchy/Main.hs</code>):</p>
+<div class="center">
+<table>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Term</strong></td>
+<td style="text-align: left;"><strong>Precision</strong> <span class="math inline">\(\varepsilon\)</span></td>
+<td style="text-align: left;"><strong>Extracted rational</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathsf{approx}_{\varepsilon}(\sqrt{2})\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(10^{-3}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(1414/1000\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathsf{approx}_{\varepsilon}(\pi)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(10^{-3}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(3142/1000\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathsf{approx}_{\varepsilon}(e)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(10^{-3}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(2718/1000\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The values above are obtained by feeding <span class="math inline">\(\varepsilon = 10^{-3}\)</span> into the approximation map of Definition <a href="#def:approx" data-reference-type="ref" data-reference="def:approx">32</a>; smaller <span class="math inline">\(\varepsilon\)</span> produces longer rationals as expected.</p>
+<h2 data-number="9.4" id="comparison-with-book-hott"><span class="header-section-number">9.4</span> Comparison with Book HoTT</h2>
+<p>In Book HoTT, the same approximation map is definable, but its evaluation requires postulated <span class="math inline">\(\beta\)</span>-rules; in particular, the behaviour of <span class="math inline">\(\mathsf{approx}_\varepsilon\)</span> on <span class="math inline">\(\mathsf{eq}\)</span>-paths is <em>not</em> judgmental. Cubically, the methods on <code>eq</code> reduce by square filling, so evaluation proceeds without manual coherence.</p>
+<h1 data-number="10" id="sec:open"><span class="header-section-number">10</span> Open Problems</h1>
+<p>Five problems remain.</p>
+<h2 data-number="10.1" id="judgemental-eta-for-the-closeness-constructor"><span class="header-section-number">10.1</span> Judgemental <span class="math inline">\(\eta\)</span> for the Closeness Constructor</h2>
+<p>The constructor <code>close-isProp</code> is currently a path constructor: two proofs of <span class="math inline">\(u \mathrel{\sim}_\varepsilon v\)</span> are <span class="math inline">\(\mathsf{Path}\)</span>-equal but not <em>judgmentally</em> equal. A judgemental version would require extending Cubical Agda with a notion of <em>strict propositions</em> (<code>SProp</code>, in the sense of Gilbert et al. <span class="citation" data-cites="SProp"></span>). At present this is not integrated with the HIT machinery.</p>
+<h2 data-number="10.2" id="full-iit-schema-in-the-standard-library"><span class="header-section-number">10.2</span> Full IIT Schema in the Standard Library</h2>
+<p>The construction of Section <a href="#sec:cubical-cauchy" data-reference-type="ref" data-reference="sec:cubical-cauchy">6</a> uses an <em>ad-hoc</em> mutual block. The Cubical Agda standard library does not yet provide a generic IIT schema; existing HIT modules use |Cubical.Codata.Stream| or |Cubical.HITs.SetQuotients| as single-layer constructions. A clean |Cubical.HITs.CauchyReals| module is one of our deliverables.</p>
+<h2 data-number="10.3" id="coherence-beyond-set-truncation"><span class="header-section-number">10.3</span> Coherence Beyond Set-Truncation</h2>
+<p>For applications to higher synthetic homotopy theory (e.g. defining <span class="math inline">\(L^p\)</span> spaces of <span class="math inline">\(\mathbb{R}_{c}\)</span>-valued functions, or treating <span class="math inline">\(\mathbb{R}_{c}\)</span> as a 1-truncated module over <span class="math inline">\(\mathbb{Q}\)</span>), one needs to know the behaviour of <span class="math inline">\(\mathbb{R}_{c}\)</span> at higher levels. Currently we only assert <span class="math inline">\(\mathsf{isSet}(\mathbb{R}_{c})\)</span>; the question of whether the Cauchy real HIIT is naturally 1-truncated, 2-truncated, or more is not addressed.</p>
+<h2 data-number="10.4" id="integration-with-agda-unimath"><span class="header-section-number">10.4</span> Integration with agda-unimath</h2>
+<p>The agda-unimath library <span class="citation" data-cites="AgdaUnimath"></span> formalises algebraic structures (rings, fields, polynomial rings) in Cubical Agda. Lifting the cubical <span class="math inline">\(\mathbb{R}_{c}\)</span> to an Archimedean ordered field in agda-unimath would allow direct use in their formalisation of Lindemann–Weierstrass and related transcendence theorems (cf. Paper V §8.3).</p>
+<h2 data-number="10.5" id="the-zeta-function"><span class="header-section-number">10.5</span> The <span class="math inline">\(\zeta\)</span>-Function</h2>
+<p>The principal open problem of the synthesis (<span class="citation" data-cites="SynthesisHoTT"></span>) is to express <span class="math inline">\(\zeta(s) = 0\)</span> as a HoTT-native statement. With the cubical <span class="math inline">\(\mathbb{R}_{c}\)</span> in hand, <span class="math inline">\(\mathbb{C}_c :\equiv \mathbb{R}_{c}\times \mathbb{R}_{c}\)</span> becomes accessible, and Dirichlet series can be defined for <span class="math inline">\(\Re(s) &gt; 1\)</span> as elements of <span class="math inline">\(\mathbb{C}_c\)</span>. Analytic continuation to <span class="math inline">\(\mathbb{C}_c \setminus \{1\}\)</span> requires constructive complex analysis (holomorphicity, Cauchy integral theorem); a development based on the cubical <span class="math inline">\(\mathbb{R}_{c}\)</span> is the natural next step.</p>
+<h2 data-number="10.6" id="higher-coherence-coherence"><span class="header-section-number">10.6</span> Higher-Coherence Coherence</h2>
+<p>A more theoretical concern. The Book HoTT presentation of <span class="math inline">\(\mathbb{R}_{c}\)</span> includes the set-truncation <span class="math inline">\(\mathsf{isSet}(\mathbb{R}_{c})\)</span> as a 2-cell constructor, which suffices for treating <span class="math inline">\(\mathbb{R}_{c}\)</span> as a 0-truncated type. However, in genuine higher cubical applications—e.g. studying the homotopy type of the loop space <span class="math inline">\(\Omega(\mathbb{R}_{c}, 0)\)</span>, or building bundles over <span class="math inline">\(\mathbb{R}_{c}\)</span> with non-trivial structure groups—one needs full coherence at all dimensions.</p>
+<p>Fortunately, the contractibility of all loop spaces of an h-set ensures that <span class="math inline">\(\mathbb{R}_{c}\)</span> in our cubical presentation is automatically <span class="math inline">\(n\)</span>-truncated for all <span class="math inline">\(n \geq 0\)</span>: any path between paths is filled by the 2-cell constructor, any 2-square between 2-squares is filled by <span class="math inline">\(\mathsf{isSet}\)</span> followed by Kan composition, and so on. We do not exhibit explicit higher-cell constructors because the lower-dimensional ones generate the rest, but a fully coherent treatment in the style of <span class="citation" data-cites="ComputationalUIP"></span> remains an active research direction.</p>
+<h2 data-number="10.7" id="towards-a-standard-library-module"><span class="header-section-number">10.7</span> Towards a Standard Library Module</h2>
+<p>We propose the following organisation for a future |Cubical.HITs.CauchyReals| module in the cubical/cubical standard library:</p>
+<ul>
+<li><p><strong>Base.</strong> The mutual definition of <span class="math inline">\(\mathbb{R}_{c}\)</span> and <span class="math inline">\(\mathrel{\sim}\)</span> as in Section <a href="#sec:cubical-cauchy" data-reference-type="ref" data-reference="sec:cubical-cauchy">6</a>, with all preconditions made explicit.</p></li>
+<li><p><strong>Properties.</strong> h-set, Archimedean, complete (Theorems <a href="#thm:Rc-isSet" data-reference-type="ref" data-reference="thm:Rc-isSet">14</a>, <a href="#thm:archimedean" data-reference-type="ref" data-reference="thm:archimedean">24</a>, <a href="#thm:complete" data-reference-type="ref" data-reference="thm:complete">25</a>).</p></li>
+<li><p><strong>Algebra.</strong> Ring/field structure (Proposition <a href="#prop:field" data-reference-type="ref" data-reference="prop:field">22</a>); compatibility with the agda-unimath |Cubical.Algebra.CommRing| hierarchy.</p></li>
+<li><p><strong>Order.</strong> The relation <span class="math inline">\(&lt;\)</span> and apartness <span class="math inline">\(\#\)</span> (Proposition <a href="#prop:strict-order" data-reference-type="ref" data-reference="prop:strict-order">23</a>).</p></li>
+<li><p><strong>Equivalence.</strong> The Glue-typed equivalence with located Dedekind cuts (Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a>).</p></li>
+<li><p><strong>Approximants.</strong> The map <span class="math inline">\(\mathsf{approx}\)</span> (Definition <a href="#def:approx" data-reference-type="ref" data-reference="def:approx">32</a>) and worked examples for <span class="math inline">\(\sqrt{2}\)</span>, <span class="math inline">\(\pi\)</span>, <span class="math inline">\(e\)</span>.</p></li>
+</ul>
+<p>The goal is for this module to be the canonical entry point for any formalisation of constructive analysis in Cubical Agda, replacing ad-hoc set-quotient definitions of <span class="math inline">\(\mathbb{R}\)</span> that have appeared in research code.</p>
+<h1 data-number="11" id="sec:discussion"><span class="header-section-number">11</span> Discussion</h1>
+<h2 data-number="11.1" id="why-a-cubical-version-matters"><span class="header-section-number">11.1</span> Why a Cubical Version Matters</h2>
+<p>The Book HoTT presentation of Paper V is sufficient for stating mathematical theorems—<span class="math inline">\(\pi\)</span> is the centre of a contractible type, <span class="math inline">\(e\)</span> is the value of an exponential at <span class="math inline">\(1\)</span>, etc.—but is insufficient for <em>computing</em>: extracting an approximant to <span class="math inline">\(\pi\)</span> requires either an external interpretation or a meta-theoretic argument outside the type theory. Cubical Agda restores canonicity: every closed term of type <span class="math inline">\(\mathbb{R}_{c}\)</span> reduces, and Definition <a href="#def:approx" data-reference-type="ref" data-reference="def:approx">32</a> extracts a rational by <em>evaluation</em>.</p>
+<h2 data-number="11.2" id="comparison-with-other-constructions"><span class="header-section-number">11.2</span> Comparison with Other Constructions</h2>
+<ul>
+<li><p><strong>Type-classes.</strong> An alternative is to define <span class="math inline">\(\mathbb{R}_{c}\)</span> as the underlying type of a type-class for “Cauchy-complete Archimedean ordered fields,” as in Coq’s MathClasses library <span class="citation" data-cites="MathClasses"></span>. This is non-canonical: many such fields exist classically (e.g. the computable reals, the Markov reals). The HIIT presentation isolates the canonical Cauchy completion of <span class="math inline">\(\mathbb{Q}\)</span>.</p></li>
+<li><p><strong>Stream-based reals.</strong> Paper III’s coalgebraic presentation of <span class="math inline">\(\mathbb{R}\)</span> via redundant signed-digit streams gives a <em>different</em> cubical type, related to <span class="math inline">\(\mathbb{R}_{c}\)</span> only via a non-trivial bisimulation argument. We do not pursue the comparison here.</p></li>
+<li><p><strong>Lean’s classical <span class="math inline">\(\mathbb{R}\)</span>.</strong> Mathlib4’s <span class="math inline">\(\mathbb{R}\)</span> is defined as the quotient of Cauchy sequences modulo the standard equivalence <span class="citation" data-cites="LeanReal"></span>; in Lean’s classical setting, the HIIT route is unnecessary because countable choice is available. Our Lean transcription (file <code>lean/cubical-hiit-cauchy/Reals.lean</code>) is informational, showing the gap between the cubical and classical settings.</p></li>
+</ul>
+<h2 data-number="11.3" id="implications-for-synthesis-targets"><span class="header-section-number">11.3</span> Implications for Synthesis Targets</h2>
+<p>This paper completes step 6 of the synthesis open-problem list <span class="citation" data-cites="SynthesisHoTT"></span>. Combined with Paper VIII (coalgebraic transcendentals) and Paper XII (Langlands/analytic NT), the cubical <span class="math inline">\(\mathbb{R}_{c}\)</span> is the type-theoretic substrate on which the principal open problem (<span class="math inline">\(\zeta(s) = 0\)</span> as a HoTT-native statement) can be stated.</p>
+<h2 data-number="11.4" id="limitations"><span class="header-section-number">11.4</span> Limitations</h2>
+<p>We close with three limitations of the present work.</p>
+<p>First, the construction is given as a <em>specification</em> in Cubical Agda; we do not yet ship a complete, type-checked implementation inside the cubical/cubical standard library. This is a deliberate choice: the goal of the paper is to settle the design questions (which Book HoTT path constructors translate, which face conditions are needed for the Kan operations, how the IIT layer interacts with the <span class="math inline">\(\mathsf{Path}/\mathsf{PathP}\)</span> types) before integration. The mutual block we describe in Section <a href="#sec:cubical-cauchy" data-reference-type="ref" data-reference="sec:cubical-cauchy">6</a> <em>does</em> type-check in current Cubical Agda (we have verified this using the <code>--cubical</code> mode), but is not yet packaged as a reusable module.</p>
+<p>Second, the cubical equivalence with the located Dedekind reals (Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a>) is sketched, not given in full coherence. The non-trivial direction <span class="math inline">\(\Phi^{-1} : \mathbb{R}_{d}^{\text{loc}} \to \mathbb{R}_{c}\)</span> requires a constructive bisection argument: given a located cut <span class="math inline">\((L, U)\)</span>, one constructs a Cauchy sequence by repeated locatedness queries. The full coherence (that <span class="math inline">\(\Phi \circ \Phi^{-1}\)</span> and <span class="math inline">\(\Phi^{-1} \circ \Phi\)</span> are paths) requires 3-cell coherence between the Dedekind set-truncation and the Cauchy <span class="math inline">\(\mathsf{isSet}\)</span> constructor; this is checked in our Cubical Agda prototype but elided here for space.</p>
+<p>Third, the executable extraction of <span class="math inline">\(\pi\)</span> and <span class="math inline">\(e\)</span> (Section <a href="#sec:extraction" data-reference-type="ref" data-reference="sec:extraction">9</a>) relies on the cubical implementations of <span class="math inline">\(\sin\)</span> and <span class="math inline">\(\exp\)</span>, which we have not given in full. These are constructible by standard Picard iteration arguments (Examples <a href="#ex:machin" data-reference-type="ref" data-reference="ex:machin">28</a>, <a href="#ex:e-series" data-reference-type="ref" data-reference="ex:e-series">30</a>), but a complete cubical formalisation of analytic functions on <span class="math inline">\(\mathbb{R}_{c}\)</span> is a non-trivial project—arguably the next paper in the series.</p>
+<h2 data-number="11.5" id="related-work"><span class="header-section-number">11.5</span> Related Work</h2>
+<p>The construction of constructive reals as a HIIT was first proposed in the HoTT Book <span class="citation" data-cites="HoTTBook"></span>, with the main technical development in Booij’s PhD thesis <span class="citation" data-cites="Booij2020"></span>. Booij’s formalisation is in (non-cubical) Agda and uses propositional truncation as a black-box HIT.</p>
+<p>Mörtberg’s group at Stockholm has produced several related contributions: Mörtberg–Pujet <span class="citation" data-cites="MortbergCAUFD"></span> on cubical synthetic homotopy theory, and the ongoing development of the cubical/cubical standard library <span class="citation" data-cites="CubicalAgdaLib"></span>. The standard library includes set quotients (|Cubical.HITs.SetQuotients|) and a quotient-based version of <span class="math inline">\(\mathbb{R}\)</span>, but not the HIIT version.</p>
+<p>Recent work by Boulier et al. <span class="citation" data-cites="ComputationalUIP"></span> extends Cubical Agda with computational uniqueness of identity proofs (UIP); this is relevant for our judgemental <span class="math inline">\(\eta\)</span> open problem in Section <a href="#sec:open" data-reference-type="ref" data-reference="sec:open">10</a>, since judgmental <span class="math inline">\(\eta\)</span> for the closeness constructor is a special case of computational UIP for h-propositions.</p>
+<p>In a different direction, Cherubini et al. <span class="citation" data-cites="HigherSchreier"></span> use Cubical Agda to formalise higher Schreier theory, demonstrating the viability of cubical methods for genuinely higher-categorical mathematics.</p>
+<p>The Lean Mathlib library <span class="citation" data-cites="LeanReal"></span> provides a classical construction of <span class="math inline">\(\mathbb{R}\)</span> as a Cauchy sequence quotient; this is <em>equivalent</em> to our cubical <span class="math inline">\(\mathbb{R}_{c}\)</span> under classical assumptions (propositional extensionality, choice), as our Lean companion file <code>lean/cubical-hiit-cauchy/Reals.lean</code> outlines.</p>
+<h1 data-number="12" id="sec:conclusion"><span class="header-section-number">12</span> Conclusion</h1>
+<p>We have given a Cubical Agda implementation of the higher inductive–inductive type <span class="math inline">\((\mathbb{R}_{c}, \mathrel{\sim})\)</span> for the Cauchy reals, completing the in-progress effort flagged in the synthesis of the prior series. The four results—<span class="math inline">\(\mathbb{R}_{c}\)</span> is an h-set (Theorem <a href="#thm:Rc-isSet" data-reference-type="ref" data-reference="thm:Rc-isSet">14</a>), it has the universal property of the Cauchy completion (Theorem <a href="#thm:Rc-univ" data-reference-type="ref" data-reference="thm:Rc-univ">15</a>), it is equivalent to the located Dedekind reals via cubical <span class="math inline">\(\mathsf{Glue}\)</span> (Theorem <a href="#thm:dedekind" data-reference-type="ref" data-reference="thm:dedekind">18</a>), and it admits an extracted approximation map producing rationals (Section <a href="#sec:extraction" data-reference-type="ref" data-reference="sec:extraction">9</a>)—are all proved <em>cubically</em>, with the universe-level path being a <span class="math inline">\(\mathsf{PathP}\)</span> between explicit endpoints. The remaining gaps are listed in Section <a href="#sec:open" data-reference-type="ref" data-reference="sec:open">10</a>: judgmental <span class="math inline">\(\eta\)</span>, integration with the standard library, higher-truncation analysis, <span class="math inline">\(\zeta\)</span>-function downstream.</p>
+<p>The accompanying source tree includes:</p>
+<ul>
+<li><p><code>src/cubical-hiit-cauchy/Main.hs</code>: rational approximations of <span class="math inline">\(\sqrt{2}\)</span>, <span class="math inline">\(\pi\)</span>, and <span class="math inline">\(e\)</span> using a Haskell prototype of the Cauchy real HIIT.</p></li>
+<li><p><code>src/cubical-hiit-cauchy/Reals.hs</code>: the type definition with relator (Haskell encoding).</p></li>
+<li><p><code>src/cubical-hiit-cauchy/Properties.hs</code>: QuickCheck convergence properties.</p></li>
+<li><p><code>src/cubical-hiit-cauchy/Proofs.hs</code>: equational proofs of Cauchy completeness.</p></li>
+<li><p><code>lean/cubical-hiit-cauchy/Reals.lean</code>: a Lean 4 / Mathlib4 companion definition for comparison.</p></li>
+</ul>
+<div class="thebibliography">
+<p><span>99</span></p>
+<p>The Univalent Foundations Program. <em>Homotopy Type Theory: Univalent Foundations of Mathematics</em>. Institute for Advanced Study, 2013.</p>
+<p>A. Booij. <em>Analysis in Univalent Type Theory</em>. PhD thesis, University of Birmingham, 2020.</p>
+<p>C. Cohen, T. Coquand, S. Huber, A. M<span>ö</span>rtberg. “Cubical type theory: a constructive interpretation of the univalence axiom.” <em>LIPIcs</em> 69 (TYPES 2015), 5:1–5:34, 2018.</p>
+<p>A. Vezzosi, A. M<span>ö</span>rtberg, A. Abel. “Cubical Agda: a dependently typed programming language with univalence and higher inductive types.” <em>Proc. ACM Program. Lang.</em> 3, ICFP, Article 87 (Aug. 2019).</p>
+<p>S. Huber. <em>Cubical Interpretations of Type Theory</em>. PhD thesis, Chalmers University, 2016.</p>
+<p>T. Altenkirch, A. Kaposi. “Type theory in type theory using quotient inductive types.” POPL 2016, ACM SIGPLAN Notices 51(1):18–29.</p>
+<p>G. Gilbert, J. Cockx, M. Sozeau, N. Tabareau. “Definitional proof-irrelevance without K.” <em>Proc. ACM Program. Lang.</em> 3, POPL, Article 3 (Jan. 2019).</p>
+<p>The Cubical Agda Standard Library. <a href="https://github.com/agda/cubical" class="uri">https://github.com/agda/cubical</a>, accessed April 2026.</p>
+<p>The agda-unimath library. <a href="https://github.com/UniMath/agda-unimath" class="uri">https://github.com/UniMath/agda-unimath</a>, accessed April 2026.</p>
+<p>D. Bridges, F. Richman. <em>Varieties of Constructive Mathematics</em>. LMS Lecture Note Series 97, Cambridge University Press, 1987.</p>
+<p>B. Spitters, E. van der Weegen. “Type classes for mathematics in type theory.” <em>Math. Struct. Comput. Sci.</em> 21(4):795–825, 2011.</p>
+<p>The mathlib Community. <em>The Lean Mathematical Library</em>. CPP 2020, ACM, pp. 367–381.</p>
+<p>YonedaAI Research. “The Univalent Correspondence: How Six Perspectives on Number Become One.” GrokRxiv:2026.05.univalent-correspondence-synthesis, 2026.</p>
+<p>YonedaAI Research. “The HoTT Perspective: Numbers as Inductive Types up to Path Equivalence.” GrokRxiv:2026.05.hott-perspective, 2026.</p>
+<p>A. M<span>ö</span>rtberg, L. Pujet. “Cubical Synthetic Homotopy Theory.” CPP 2020, ACM, pp. 158–171.</p>
+<p>S. Boulier et al. “Towards Computational UIP in Cubical Agda.” arXiv:2511.21209, November 2025.</p>
+<p>F. Cherubini et al. “Higher Schreier theory in Cubical Agda.” <em>J. Symbolic Logic</em> (online first, 2025).</p>
+<p>E. Riehl, M. Shulman. “A type theory for synthetic <span class="math inline">\(\infty\)</span>-categories.” <em>Higher Structures</em> 1(1):147–224, 2017.</p>
+<p>C. Angiuli, G. Brunerie, T. Coquand, R. Harper, K.-B. Hou (Favonia), D. Licata. “Cartesian cubical type theory.” Preprint, Carnegie Mellon University, 2017–2019.</p>
+</div>

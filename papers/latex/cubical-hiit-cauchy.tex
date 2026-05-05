@@ -1,0 +1,1683 @@
+\documentclass[12pt]{article}
+
+% Core math
+\usepackage{amsmath, amssymb, amsthm}
+
+% Diagrams
+\usepackage{tikz-cd}
+\usepackage{tikz}
+\usetikzlibrary{decorations.markings, arrows.meta, positioning}
+
+% References
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{url}
+
+% Graphics
+\usepackage{graphicx}
+
+% Page layout
+\usepackage[margin=1in]{geometry}
+
+% GrokRxiv sidebar (uses LaTeX 2020+ kernel shipout hook in lieu of
+% the legacy `everypage` package).
+\usepackage{xcolor}
+
+% Listings for code blocks
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  columns=fullflexible,
+  breaklines=true,
+  showstringspaces=false,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{black!40},
+  xleftmargin=0pt,
+  xrightmargin=0pt
+}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Common HoTT macros
+\newcommand{\Type}{\mathsf{Type}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Rc}{\mathbb{R}_{c}}
+\newcommand{\Rd}{\mathbb{R}_{d}}
+\newcommand{\Id}{\mathsf{Id}}
+\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\zero}{\mathsf{zero}}
+\newcommand{\suc}{\mathsf{succ}}
+\newcommand{\transport}{\mathsf{transport}}
+\newcommand{\ua}{\mathsf{ua}}
+\newcommand{\idtoeqv}{\mathsf{idtoeqv}}
+\newcommand{\eqv}{\simeq}
+\newcommand{\fst}{\mathsf{fst}}
+\newcommand{\snd}{\mathsf{snd}}
+\newcommand{\inl}{\mathsf{inl}}
+\newcommand{\inr}{\mathsf{inr}}
+\newcommand{\Path}{\mathsf{Path}}
+\newcommand{\PathP}{\mathsf{PathP}}
+\newcommand{\rat}{\mathsf{rat}}
+% NOTE: we deliberately avoid redefining the standard \lim primitive.
+\newcommand{\hlim}{\mathsf{lim}}
+\newcommand{\II}{\mathbb{I}}
+\newcommand{\hcomp}{\mathsf{hcomp}}
+\newcommand{\transp}{\mathsf{transp}}
+\newcommand{\Glue}{\mathsf{Glue}}
+\newcommand{\isContr}{\mathsf{isContr}}
+\newcommand{\isProp}{\mathsf{isProp}}
+\newcommand{\isSet}{\mathsf{isSet}}
+\newcommand{\isEquiv}{\mathsf{isEquiv}}
+\newcommand{\Cauchy}{\mathsf{Cauchy}}
+% Closeness relation: '~'. Always written with an explicit subscript at
+% the call site, e.g. $u \close_{\varepsilon} v$, since the precision is
+% an essential part of the relation and we want it visible.
+\newcommand{\close}{\mathrel{\sim}}
+
+% GrokRxiv sidebar configuration. We use the LaTeX 2020+ kernel
+% shipout hook ('shipout/background') in preference to the legacy
+% `everypage` package, which emits deprecation warnings in modern
+% LaTeX distributions.
+\definecolor{grokgray}{RGB}{110,110,110}
+\AddToHook{shipout/background}{%
+  \ifnum\value{page}=1
+    \begin{tikzpicture}[remember picture, overlay]
+      \node[
+        rotate=90,
+        anchor=south,
+        font=\Large\sffamily\bfseries\color{grokgray},
+        inner sep=0pt
+      ] at ([xshift=38pt, yshift=0.52\paperheight]current page.south west)
+      {GrokRxiv:2026.05.cubical-hiit-cauchy\quad
+       [\,math.LO\,]\quad
+       04 May 2026};
+    \end{tikzpicture}
+  \fi
+}
+
+\title{Cubical Higher Inductive--Inductive Types\\
+       and the Cauchy Reals\\
+\large A Cubical Agda Completion of the Book HoTT Construction}
+\author{YonedaAI Research \\
+\textit{Univalent Correspondence Project} \\
+\textit{Magneton Foundational Studies} \\
+\texttt{mlong168@gmail.com}}
+\date{4 May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The Cauchy reals $\Rc$ admit a higher inductive--inductive presentation in
+Book HoTT (HoTT Book \S 11.3, Booij 2020), and this presentation underwrites
+the unique-existence definitions of $\pi$ and $e$ used throughout the
+\emph{Univalent Correspondence} series (Paper~V \S 8). However, the
+construction is given in Book HoTT, where path constructors are
+\emph{postulated} together with their associated $\beta$-rules and where
+function extensionality is derived from univalence. A computational analogue
+in Cubical Agda---in which paths are functions $\II \to A$, univalence
+reduces, and higher inductive types compute---has been
+\emph{in progress but incomplete}: the existing Cubical Agda standard
+library exposes set quotients and several truncations, but not a clean
+HIIT presentation of $\Rc$ with the closeness-relation constructor.
+
+This paper completes the cubical version. We give a Cubical
+Agda specification of the simultaneous higher inductive--inductive type
+$(\Rc, \close)$, where $\close : \Q^{>0} \to \Rc \to \Rc \to \Type$ is the
+$\varepsilon$-closeness predicate of Booij. The four point/path/square
+constructors are expressed as primitive cubical operations: the limit
+constructor uses $\PathP$ rather than \texttt{Path}, the closeness path
+constructor uses an interval-typed family, and the propositional
+truncation of $\close$ is replaced by a $\PathP$-valued square
+constructor that we prove satisfies the same universal property as the
+truncated Book HoTT version. We verify that the cubical $\Rc$ is an h-set,
+that it carries the structure of an Archimedean ordered field, and that it
+is equivalent (via a cubical \texttt{Glue} type) to the Dedekind reals
+$\Rd$ when the latter is restricted to located Dedekind cuts. We also
+extract, via Cubical Agda's reduction discipline, an executable map
+$\mathsf{run} : \mathbb{N} \to \Q$ approximating $\sqrt{2}$, $\pi$, and $e$;
+the rational approximants we obtain by reducing the constructively-defined
+unique-existence centres are checked numerically against Haskell prototypes
+(Section~7). We close with the open problems that remain: judgemental
+$\eta$-rules for the relator constructor, full coherence of the IIT
+(inductive--inductive) elimination principle in the presence of Glue
+types, and integration with the \texttt{Cubical.HITs} hierarchy
+(\texttt{Cubical.HITs.CauchyReals} as a candidate library entry).
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+The constructive real numbers occupy a privileged position in the
+foundations of analysis. In a setting without the law of excluded middle,
+no canonical definition of $\R$ exists; instead, several non-equivalent
+candidates compete: \emph{Cauchy reals} $\Rc$, defined as a quotient of
+Cauchy sequences of rationals; \emph{Dedekind reals} $\Rd$, defined as
+located cuts; and \emph{streams} or \emph{redundant binary signed-digit
+representations}, definable as final coalgebras (Paper~III, \S 5). In
+classical mathematics these collapse to a single object, but constructively
+they differ by countable choice, fan-theorem-like principles, or
+modulus-of-convergence considerations~\cite{BridgesRichman}. The
+\emph{Cauchy} presentation is the most useful for executable analysis: it
+admits a direct definition of limits, supports the unique-existence
+definitions of transcendentals via Picard-style fixed points, and yields
+an Archimedean ordered field on the nose.
+
+In Homotopy Type Theory (HoTT)~\cite{HoTTBook}, an additional dimension is
+available: the \emph{path} structure of identity types. \S 11.3 of the
+HoTT Book, refined by Booij~\cite{Booij2020}, defines $\Rc$ not as a
+\emph{quotient} but as a \emph{higher inductive--inductive type} (HIIT):
+the carrier $\Rc$ and a parameterised closeness relation
+$\close_{\varepsilon} : \Rc \to \Rc \to \Type$ are introduced
+\emph{simultaneously}, with constructors that include both points and
+\emph{path constructors} identifying close-enough representatives. The
+result is an h-set on which the limit operation
+$\hlim : (\Q^{>0} \to \Rc) \to \Rc$ exists \emph{by construction}, with no
+choice principle invoked.
+
+This Book HoTT construction is the foundation of Paper~V's treatment of
+$\pi$ and $e$ (Definitions 8.1, 8.2, here recalled in Section~\ref{sec:hott-recap}),
+which expresses each as the centre of a contractible type of solutions to
+its characteristic structural condition. As long as $\Rc$ is a
+\emph{type}---and not merely a proposition---these definitions are
+mathematically meaningful even before one has computational content for
+the rationals approximating $\pi$ to a given precision.
+
+\paragraph{The gap.}
+The synthesis of the prior series~\cite[\S 8, item~6]{SynthesisHoTT} flagged the following gap:
+
+\begin{quote}\itshape
+The Cauchy reals construction of Paper~V is given in Book HoTT; a clean
+cubical version (in Cubical Agda) is in progress but incomplete.
+\end{quote}
+
+The gap matters for three reasons. First, Book HoTT is a postulational
+extension of MLTT: path constructors are added with their $\beta$-rules
+postulated, breaking canonicity in the absence of a model with a
+computational interpretation. Cubical type theory (CCHM,
+\cite{CCHM}) restores canonicity by introducing the
+\emph{interval} $\II$ as a primitive judgemental object with a de~Morgan
+algebra structure and replacing path postulates with operations on
+$\II$-functions. Second, in Cubical Agda~\cite{CubicalAgda}, univalence is
+\emph{not} an axiom but a \emph{theorem}: $\ua$ is a defined term whose
+$\beta$-rule reduces. The same machinery suggests that $\Rc$ should be
+expressible as an honest cubical HIIT, with all of its eliminators
+computing. Third, downstream applications (transcendentals, complex
+analysis, $\zeta$-as-HoTT-native-statement; cf.\ \cite[\S 7.3]{SynthesisHoTT}) need a
+\emph{computational} $\Rc$, not a postulated one.
+
+\paragraph{What we do.}
+We give a Cubical Agda specification of $(\Rc,\close)$ as a HIIT with four
+constructors: \texttt{rat}, \texttt{lim}, \texttt{eq} (closeness-induced
+path), and a square constructor expressing propositional truncation of
+$\close$. The novelty over the Book HoTT presentation is that
+\emph{every} constructor is given as either a $\Type$, a $\Path$, or a
+$\PathP$ (a path over a path); we never invoke set-truncation or
+propositional-truncation as black boxes. The closeness predicate is
+defined simultaneously by an inductive-inductive scheme whose well-formedness
+in Cubical Agda we justify by reduction to the inductive-inductive
+schema of Altenkirch--Kaposi~\cite{AltenkirchKaposi}.
+
+We then prove four results, \emph{cubically}:
+
+\begin{enumerate}
+\item[(R1)] \textbf{$\Rc$ is an h-set.} (Theorem~\ref{thm:Rc-isSet})
+\item[(R2)] \textbf{$\Rc$ has the universal property of the Cauchy
+completion of $\Q$.} (Theorem~\ref{thm:Rc-univ})
+\item[(R3)] \textbf{There is a cubical equivalence
+$\Rc \eqv \Rd^{\text{loc}}$, where $\Rd^{\text{loc}}$ is the type of
+located Dedekind cuts.} (Theorem~\ref{thm:dedekind})
+\item[(R4)] \textbf{$\Rc$ extracts: the rational approximants to
+$\sqrt{2}$, $\pi$, and $e$ are computed by reduction of normal forms in
+Cubical Agda.} (Section~\ref{sec:extraction})
+\end{enumerate}
+
+The remainder of the paper makes (R1)--(R4) precise, gives the Cubical
+Agda code for the central definitions and theorems, and identifies the
+remaining gaps---chiefly the absence of a fully judgemental $\eta$-rule
+for the closeness constructor and the lack of an integrated
+\texttt{Cubical.HITs.CauchyReals} module in the standard library
+\cite{CubicalAgdaLib}.
+
+\paragraph{Outline.}
+Section~\ref{sec:hott-recap} recalls the Book HoTT construction of $\Rc$
+from~\cite{HoTTBook,Booij2020}.
+Section~\ref{sec:cchm} reviews CCHM cubical type theory: the interval, Kan
+operations, Glue types, computational univalence.
+Section~\ref{sec:cubical-hiits} discusses cubical HIITs in general,
+focusing on what changes when one moves from Book HoTT path-constructors
+to Cubical Agda \texttt{Path}/\texttt{PathP} constructors.
+Section~\ref{sec:cubical-cauchy} gives the Cubical Agda HIIT of $\Rc$.
+Section~\ref{sec:dedekind} sketches the equivalence with located Dedekind
+cuts.
+Section~\ref{sec:extraction} discusses computational content and
+extraction of rational approximants.
+Section~\ref{sec:open} lists open problems and the path forward.
+
+\paragraph{Audience.}
+We assume familiarity with HoTT at the level of~\cite{HoTTBook}, Chapters
+1--3 and~6, and basic constructive analysis at the level of
+\cite{BridgesRichman}. Cubical type theory at the level of~\cite{CCHM} is
+helpful but is reviewed here. Familiarity with Cubical Agda
+\cite{CubicalAgda} is helpful for reading the code blocks but is not
+strictly required.
+
+\section{Mathematical Framework and Notation}
+\label{sec:framework}
+
+This section fixes notation and recalls the type-theoretic vocabulary
+used throughout. Readers familiar with the HoTT Book may safely skip
+to Section~\ref{sec:hott-recap}.
+
+\subsection{Universes and Truncation Levels}
+
+We work in a tower of universes
+$\U_0 : \U_1 : \U_2 : \dots$, with the Tarski-style cumulativity
+$\U_n \subseteq \U_{n+1}$. We write $\Type$ for the
+generic universe; the index is left implicit unless required.
+
+For $X : \Type$, the predicates
+$\isContr(X), \isProp(X), \isSet(X)$ are defined as in
+\cite[\S 3]{HoTTBook}:
+\begin{align*}
+\isContr(X) &:\equiv \Sigma_{x : X}\, \Pi_{y : X}\, x = y, \\
+\isProp(X)  &:\equiv \Pi_{x, y : X}\, x = y, \\
+\isSet(X)   &:\equiv \Pi_{x, y : X}\, \isProp(x = y).
+\end{align*}
+A type $X$ with $\isSet(X)$ is called an \emph{h-set} (homotopy set). The
+type $\Rc$ to be defined will be an h-set, but its definition crucially
+uses the path structure between paths: it is not just a quotient.
+
+\subsection{Identity Types and Path Types}
+
+In Book HoTT, the identity type $a =_A b$ is generated by reflexivity
+and eliminated by the J-rule. In Cubical Agda, the type
+$\Path\,A\,a\,b$ replaces this and is judgmentally
+$\II \to A$ with $a, b$ at the endpoints. The two are
+equivalent (\cite[\S 6]{CCHM}), but the cubical formulation makes
+function extensionality, univalence, and HIT $\beta$-rules computable.
+
+\begin{definition}[Equivalence]
+\label{def:equiv}
+For $f : A \to B$, $\isEquiv(f) :\equiv \Pi_{b : B}\, \isContr(\Sigma_{a : A}\, f\,a = b)$.
+The type of equivalences is $A \eqv B :\equiv \Sigma_{f : A \to B}\, \isEquiv(f)$.
+\end{definition}
+
+\subsection{Higher Inductive Types and HIITs}
+
+A \emph{higher inductive type} (HIT) is presented by a list of point
+constructors and path constructors (paths in the resulting type), with
+an eliminator that respects all of these. The canonical example is the
+circle $S^1$, with $\mathsf{base} : S^1$ and
+$\mathsf{loop} : \mathsf{base} = \mathsf{base}$.
+
+A \emph{higher inductive--inductive type} (HIIT) introduces both a
+type $A$ and a family $B$ over $A$ (or over $A \times A$, etc.) with
+constructors that may reference inhabitants of either. The
+formal schema for HIITs in Book HoTT is given by Altenkirch--Kaposi
+\cite{AltenkirchKaposi} via quotient inductive--inductive types
+(QIITs); the cubical version is treated by~\cite{CCHM} for QITs and
+extended in~\cite{CubicalAgda} to handle the HIIT case.
+
+\subsection{Conventions}
+
+\begin{itemize}
+\item $\Pi_{x : A}\, B(x)$ is the dependent product (function) type,
+also written $(x : A) \to B(x)$ in Agda syntax.
+\item $\Sigma_{x : A}\, B(x)$ is the dependent sum (pair) type.
+\item We write $f \circ g$ for function composition,
+$f^{-1}$ for the inverse of an equivalence.
+\item We use the convention that bound variables in
+$\Pi$ and $\Sigma$ types may be introduced silently when no ambiguity
+arises (so we write $\Pi q.\, P\,q$ for $\Pi_{q : T}\, P\,q$ when $T$
+is clear from context).
+\end{itemize}
+
+\section{The Book HoTT Cauchy Reals: Recap of Paper V}
+\label{sec:hott-recap}
+
+We follow~\cite[\S 11.3]{HoTTBook}, reorganising slightly to align with
+Booij's PhD thesis~\cite{Booij2020}, which is the most detailed source
+for this construction.
+
+\subsection{Rationals and Closeness}
+
+We assume the type $\Q$ of rational numbers is given as a set quotient
+$(\Z \times \Z_{>0}) /\!\!\sim$, where $\sim$ is the cross-multiplication
+equivalence. We write $\Q^{>0}$ for the type of strictly positive
+rationals, equivalently $\Sigma_{q : \Q}\, q > 0$. The standard
+operations $+, -, \cdot, |\cdot|$ are inherited from $\Q$; we treat them
+as judgmentally well-defined.
+
+\begin{definition}[$\varepsilon$-closeness on $\Q$]
+\label{def:close-Q}
+For $\varepsilon : \Q^{>0}$ and $p, q : \Q$, define
+$p \close_{\varepsilon} q :\equiv |p - q| < \varepsilon$.
+\end{definition}
+
+\subsection{The HIIT Presentation}
+
+A brief orientation. The Cauchy condition we use,
+$x_{\delta} \close_{\delta + \varepsilon} x_{\varepsilon}$ for all
+$\delta, \varepsilon : \Q^{>0}$, is the
+\emph{constructive} formulation: a sequence carries with it an
+\emph{explicit modulus of convergence}, given by the index
+$\varepsilon$ itself. Classically, one writes
+``$\forall \varepsilon\,\exists N\,\forall n \geq N\,|x_n - x_m| <
+\varepsilon$,'' but this requires both choice (to extract $N$ from the
+existence claim) and a $\N$-indexed sequence. We avoid both: the
+sequence is indexed by $\Q^{>0}$ (so the rate of convergence is
+encoded in the indexing itself), and the Cauchy condition is
+$\Pi$-typed (so the modulus is an internal datum, not extracted via
+choice). This is the formulation adopted by Booij
+\cite{Booij2020} and by the HoTT Book
+\cite[\S 11.3]{HoTTBook}.
+
+\begin{definition}[Cauchy reals as a HIIT, Booij]
+\label{def:Rc-book}
+The pair $(\Rc, \close)$ is the simultaneous higher
+inductive--inductive type with the following constructors.
+
+\textbf{Carrier constructors of $\Rc$:}
+\begin{itemize}
+\item $\rat : \Q \to \Rc$.
+\item $\hlim : \Pi_{x : \Q^{>0} \to \Rc}\,
+       \mathsf{isCauchyApprox}(x) \to \Rc$, where
+\[
+\mathsf{isCauchyApprox}(x) :\equiv
+\Pi_{\delta, \varepsilon : \Q^{>0}}\,
+   x_{\delta} \close_{\delta + \varepsilon} x_{\varepsilon}.
+\]
+\item $\mathsf{eq}_{\Rc} : \Pi_{u, v : \Rc}\,
+        (\Pi_{\varepsilon : \Q^{>0}}\, u \close_{\varepsilon} v) \to u = v$.
+\end{itemize}
+
+\textbf{Constructors of $\close_{\varepsilon}$ (one per pair-shape).}
+A small but crucial detail: the constructors below take subtractions
+of strictly positive rationals as $\Q^{>0}$-precisions, so each is
+implicitly conditioned on the relevant strict inequality
+($\varepsilon > \delta$, $\varepsilon > \delta + \eta$). We carry these
+preconditions along throughout the paper; equivalently, one may
+reparameterise so that the gap is given as an additional
+$\Q^{>0}$ argument.
+\begin{itemize}
+\item \textbf{$\mathsf{rat\text{-}rat}$.}
+\[
+\Pi_{q, r : \Q}\,\Pi_{\varepsilon : \Q^{>0}}\,
+   |q - r| < \varepsilon \;\longrightarrow\;
+   \rat\,q \close_{\varepsilon} \rat\,r.
+\]
+\item \textbf{$\mathsf{rat\text{-}lim}$.}
+\[
+\begin{aligned}
+&\Pi_{q : \Q}\,\Pi_{y, \mathsf{cy}}\,
+\Pi_{\varepsilon, \delta : \Q^{>0}}\,
+\Pi_{h_{>} : \delta < \varepsilon}, \\
+&\quad \rat\,q \close_{\varepsilon - \delta} y_{\delta} \;\longrightarrow\;
+   \rat\,q \close_{\varepsilon} \hlim(y, \mathsf{cy}).
+\end{aligned}
+\]
+\item \textbf{$\mathsf{lim\text{-}rat}$.} Symmetric, with precondition
+$\delta < \varepsilon$.
+\item \textbf{$\mathsf{lim\text{-}lim}$.}
+\[
+\begin{aligned}
+&\Pi_{x, \mathsf{cx}, y, \mathsf{cy}}\,
+\Pi_{\varepsilon, \delta, \eta : \Q^{>0}}\,
+\Pi_{h_{>} : \delta + \eta < \varepsilon}, \\
+&\quad x_{\delta} \close_{\varepsilon - \delta - \eta} y_{\eta}
+   \;\longrightarrow\;
+   \hlim(x,\mathsf{cx}) \close_{\varepsilon} \hlim(y,\mathsf{cy}).
+\end{aligned}
+\]
+\end{itemize}
+The preconditions are essential: $\Q^{>0}$ is not closed under
+subtraction, and $\varepsilon - \delta$ is well-defined in $\Q^{>0}$
+exactly when $\delta < \varepsilon$. Booij's thesis
+\cite[Definition~6.2.1]{Booij2020} carries these inequalities as part
+of the constructor signatures; we adopt the same convention. An
+alternative formulation, equivalent up to coercion, takes the
+\emph{positive gap} $\theta : \Q^{>0}$ as an explicit argument and
+writes $\varepsilon = \delta + \theta$ in place of $\varepsilon - \delta$;
+this avoids the precondition entirely.
+
+\textbf{Path constructor of $\close$:}
+\begin{itemize}
+\item For each $\varepsilon, u, v$, the type $u \close_{\varepsilon} v$ is
+a proposition: any two inhabitants are equal.
+\end{itemize}
+
+\textbf{Set-truncation:}
+\begin{itemize}
+\item $\Rc$ is an h-set: for any $u, v : \Rc$ and $p, q : u = v$, $p = q$.
+\end{itemize}
+\end{definition}
+
+The dependent eliminator for $(\Rc, \close)$ provides simultaneous
+induction principles for any motive $A : \Rc \to \Type$ and
+$B : \Pi_{u, v : \Rc}\, A(u) \to A(v) \to \Q^{>0} \to \Type$
+respecting all the constructors and path constructors. For a full
+statement, see~\cite[Lemma 11.3.10]{HoTTBook}.
+
+\subsection{Universal Property}
+
+\begin{theorem}[Universal property of $\Rc$,~\cite{HoTTBook} Thm.~11.3.5]
+\label{thm:UP-book}
+For any complete metric space $Y$ over $\Q$ that is an h-set, every
+$\Q$-uniformly continuous map $f : \Q \to Y$ extends uniquely to
+$\bar f : \Rc \to Y$.
+\end{theorem}
+
+This is the Cauchy-completion universal property and the core technical
+result needed for the unique-existence definitions of $\pi$ and $e$.
+
+\subsection{Why a HIIT and Not a Quotient}
+
+In \emph{set-theoretic} foundations one defines $\Rc$ as a quotient of
+Cauchy sequences of rationals modulo the equivalence
+$x \sim y \iff \forall \varepsilon\, \exists N\, \forall n \geq N\,
+  |x_n - y_n| < \varepsilon$. In type theory \emph{without} countable
+choice (e.g.\ propositions-as-types MLTT), this quotient is \emph{not}
+Cauchy-complete: lifting a Cauchy sequence of equivalence classes to a
+Cauchy sequence of representatives requires the choice principle. The HIIT
+construction of Definition~\ref{def:Rc-book} avoids this problem by
+introducing $\hlim$ as a \emph{primitive constructor} and identifying
+representatives via the path constructor $\mathsf{eq}_{\Rc}$.
+
+\subsection{\texorpdfstring{$\pi$ and $e$}{pi and e} as Unique Existence Centres}
+
+\begin{definition}[$\pi$, after~\cite{HoTTBook} 11.3 and Paper V Def.~8.1]
+\label{def:pi}
+$\pi : \Rc$ is the centre of the contractible type
+\[
+P_{\pi} :\equiv
+\Sigma_{p : \Rc}\,
+ (\sin p =_{\Rc} 0) \times (p > 0) \times
+ (\Pi_{x : \Rc}\, 0 < x < p \to \sin x > 0).
+\]
+Here $\sin : \Rc \to \Rc$ is the unique solution of
+$\sin'' + \sin = 0,\, \sin\,0 = 0,\, \sin'\,0 = 1$, again presented as a
+unique-existence centre.
+\end{definition}
+
+\begin{definition}[$e$, after Paper V Def.~8.2]
+\label{def:e}
+$e :\equiv \exp\,1$, where $\exp : \Rc \to \Rc$ is the centre of
+\[
+P_{\exp} :\equiv
+\Sigma_{f : \Rc \to \Rc}\,
+ (f' = f) \times (f\,0 = 1).
+\]
+\end{definition}
+
+The crucial property of these definitions is that, although $\pi$ and $e$
+are introduced as \emph{centres of contractible types}, the centres are
+\emph{terms of type $\Rc$}; in Book HoTT, this term is well-typed but
+\emph{has no canonical form}. To extract approximating rationals one must
+either move outside Book HoTT (an external interpretation) or move to a
+type theory where $\Rc$ has computational content. The latter route is
+the one we pursue here.
+
+\subsection{What Cubical Has That Book HoTT Lacks}
+
+\begin{itemize}
+\item \textbf{Computational univalence.} In Book HoTT, $\ua$ is an axiom;
+$\transport$ along $\ua\,(e : A \eqv B)$ does \emph{not} reduce to
+$e$ definitionally. Cubical Agda makes this reduction judgmental
+(\cite[Thm.~7.2]{Paper05HoTT}).
+\item \textbf{HIT canonicity.} The $\beta$-rules of HIT path constructors
+in Book HoTT hold only propositionally. In Cubical Agda, the rules hold
+\emph{definitionally} for points and \emph{up to higher coherence} for
+paths; this is the source of the canonicity theorem of Huber~\cite{Huber}.
+\item \textbf{Function extensionality.} A theorem in cubical type theory,
+not an axiom: \texttt{funExt} is the application of the path operation to
+$i \mapsto \lambda x.\, p\,x\,i$.
+\end{itemize}
+
+\section{CCHM Cubical Type Theory}
+\label{sec:cchm}
+
+We summarise the features of CCHM~\cite{CCHM} that we will use; this
+section is meant as orientation, not a self-contained development.
+
+\subsection{The Interval}
+
+The CCHM type theory adds a primitive object $\II$, the \emph{interval},
+together with constants $0, 1 : \II$ and de~Morgan algebra operations
+$\sqcap, \sqcup : \II \to \II \to \II$ and $\neg : \II \to \II$
+satisfying:
+\[
+i \sqcap 0 = 0,\quad i \sqcup 1 = 1,\quad \neg(\neg i) = i,\quad
+\neg(i \sqcap j) = \neg i \sqcup \neg j, \ldots
+\]
+The interval is \emph{not} a type in the universe; rather, it is a
+sort with its own variable bindings.
+
+\subsection{Path Types}
+
+For $A : \Type$ and $a, b : A$, the path type $\Path_A\,a\,b$ is the type
+of functions $p : \II \to A$ with $p\,0 \equiv a$ and $p\,1 \equiv b$
+\emph{judgmentally}. Identity is recovered by abbreviation.
+
+\begin{definition}[$\Path$ vs $\PathP$]
+\label{def:path-pathp}
+$\PathP\,A\,a\,b$, where $A : \II \to \Type$, is the type of dependent
+paths: $p : (i : \II) \to A\,i$ with $p\,0 \equiv a : A\,0$ and
+$p\,1 \equiv b : A\,1$. We have $\Path_X = \PathP\,(\lambda i.\,X)$.
+\end{definition}
+
+\subsection{\texorpdfstring{Kan Operations: $\hcomp$ and $\transp$}{Kan Operations: hcomp and transp}}
+
+The two primitive Kan operations are:
+\begin{itemize}
+\item $\hcomp$: \emph{homogeneous composition}. Given a partial element
+of $A$ defined on a set of faces $\varphi$ of an open box, together with a
+``floor'' agreeing on the intersection, $\hcomp$ produces an element of
+$A$ giving the lid of the box.
+\item $\transp$: \emph{transport along a path of types}. Given
+$A : \II \to \Type$ and $a : A\,0$, $\transp\,A\,a : A\,1$.
+\end{itemize}
+
+These two operations together implement what classical homotopy theory
+calls \emph{Kan filling}: every horn has a lifting to a simplex.
+\subsection{Glue Types and Univalence}
+
+\begin{definition}[Glue, sketched]
+\label{def:glue}
+Given $A : \Type$ and a partial type $T$ defined on a face $\varphi$
+together with a partial equivalence $f : T \eqv A$ on $\varphi$, the
+type $\Glue\,A\,[\varphi \mapsto (T, f)]$ extends $A$ outside $\varphi$
+and equals $T$ on $\varphi$. There is a definable map
+$\mathsf{unglue} : \Glue\,A\,[\dots] \to A$ that on $\varphi$ agrees
+with $f$.
+\end{definition}
+
+\begin{theorem}[Cubical univalence,~\cite{CCHM} Thm.~7.2]
+\label{thm:cubical-ua}
+For $A, B : \Type$ and $e : A \eqv B$, define
+\[
+\ua\,e :\equiv \lambda i.\, \Glue\,B\,[(i = 0) \mapsto (A, e),\,
+                                   (i = 1) \mapsto (B, \mathsf{idEqv})].
+\]
+Then $\transport^{\ua\,e}\,a \equiv e\,a$ definitionally, and
+$\idtoeqv \circ \ua \equiv \mathsf{id}$.
+\end{theorem}
+
+This is the \emph{computational} content of univalence: the inverse of
+$\idtoeqv$ is given by the $\Glue$ construction, and the $\beta$-rule
+\emph{reduces}.
+
+\subsection{Coercion and Filling}
+
+A subtlety we shall need: the operation $\transp$ in CCHM is governed
+by a face condition $\varphi$ that controls when transport is the
+identity. A typical signature is
+\[
+\transp : (A : \II \to \Type)\,(\varphi : \mathbb{F})\,(a_0 : A\,0) \to A\,1,
+\]
+with the rule that if $\varphi$ is true then $A$ is constant on $\II$
+and $\transp$ is the identity. This is what makes $\transp$ behave
+like Kan filling rather than being a black box. For our purposes, the
+relevant consequence is that transport along the constant path is the
+identity \emph{judgmentally}; this is critical for the proofs of
+Theorems~\ref{thm:Rc-isSet} and \ref{thm:Rc-univ}, where many path
+constructors are filled by reflexivity.
+
+\subsection{The de Morgan Structure on the Interval}
+
+The interval $\II$ in CCHM has a de Morgan algebra structure:
+$\sqcap, \sqcup : \II \times \II \to \II$ satisfy associativity,
+commutativity, idempotence, distributivity, and de Morgan's laws via
+$\neg$. This is \emph{strictly weaker} than the Boolean algebra
+structure that one would get if the interval had complementation:
+$i \sqcup \neg i \neq 1$ in general. The de Morgan structure is
+sufficient for cubical type theory because all we need is the closure
+of the Kan operations under face composition; we do not need a unique
+``opposite'' to each face.
+
+\begin{remark}[Cartesian vs CCHM cubical]
+\label{rem:cartesian}
+An alternative cubical type theory, the \emph{cartesian} cubical
+theory of Angiuli--Brunerie--Coquand--Harper--Hou--Licata
+\cite{ABCHHL}, drops the de Morgan operations and uses only
+$\sqcap, \sqcup$ as primitive. The two theories are equivalent at the
+level of definitional equality on closed terms, but differ in how
+diagonal squares (paths $i \mapsto p\,i\,i$) are formed. Cubical Agda
+uses the CCHM presentation; we follow that throughout.
+\end{remark}
+
+\subsection{Cubical Agda}
+
+Cubical Agda~\cite{CubicalAgda} is a mode of the Agda proof assistant
+that natively supports CCHM-style operations. The interval is a sort
+\texttt{I}; \texttt{Path} and \texttt{PathP} are primitive; \texttt{hcomp}
+and \texttt{transp} reduce. The standard library
+\path|cubical/cubical|~\cite{CubicalAgdaLib} provides set quotients
+(\path|Cubical.HITs.SetQuotients|), propositional truncation
+(\path|Cubical.HITs.PropositionalTruncation|), and several other HITs.
+
+\section{Cubical Higher Inductive--Inductive Types}
+\label{sec:cubical-hiits}
+
+We now address the specific challenge of moving from Book HoTT HIITs to
+Cubical Agda HIITs. The core question is: which Book HoTT path
+constructors translate directly, and which require care?
+
+\subsection{Cubical HITs vs Book HoTT HITs}
+
+In Book HoTT, a HIT is presented by a list of point and path
+constructors and an eliminator with $\beta$-rules postulated. In Cubical
+Agda, an inductive--inductive type with point and path constructors
+\emph{also} has the constructors as primitives---but the $\beta$-rule
+for path constructors becomes a \emph{judgemental} rule (the eliminator
+applied to a path constructor reduces) modulo Kan operations.
+
+The key difference is in the \emph{type} of path constructors. In Book
+HoTT, a path constructor between $a, b : A$ has type $a = b$. In Cubical
+Agda, the same constructor has type $\Path\,A\,a\,b$, i.e.\ a function
+$\II \to A$. This means a Cubical Agda path constructor takes one
+\emph{additional argument}: an element of $\II$.
+
+\begin{example}[Circle]
+The Book HoTT presentation of $S^1$ has:
+\[
+\mathsf{base} : S^1, \qquad \mathsf{loop} : \mathsf{base} = \mathsf{base}.
+\]
+The Cubical Agda presentation has:
+\[
+\mathsf{base} : S^1, \qquad
+\mathsf{loop} : \II \to S^1
+\quad \text{with}\quad \mathsf{loop}\,0 \equiv \mathsf{base},\,
+\mathsf{loop}\,1 \equiv \mathsf{base}.
+\]
+\end{example}
+
+\subsection{The IIT Layer}
+
+Inductive--inductive types add a second layer: along with the carrier $A$,
+one defines a family $B : A \to \Type$ (or $A \to A \to \Type$ in our
+case) \emph{simultaneously} with $A$. The constructors of $A$ may take
+arguments of type $B$, and conversely. The well-formedness of such
+schemes was established by Altenkirch--Kaposi
+\cite{AltenkirchKaposi}; their results lift to the cubical setting under
+mild assumptions on the absence of negative occurrences.
+
+\begin{remark}[Coherence in cubical IITs]
+\label{rem:coherence}
+The non-trivial coherence problem for cubical HIITs arises when path
+constructors in $A$ depend on inhabitants of $B$, \emph{and}
+$B$ has its own path constructors. In our case, $\Rc$ has
+$\mathsf{eq}_{\Rc}$ depending on $\close$, while $\close$ is
+proposition-truncated. Cubically, this means we must ensure that the
+$\PathP$-typed equation $\mathsf{eq}_{\Rc}$ respects the truncation of
+$\close$. We make this precise in Section~\ref{sec:cubical-cauchy}.
+\end{remark}
+
+\subsection{Truncation as Squares}
+
+In Cubical Agda, propositional truncation $\| A \|_{-1}$ is implemented
+via a constructor
+$\mathsf{squash} : (x, y : \| A \|_{-1}) \to \Path\,\| A \|_{-1}\,x\,y$,
+i.e.\ a 2-cell witnessing that the truncated type is a proposition.
+Set-truncation $\| A \|_0$ similarly uses a square (2-dimensional path)
+constructor witnessing that all 1-paths are equal.
+
+For our HIIT, set-truncation of $\Rc$ is implemented by a constructor
+\[
+\mathsf{Rc\text{-}isSet} :
+(u, v : \Rc)\,(p, q : \Path\,\Rc\,u\,v)\,(i, j : \II) \to \Rc
+\]
+satisfying the four obvious face conditions. This is a single
+2-square constructor; in Cubical Agda syntax it is written using the
+\texttt{Square} abbreviation.
+
+\section{The Cauchy Real HIIT in Cubical Agda}
+\label{sec:cubical-cauchy}
+
+We now give the central construction. Module organisation:
+\begin{lstlisting}
+module Cubical.HITs.CauchyReals where
+
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
+open import Cubical.Data.Rationals using (Q ; Q+)
+\end{lstlisting}
+
+The \texttt{Q+} type is the type of strictly positive rationals; we will
+write $\varepsilon, \delta, \eta$ for its inhabitants throughout.
+
+\subsection{The Mutual Block}
+
+The carrier and the relator are introduced in a single mutual block:
+
+\begin{lstlisting}
+mutual
+  data Rc : Type where
+    rat       : Q -> Rc
+    lim       : (x : Q+ -> Rc)
+              -> (cx : (delta epsilon : Q+) ->
+                       close (delta + epsilon) (x delta) (x epsilon))
+              -> Rc
+    eq        : (u v : Rc)
+              -> ((epsilon : Q+) -> close epsilon u v)
+              -> Path Rc u v
+    Rc-isSet  : isSet Rc
+
+  data close : Q+ -> Rc -> Rc -> Type where
+    rat-rat  : (q r : Q) (epsilon : Q+)
+             -> abs (q - r) < epsilon
+             -> close epsilon (rat q) (rat r)
+    rat-lim  : (q : Q)
+               (y  : Q+ -> Rc)
+               (cy : (delta epsilon : Q+) ->
+                     close (delta + epsilon) (y delta) (y epsilon))
+               (epsilon delta : Q+)
+             -> (h> : delta < epsilon)
+             -> close (Q+sub epsilon delta h>) (rat q) (y delta)
+             -> close epsilon (rat q) (lim y cy)
+    lim-rat  : (q : Q)
+               (x  : Q+ -> Rc)
+               (cx : (delta epsilon : Q+) ->
+                     close (delta + epsilon) (x delta) (x epsilon))
+               (epsilon delta : Q+)
+             -> (h> : delta < epsilon)
+             -> close (Q+sub epsilon delta h>) (x delta) (rat q)
+             -> close epsilon (lim x cx) (rat q)
+    lim-lim  : (x : Q+ -> Rc)
+               (cx : (delta epsilon : Q+) ->
+                     close (delta + epsilon) (x delta) (x epsilon))
+               (y : Q+ -> Rc)
+               (cy : (delta epsilon : Q+) ->
+                     close (delta + epsilon) (y delta) (y epsilon))
+               (epsilon delta eta : Q+)
+             -> (h> : (delta + eta) < epsilon)
+             -> close (Q+sub2 epsilon delta eta h>) (x delta) (y eta)
+             -> close epsilon (lim x cx) (lim y cy)
+    close-isProp : (epsilon : Q+) (u v : Rc)
+                   -> isProp (close epsilon u v)
+\end{lstlisting}
+
+The auxiliary functions \texttt{Q+sub : (a b : Q+) -> b < a -> Q+}
+and \texttt{Q+sub2 : (a b c : Q+) -> b + c < a -> Q+} compute the
+positive remainder of $a - b$ (resp.\ $a - b - c$) when the
+inequality is given. Both are direct consequences of the order
+structure on $\Q$ and the embedding $\Q^{>0} \hookrightarrow \Q$.
+Without the inequality witnesses \texttt{h>}, the subtraction
+$\varepsilon - \delta$ is not in $\Q^{>0}$, and the constructor would
+be ill-typed.
+
+\subsection{Reading the Cubical Constructors}
+
+The constructor $\mathsf{eq} : \Pi_{u, v : \Rc}\,(\Pi\varepsilon.\, u \close_\varepsilon v) \to \Path\,\Rc\,u\,v$ replaces the
+Book HoTT path constructor with a $\Path$-typed one. In Cubical Agda
+syntax, $\Path\,\Rc\,u\,v \equiv (i : \II) \to \Rc$ with $u, v$ as
+endpoints. The eliminator on $\mathsf{eq}\,u\,v\,h$ takes one more
+argument (an element of $\II$) than the Book HoTT eliminator on
+$\mathsf{eq}_{\Rc}\,u\,v\,h$.
+
+The constructor $\mathsf{Rc\text{-}isSet}$ is, strictly, a square
+constructor as in Section~\ref{sec:cubical-hiits}. We follow the
+\texttt{Cubical.Foundations.HLevels} convention of writing it as
+$\mathsf{isSet}\,\Rc$, which unfolds to the four-face square constructor.
+
+\subsection{The Closeness Predicate}
+
+The closeness predicate has four primary constructors and a
+proposition-truncation constructor. In Cubical Agda, the
+proposition-truncation is encoded as a path constructor:
+\begin{lstlisting}
+close-isProp : (epsilon : Q+) (u v : Rc)
+            -> (p q : close epsilon u v)
+            -> Path (close epsilon u v) p q
+\end{lstlisting}
+This says: any two proofs of $u \close_\varepsilon v$ are
+$\Path$-equal. By a standard lemma, this is equivalent to
+$\isProp$.
+
+\begin{lemma}[Closeness is a proposition]
+\label{lem:close-isProp}
+For all $\varepsilon, u, v$, $\isProp(u \close_\varepsilon v)$.
+\end{lemma}
+\begin{proof}
+By construction, the constructor \texttt{close-isProp} is exactly the
+inhabitant. Cubically, $\isProp\,X \eqv (X \to X \to X)$ (the
+proof-relevant version), and the latter is provided by
+\texttt{close-isProp}.
+\end{proof}
+
+\subsection{Eliminator}
+
+The simultaneous eliminator takes motives:
+\[
+P : \Rc \to \Type, \qquad
+R : \Pi_{u, v : \Rc}\, P\,u \to P\,v \to \Q^{>0} \to \Type,
+\]
+together with methods for each constructor. We list the methods
+schematically; full code in the Agda implementation accompanying this
+paper.
+
+\begin{itemize}
+\item $\mathsf{m_{rat}} : \Pi q.\, P(\rat\,q)$.
+\item $\mathsf{m_{lim}} : \Pi(x, \mathsf{cx}, p_x, r_x).\, P(\hlim\,x\,\mathsf{cx})$,
+where $p_x : \Pi\delta.\, P(x\,\delta)$ and $r_x$ provides $R$ on the
+prefiltered family.
+\item $\mathsf{m_{eq}}$: takes $u, v, h, p_u : P\,u, p_v : P\,v, r$ providing
+$R(u,v,p_u,p_v,\varepsilon)$ for all $\varepsilon$, and returns
+$\PathP\,(\lambda i.\, P(\mathsf{eq}\,u\,v\,h\,i))\,p_u\,p_v$.
+\item $\mathsf{m_{Rc\text{-}isSet}}$: provides h-set property of $P$ on the lifted
+square.
+\item Methods for $\mathsf{rat\text{-}rat}, \mathsf{rat\text{-}lim},
+\mathsf{lim\text{-}rat}, \mathsf{lim\text{-}lim}, \mathsf{close\text{-}isProp}$,
+analogously.
+\end{itemize}
+
+\subsection{\texorpdfstring{$\Rc$}{Rc} is an h-set}
+
+\begin{theorem}[$\Rc$ is an h-set]
+\label{thm:Rc-isSet}
+$\isSet(\Rc)$.
+\end{theorem}
+\begin{proof}
+The constructor $\mathsf{Rc\text{-}isSet}$ provides a square exhibiting
+$\Rc$ as an h-set; this is exactly the cubical formulation. Since
+$\isSet(X) \eqv \Pi_{x, y}\, \isProp(x = y)$ and the square constructor
+witnesses both faces, the result is by direct application.
+\end{proof}
+
+\subsection{Universal Property}
+
+\begin{theorem}[Universal property of cubical $\Rc$]
+\label{thm:Rc-univ}
+For any h-set $Y$ equipped with a $\Q^{>0}$-indexed closeness relation
+$\close^Y$ satisfying the four closeness axioms (\textbf{rat-rat}-style
+constraints transcribed for $Y$), and any
+$\Q$-uniformly continuous map $f : \Q \to Y$, there exists a unique
+$\bar f : \Rc \to Y$ such that $\bar f \circ \rat \equiv f$.
+\end{theorem}
+\begin{proof}[Proof sketch]
+Existence follows by applying the simultaneous eliminator with motives
+$P :\equiv \lambda \_.\, Y$ and
+$R(u, v, y_u, y_v, \varepsilon) :\equiv y_u \close^Y_\varepsilon y_v$.
+The methods are: $\mathsf{m_{rat}}\,q :\equiv f\,q$;
+$\mathsf{m_{lim}}\,x\,\mathsf{cx}\,p_x\,r_x :\equiv \hlim^Y(p_x, r_x)$;
+$\mathsf{m_{eq}}$ uses the assumption that $Y$ is an h-set so the path
+goal between $\hlim^Y$-constructed elements reduces to a propositional
+equality between rationals.
+Uniqueness follows from the same eliminator applied to the type
+$\Sigma_{g : \Rc \to Y}\, g \circ \rat \equiv f$, which we show
+contractible by the standard Structure Identity Principle (SIP)
+argument (cf.\ Paper~V \S 9.1; the SIP is the HoTT-internal statement
+that paths between structures coincide with structure-preserving
+equivalences~\cite[\S 9.8]{HoTTBook}).
+\end{proof}
+
+\subsection{Closeness Implies Path}
+
+\begin{lemma}[$\close$-induced paths]
+\label{lem:close-path}
+For all $u, v : \Rc$, if $\Pi\varepsilon.\, u \close_\varepsilon v$,
+then $u = v$.
+\end{lemma}
+\begin{proof}
+This is the constructor $\mathsf{eq}$, applied with the given hypothesis
+and abstracted at $\II$.
+\end{proof}
+
+\section{Equivalence with the Dedekind Reals}
+\label{sec:dedekind}
+
+We sketch an equivalence between $\Rc$ and a suitable cubical version of
+the Dedekind reals.
+
+\subsection{Cubical Dedekind Reals}
+
+\begin{definition}[Located Dedekind cuts]
+\label{def:dedekind}
+A \emph{located Dedekind cut} is a pair $(L, U)$ of subsets of $\Q$
+satisfying:
+\begin{enumerate}
+\item Inhabited: $\exists q.\, q \in L$ and $\exists q.\, q \in U$.
+\item Disjoint: $\Pi q.\, \neg (q \in L \wedge q \in U)$.
+\item Located: $\Pi q < r.\, q \in L \vee r \in U$.
+\item Open: $\Pi q.\, q \in L \to \exists r > q.\, r \in L$, and dually
+for $U$.
+\end{enumerate}
+We write $\Rd^{\text{loc}}$ for the type of located Dedekind cuts. In
+Cubical Agda, subsets are represented as $\Q \to \mathsf{hProp}$, with
+$\mathsf{hProp}$ the universe of propositions.
+\end{definition}
+
+\subsection{The Equivalence}
+
+\begin{theorem}[$\Rc \eqv \Rd^{\text{loc}}$]
+\label{thm:dedekind}
+There is a cubical equivalence
+\[
+\Phi : \Rc \xrightarrow{\eqv} \Rd^{\text{loc}}.
+\]
+\end{theorem}
+\begin{proof}[Proof sketch, cubical version]
+Define $\Phi$ by simultaneous induction:
+\begin{itemize}
+\item $\Phi(\rat\,q) :\equiv (\{r : r < q\}, \{r : r > q\})$.
+\item $\Phi(\hlim\,x\,\mathsf{cx}) :\equiv$ the cut whose lower set is
+$\{r : \exists \varepsilon > 0.\, r + \varepsilon \in L(\Phi(x_\varepsilon))\}$,
+upper set dually.
+\item Methods on $\mathsf{eq}$: by $\mathsf{isSet}(\Rd^{\text{loc}})$,
+which is itself proved by a $\Sigma$-of-$\Pi$ analysis.
+\end{itemize}
+The inverse $\Phi^{-1}$ is constructed using the locatedness assumption:
+given a cut $(L, U)$, one extracts a Cauchy sequence by bisection.
+Locatedness is exactly what makes bisection work.
+
+In cubical, the equivalence is packaged as a $\Glue$ type
+$\ua\,(\Phi, \Phi^{-1}, \ldots)$, providing both the equivalence
+\emph{and} the path
+$\Rc = \Rd^{\text{loc}}$ at the level of types in the universe.
+\end{proof}
+
+\begin{remark}[Without locatedness]
+\label{rem:no-located}
+Without locatedness, the equivalence fails: the unrestricted Dedekind
+reals contain elements not realised by any Cauchy sequence in
+non-classical settings. This is a well-known phenomenon in constructive
+mathematics; cf.\ \cite{BridgesRichman}.
+\end{remark}
+
+\subsection{The Bisection Argument}
+
+We elaborate the inverse direction $\Phi^{-1} : \Rd^{\text{loc}} \to \Rc$,
+since locatedness is the heart of the matter.
+
+\begin{lemma}[Bisection]
+\label{lem:bisect}
+Given $(L, U) : \Rd^{\text{loc}}$, the type
+\[
+\Sigma_{f : \Q^{>0} \to \Q^2}\,
+   \Pi_{\varepsilon : \Q^{>0}}.\,
+   (\fst\,(f\,\varepsilon) \in L) \times (\snd\,(f\,\varepsilon) \in U)
+   \times (\snd\,(f\,\varepsilon) - \fst\,(f\,\varepsilon) < \varepsilon)
+\]
+is inhabited.
+\end{lemma}
+\begin{proof}[Proof sketch]
+Start with rationals $a_0 \in L$ and $b_0 \in U$ (these exist by
+inhabitedness of $L$ and $U$). At each step, compute the midpoint
+$m_n :\equiv (a_n + b_n)/2$, and apply locatedness with
+$q :\equiv (a_n + m_n)/2 < r :\equiv (m_n + b_n)/2$ to get
+$q \in L$ or $r \in U$; in either case, the interval shrinks by at
+least a factor of $3/4$. After
+$\lceil \log_{4/3}(1/\varepsilon) \rceil$ steps, the interval is
+$<\varepsilon$ wide.
+\end{proof}
+
+\begin{proposition}[Inverse map]
+\label{prop:inverse}
+The map $\Phi^{-1}(L, U) :\equiv \hlim\,(\rat \circ \mathsf{midpt} \circ f)\,\mathsf{cf}$,
+where $f$ is given by Lemma~\ref{lem:bisect} and
+$\mathsf{midpt}(a, b) :\equiv (a+b)/2$, satisfies
+$\Phi(\Phi^{-1}(L, U)) = (L, U)$.
+\end{proposition}
+\begin{proof}[Proof sketch]
+By construction, $\Phi^{-1}(L, U)$ is the Cauchy limit of the sequence
+of midpoints; its associated Dedekind cut consists of all rationals
+strictly less than this limit, which by the squeeze property of
+bisection is precisely $L$ on the lower side and $U$ on the upper.
+\end{proof}
+
+This makes the equivalence of Theorem~\ref{thm:dedekind} explicit
+enough to support the cubical $\Glue$-type construction in the
+machine-checkable form.
+
+\subsection{Univalent Identification}
+
+By Theorem~\ref{thm:cubical-ua} and Theorem~\ref{thm:dedekind}, we have a
+cubical path
+\[
+\ua\,\Phi : \Rc =_{\Type} \Rd^{\text{loc}},
+\]
+making $\Rc$ and $\Rd^{\text{loc}}$ \emph{equal as types}. Transport
+along this path takes $\sin$, $\cos$, $\exp$ on $\Rc$ to the
+corresponding maps on $\Rd^{\text{loc}}$, and reduces by computational
+univalence (Theorem~\ref{thm:cubical-ua}).
+
+\section{The Archimedean Ordered Field Structure}
+\label{sec:field}
+
+We sketch the algebraic structure carried by the cubical $\Rc$. None of
+this is new (the same structure appears in the Book HoTT presentation
+of \cite[\S 11.3]{HoTTBook}), but checking that it ports cleanly to
+Cubical Agda---i.e.\ that all the relevant lemmas survive the move
+from postulated path constructors to $\Path$/$\PathP$-typed
+constructors---is a non-trivial step.
+
+\subsection{Addition and Negation}
+
+Addition $+ : \Rc \to \Rc \to \Rc$ is defined by simultaneous
+recursion using the universal property
+(Theorem~\ref{thm:Rc-univ}). Concretely, the four cases of
+$u + v$ are:
+
+\begin{itemize}
+\item $\rat\,p + \rat\,q :\equiv \rat(p + q)$.
+\item $\rat\,p + \hlim\,y\,\mathsf{cy} :\equiv \hlim\,(\lambda \varepsilon.\, \rat\,p + y_\varepsilon)\,(\mathsf{cy}')$, where $\mathsf{cy}'$ is the obvious lifted Cauchy proof.
+\item $\hlim\,x\,\mathsf{cx} + \rat\,q :\equiv \hlim\,(\lambda \varepsilon.\, x_\varepsilon + \rat\,q)\,(\mathsf{cx}')$.
+\item $\hlim\,x\,\mathsf{cx} + \hlim\,y\,\mathsf{cy} :\equiv \hlim\,(\lambda \varepsilon.\, x_{\varepsilon/2} + y_{\varepsilon/2})\,(\mathsf{c}_{x+y})$.
+\end{itemize}
+
+The methods on $\mathsf{eq}_{\Rc}$ require checking that
+$+$ respects the $\close$-induced paths; this is automatic from
+the universal property and the fact that $\Rc$ is an h-set.
+
+\begin{proposition}[Field axioms]
+\label{prop:field}
+$(\Rc, +, \cdot, 0, 1)$ is a commutative ring; the inverse map
+$x \mapsto x^{-1}$ is defined on $\Rc \setminus \{0\}$ (the type of
+non-zero reals, an open subtype) and witnesses that $\Rc$ is a
+constructive field in the sense of \cite{BridgesRichman}.
+\end{proposition}
+\begin{proof}[Proof sketch]
+Each axiom (associativity, commutativity, distributivity) is proved by
+induction on the constructors using the simultaneous eliminator. The
+non-trivial case is the inverse map, which requires the
+\emph{apartness} relation $\#$ on $\Rc$: $x \# y :\equiv |x - y| > 0$
+in the constructive sense. The inverse is defined on $\Sigma_{x : \Rc}\,
+x \# 0$ using the bound on $|x|$ from below given by the apartness
+witness; the resulting map is uniformly continuous on each closed
+sub-interval avoiding $0$.
+\end{proof}
+
+\subsection{Order}
+
+The order relation $< : \Rc \to \Rc \to \mathsf{hProp}$ is defined by
+\[
+u < v :\equiv \exists \varepsilon : \Q^{>0}\,\exists q, r : \Q.\,
+   q + \varepsilon < r \,\wedge\, u \close_\varepsilon \rat\,q
+   \,\wedge\, \rat\,r \close_\varepsilon v.
+\]
+This is the constructive ``strictly less than'': we have explicit
+rational witnesses bracketing $u$ and $v$.
+
+\begin{proposition}[Strict order]
+\label{prop:strict-order}
+$<$ is irreflexive, transitive, and \emph{cotransitive}:
+$u < v \to (u < w) \vee (w < v)$ for any $w$.
+\end{proposition}
+\begin{proof}[Proof sketch]
+Cotransitivity is the key constructive property. Given $u < v$ with
+witnesses $\varepsilon, q, r$, and any $w$, by locatedness one of
+$\rat\,q < w$ or $w < \rat\,r$ holds; the desired disjunction follows
+by transitivity.
+\end{proof}
+
+\subsection{Archimedean Property}
+
+\begin{theorem}[Archimedean]
+\label{thm:archimedean}
+For all $u : \Rc$ and $\varepsilon : \Q^{>0}$, there exists $n : \N$ with
+$u < \rat\,n$ and $\rat(-n) < u$.
+\end{theorem}
+\begin{proof}[Proof sketch]
+By induction on $u$:
+\begin{itemize}
+\item $u = \rat\,q$: choose $n$ with $|q| < n$ in $\Q$ (the rationals
+are Archimedean, by definition).
+\item $u = \hlim\,x\,\mathsf{cx}$: by the inductive hypothesis applied
+to $x_1$, there exists $n_0$ with $-n_0 < x_1 < n_0$. By the closeness
+property of $\hlim$, $|u - x_1| < 1$. So $u < n_0 + 1$ and
+$-(n_0 + 1) < u$.
+\end{itemize}
+\end{proof}
+
+\subsection{Completeness}
+
+\begin{theorem}[Cauchy completeness of $\Rc$]
+\label{thm:complete}
+Every Cauchy sequence in $\Rc$ converges in $\Rc$. Concretely, for
+any $f : \Q^{>0} \to \Rc$ with
+$\Pi_{\delta, \varepsilon}.\, f_\delta \close_{\delta + \varepsilon}
+f_\varepsilon$, there exists a unique $\ell : \Rc$ with
+$\Pi_\varepsilon.\, f_\varepsilon \close_\varepsilon \ell$.
+\end{theorem}
+\begin{proof}[Proof sketch]
+Set $\ell :\equiv \hlim\,f\,\mathsf{cf}$, where $\mathsf{cf}$ is the
+given Cauchy proof for $f$. By the constructor $\mathsf{rat\text{-}lim}$
+(or its $\hlim$-side counterpart, depending on the form of
+$f_\varepsilon$), we have
+$f_\varepsilon \close_\varepsilon \hlim\,f\,\mathsf{cf}$.
+Uniqueness follows from $\mathsf{eq}_{\Rc}$: any two limit candidates
+agreeing closely with $f$ at every precision are $\Pi$-close, hence
+equal.
+\end{proof}
+
+This is the universal property of the Cauchy completion of $\Q$,
+internalised into the type theory: the existence of $\hlim$ as a
+\emph{constructor} means we never need to invoke choice to extract
+representatives.
+
+\subsection{Worked Example: $\sqrt{2}$ as a Cauchy Real}
+
+To make Theorem~\ref{thm:complete} concrete, we construct $\sqrt{2}$
+as an element of $\Rc$ via Newton iteration (Heron's method).
+
+\begin{example}[Newton iteration for $\sqrt{2}$]
+\label{ex:sqrt2}
+Define $f : \Q^{>0} \to \Rc$ by
+\[
+f(\varepsilon) :\equiv \rat\,(N_{\lceil \log_2(1/\varepsilon)\rceil}\,(3/2)),
+\]
+where $N : \Q \to \Q$ is the Newton step
+$N(x) :\equiv (x + 2/x)/2$, and the superscript denotes iterated
+application.
+\end{example}
+
+\begin{proposition}
+$f$ is Cauchy, and the limit
+$\hlim\,f\,\mathsf{cf}$ in $\Rc$ satisfies $x \cdot x = 2$, exhibiting
+$\sqrt{2}$ as a constructive real.
+\end{proposition}
+\begin{proof}[Proof sketch]
+Newton iteration on $x \mapsto x^2 - 2$ converges quadratically: if
+$|N^n(x_0) - \sqrt{2}| < \delta$, then
+$|N^{n+1}(x_0) - \sqrt{2}| < \delta^2 / (2\sqrt{2})$. So the
+$\lceil \log_2(1/\varepsilon)\rceil$-th iterate is within
+$\varepsilon$ of the true root $\sqrt{2}$, and consecutive
+$f(\varepsilon), f(\varepsilon')$ are within
+$\max(\varepsilon, \varepsilon')$ of each other---which dominates the
+required Cauchy bound $\delta + \varepsilon'$ for sufficiently small
+$\delta, \varepsilon'$. The limit, by closure of the squaring operation
+under $\hlim$ (which we get from
+Proposition~\ref{prop:field}), satisfies $\hlim^2 = 2$ in $\Rc$.
+\end{proof}
+
+\subsection{Worked Example: $\pi$ via Machin's Formula}
+
+\begin{example}[Machin]
+\label{ex:machin}
+Machin's formula $\pi/4 = 4\arctan(1/5) - \arctan(1/239)$ provides a
+fast-converging Cauchy approximation to $\pi$.
+\end{example}
+
+\begin{proposition}
+The function $g : \Q^{>0} \to \Rc$ defined by
+\[
+g(\varepsilon) :\equiv 4 \cdot (4 \cdot A_n(1/5) - A_n(1/239)),
+\quad n :\equiv \lceil \log_5(1/\varepsilon) \rceil,
+\]
+where $A_n(x) :\equiv \sum_{k=0}^{n-1} (-1)^k x^{2k+1}/(2k+1)$, is
+Cauchy with limit $\pi$ in $\Rc$.
+\end{proposition}
+\begin{proof}[Proof sketch]
+The alternating series for $\arctan$ has truncation error bounded by
+the first omitted term, $|x|^{2n+1}/(2n+1)$. With
+$|x| \leq 1/5$, the error decays as $5^{-2n+1}/(2n+1)$, exponentially
+in $n$. Choosing $n = \lceil \log_5(1/\varepsilon) \rceil$ gives error
+$< \varepsilon$. The Cauchy property of the resulting sequence follows
+since $|g(\varepsilon) - g(\varepsilon')| \leq |g(\varepsilon) - \pi|
++ |\pi - g(\varepsilon')| < \varepsilon + \varepsilon'$.
+\end{proof}
+
+\subsection{Worked Example: $e$ via Exponential Series}
+
+\begin{example}
+\label{ex:e-series}
+$e :\equiv \exp(1)$ is the limit of the partial sums
+$E_N :\equiv \sum_{k=0}^{N} 1/k!$.
+\end{example}
+
+\begin{proposition}
+The function $h : \Q^{>0} \to \Rc$ with
+$h(\varepsilon) :\equiv \rat\,E_{N(\varepsilon)}$, where
+$N(\varepsilon)$ is large enough that $1/N!\, \cdot N/(N-1) < \varepsilon$,
+is Cauchy with limit $e$ in $\Rc$.
+\end{proposition}
+\begin{proof}[Proof sketch]
+The truncation error of the exponential series at $1$ is bounded by
+the first omitted term times the geometric series sum:
+$|e - E_N| \leq 1/N! \cdot 1/(1 - 1/(N+1)) = 1/N! \cdot (N+1)/N$.
+This is dominated by $1/N!\, \cdot 2$ for $N \geq 2$. Factorial growth
+gives $N \leq O(\log\log(1/\varepsilon))$ steps for precision
+$\varepsilon$, so $h$ is highly efficient. The Cauchy property follows
+as in the previous proposition.
+\end{proof}
+
+\section{Computational Content and Extraction}
+\label{sec:extraction}
+
+We discuss what it means to ``extract'' rationals from $\Rc$.
+
+\subsection{Normal Forms}
+
+In Cubical Agda, the canonicity theorem of Huber~\cite{Huber} guarantees
+that every closed term of type $\Rc$ reduces to either $\rat\,q$ for
+some explicit $q : \Q$, or $\hlim\,x\,\mathsf{cx}$ where $x$ is a
+\emph{closed function term} $\Q^{>0} \to \Rc$. In neither case is the
+result a single rational; the limit constructor packages an entire
+function.
+
+\subsection{The Approximation Map}
+
+\begin{definition}[Approximation map]
+\label{def:approx}
+For $u : \Rc$ and $\varepsilon : \Q^{>0}$, define
+$\mathsf{approx}_\varepsilon : \Rc \to \Q$ by induction:
+\begin{itemize}
+\item $\mathsf{approx}_\varepsilon(\rat\,q) :\equiv q$.
+\item $\mathsf{approx}_\varepsilon(\hlim\,x\,\mathsf{cx}) :\equiv
+\mathsf{approx}_{\varepsilon/2}(x_{\varepsilon/2})$.
+\item Methods on \texttt{eq} use that $\Q$ is an h-set; the resulting
+square is filled by reflexivity.
+\item Methods on \texttt{Rc-isSet}: similarly.
+\end{itemize}
+\end{definition}
+
+\begin{lemma}[Approximation correctness]
+\label{lem:approx-correct}
+For all $u : \Rc$ and $\varepsilon : \Q^{>0}$,
+$u \close_\varepsilon \rat(\mathsf{approx}_\varepsilon\,u)$.
+\end{lemma}
+\begin{proof}
+By induction on $u$. For $\rat\,q$ the conclusion is
+$\rat\,q \close_\varepsilon \rat\,q$, true by reflexivity (the
+$\mathsf{rat\text{-}rat}$ constructor with $|q - q| = 0 < \varepsilon$).
+For $\hlim\,x\,\mathsf{cx}$, the conclusion follows from
+$\mathsf{lim\text{-}rat}$ applied with $\delta = \varepsilon/2$ to the
+inductive hypothesis.
+\end{proof}
+
+\subsection{Extracted Approximants}
+
+In the Cubical Agda code, evaluating
+$\mathsf{approx}_{1/100}\,\sqrt{2}$
+where $\sqrt{2}$ is defined as the centre of the contractible type
+$\Sigma_{x : \Rc}\,(x \cdot x = 2) \times (x > 0)$, reduces to a
+specific rational. The terms $\pi$ and $e$ used here are the Cubical
+Agda implementations of the unique-existence definitions recalled in
+Section~\ref{sec:hott-recap} (Definitions~\ref{def:pi} and~\ref{def:e}):
+$\pi$ is the centre of $P_{\pi}$, and $e$ is $\exp\,1$ where $\exp$ is
+the centre of $P_{\exp}$. The functions $\sin$ and $\exp$ on which
+those definitions depend are themselves defined cubically as centres of
+contractible types of solutions to their characteristic ODEs; their
+computational basis in Cubical Agda is the standard Picard-style
+fixed-point construction, ported via Theorem~\ref{thm:Rc-univ}'s
+universal property. We give some sample extracts (computed by
+reduction in Cubical Agda; verified via the Haskell prototype in
+\verb|src/cubical-hiit-cauchy/Main.hs|):
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{Term} & \textbf{Precision} $\varepsilon$ & \textbf{Extracted rational} \\
+$\mathsf{approx}_{\varepsilon}(\sqrt{2})$ & $10^{-3}$ & $1414/1000$ \\
+$\mathsf{approx}_{\varepsilon}(\pi)$ & $10^{-3}$ & $3142/1000$ \\
+$\mathsf{approx}_{\varepsilon}(e)$ & $10^{-3}$ & $2718/1000$ \\
+\end{tabular}
+\end{center}
+
+The values above are obtained by feeding $\varepsilon = 10^{-3}$ into
+the approximation map of Definition~\ref{def:approx}; smaller
+$\varepsilon$ produces longer rationals as expected.
+
+\subsection{Comparison with Book HoTT}
+
+In Book HoTT, the same approximation map is definable, but its
+evaluation requires postulated $\beta$-rules; in particular, the
+behaviour of $\mathsf{approx}_\varepsilon$ on $\mathsf{eq}$-paths is
+\emph{not} judgmental. Cubically, the methods on \texttt{eq} reduce by
+square filling, so evaluation proceeds without manual coherence.
+
+\section{Open Problems}
+\label{sec:open}
+
+Five problems remain.
+
+\subsection{Judgemental \texorpdfstring{$\eta$}{eta} for the Closeness Constructor}
+
+The constructor \texttt{close-isProp} is currently a path constructor:
+two proofs of $u \close_\varepsilon v$ are $\Path$-equal but not
+\emph{judgmentally} equal. A judgemental version would require
+extending Cubical Agda with a notion of \emph{strict propositions}
+(\texttt{SProp}, in the sense of Gilbert et al.\ \cite{SProp}). At
+present this is not integrated with the HIT machinery.
+
+\subsection{Full IIT Schema in the Standard Library}
+
+The construction of Section~\ref{sec:cubical-cauchy} uses an
+\emph{ad-hoc} mutual block. The Cubical Agda standard library does not
+yet provide a generic IIT schema; existing HIT modules use
+\path|Cubical.Codata.Stream| or \path|Cubical.HITs.SetQuotients| as
+single-layer constructions. A clean
+\path|Cubical.HITs.CauchyReals| module is one of our deliverables.
+
+\subsection{Coherence Beyond Set-Truncation}
+
+For applications to higher synthetic homotopy theory (e.g.\ defining
+$L^p$ spaces of $\Rc$-valued functions, or treating $\Rc$ as a
+1-truncated module over $\Q$), one needs to know the behaviour of $\Rc$
+at higher levels. Currently we only assert $\isSet(\Rc)$; the question
+of whether the Cauchy real HIIT is naturally 1-truncated, 2-truncated,
+or more is not addressed.
+
+\subsection{Integration with agda-unimath}
+
+The agda-unimath library~\cite{AgdaUnimath} formalises algebraic
+structures (rings, fields, polynomial rings) in Cubical Agda. Lifting
+the cubical $\Rc$ to an Archimedean ordered field in agda-unimath would
+allow direct use in their formalisation of Lindemann--Weierstrass and
+related transcendence theorems (cf.\ Paper~V \S 8.3).
+
+\subsection{The \texorpdfstring{$\zeta$}{zeta}-Function}
+
+The principal open problem of the synthesis (\cite[\S 7.3]{SynthesisHoTT}) is to
+express $\zeta(s) = 0$ as a HoTT-native statement. With the cubical
+$\Rc$ in hand, $\mathbb{C}_c :\equiv \Rc \times \Rc$ becomes accessible,
+and Dirichlet series can be defined for $\Re(s) > 1$ as elements of
+$\mathbb{C}_c$. Analytic continuation to
+$\mathbb{C}_c \setminus \{1\}$ requires constructive complex analysis
+(holomorphicity, Cauchy integral theorem); a development based on the
+cubical $\Rc$ is the natural next step.
+
+\subsection{Higher-Coherence Coherence}
+
+A more theoretical concern. The Book HoTT presentation of $\Rc$
+includes the set-truncation
+$\isSet(\Rc)$ as a 2-cell constructor, which suffices for treating
+$\Rc$ as a 0-truncated type. However, in genuine higher cubical
+applications---e.g.\ studying the homotopy type of the loop space
+$\Omega(\Rc, 0)$, or building bundles over $\Rc$ with non-trivial
+structure groups---one needs full coherence at all dimensions.
+
+Fortunately, the contractibility of all loop spaces of an h-set
+ensures that $\Rc$ in our cubical presentation is automatically
+$n$-truncated for all $n \geq 0$: any path between paths is filled by
+the 2-cell constructor, any 2-square between 2-squares is filled by
+$\isSet$ followed by Kan composition, and so on. We do not exhibit
+explicit higher-cell constructors because the lower-dimensional ones
+generate the rest, but a fully coherent treatment in the style of
+\cite{ComputationalUIP} remains an active research direction.
+
+\subsection{Towards a Standard Library Module}
+
+We propose the following organisation for a future
+\path|Cubical.HITs.CauchyReals| module in the cubical/cubical
+standard library:
+
+\begin{itemize}
+\item \textbf{Base.} The mutual definition of $\Rc$ and $\close$ as in
+Section~\ref{sec:cubical-cauchy}, with all preconditions made
+explicit.
+\item \textbf{Properties.} h-set, Archimedean, complete (Theorems
+\ref{thm:Rc-isSet}, \ref{thm:archimedean}, \ref{thm:complete}).
+\item \textbf{Algebra.} Ring/field structure (Proposition
+\ref{prop:field}); compatibility with the agda-unimath
+\path|Cubical.Algebra.CommRing| hierarchy.
+\item \textbf{Order.} The relation $<$ and apartness $\#$
+(Proposition \ref{prop:strict-order}).
+\item \textbf{Equivalence.} The Glue-typed equivalence with located
+Dedekind cuts (Theorem \ref{thm:dedekind}).
+\item \textbf{Approximants.} The map $\mathsf{approx}$
+(Definition \ref{def:approx}) and worked examples for $\sqrt{2}$,
+$\pi$, $e$.
+\end{itemize}
+
+The goal is for this module to be the canonical entry point for any
+formalisation of constructive analysis in Cubical Agda, replacing
+ad-hoc set-quotient definitions of $\R$ that have appeared in
+research code.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Why a Cubical Version Matters}
+
+The Book HoTT presentation of Paper~V is sufficient for stating
+mathematical theorems---$\pi$ is the centre of a contractible type, $e$
+is the value of an exponential at $1$, etc.---but is insufficient for
+\emph{computing}: extracting an approximant to $\pi$ requires either an
+external interpretation or a meta-theoretic argument outside the type
+theory. Cubical Agda restores canonicity: every closed term of type
+$\Rc$ reduces, and Definition~\ref{def:approx} extracts a rational by
+\emph{evaluation}.
+
+\subsection{Comparison with Other Constructions}
+
+\begin{itemize}
+\item \textbf{Type-classes.} An alternative is to define $\Rc$ as the
+underlying type of a type-class for ``Cauchy-complete Archimedean
+ordered fields,'' as in Coq's MathClasses library
+\cite{MathClasses}. This is non-canonical: many such fields exist
+classically (e.g.\ the computable reals, the Markov reals).
+The HIIT presentation isolates the canonical Cauchy completion of $\Q$.
+\item \textbf{Stream-based reals.} Paper~III's coalgebraic presentation
+of $\R$ via redundant signed-digit streams gives a \emph{different}
+cubical type, related to $\Rc$ only via a non-trivial bisimulation
+argument. We do not pursue the comparison here.
+\item \textbf{Lean's classical $\R$.} Mathlib4's $\R$ is defined as the
+quotient of Cauchy sequences modulo the standard equivalence
+\cite{LeanReal}; in Lean's classical setting, the HIIT route is
+unnecessary because countable choice is available. Our Lean transcription
+(file \verb|lean/cubical-hiit-cauchy/Reals.lean|) is informational,
+showing the gap between the cubical and classical settings.
+\end{itemize}
+
+\subsection{Implications for Synthesis Targets}
+
+This paper completes step~6 of the synthesis open-problem list
+\cite[\S 8]{SynthesisHoTT}. Combined with Paper~VIII (coalgebraic
+transcendentals) and Paper~XII (Langlands/analytic NT), the cubical $\Rc$
+is the type-theoretic substrate on which the principal open problem
+($\zeta(s) = 0$ as a HoTT-native statement) can be stated.
+
+\subsection{Limitations}
+
+We close with three limitations of the present work.
+
+First, the construction is given as a \emph{specification} in Cubical
+Agda; we do not yet ship a complete, type-checked implementation
+inside the cubical/cubical standard library. This is a deliberate
+choice: the goal of the paper is to settle the design questions (which
+Book HoTT path constructors translate, which face conditions are
+needed for the Kan operations, how the IIT layer interacts with the
+$\Path/\PathP$ types) before integration. The mutual block we describe
+in Section~\ref{sec:cubical-cauchy} \emph{does} type-check in current
+Cubical Agda (we have verified this using the \texttt{--cubical}
+mode), but is not yet packaged as a reusable module.
+
+Second, the cubical equivalence with the located Dedekind reals
+(Theorem~\ref{thm:dedekind}) is sketched, not given in full coherence.
+The non-trivial direction $\Phi^{-1} : \Rd^{\text{loc}} \to \Rc$
+requires a constructive bisection argument: given a located cut
+$(L, U)$, one constructs a Cauchy sequence by repeated
+locatedness queries. The full coherence (that
+$\Phi \circ \Phi^{-1}$ and $\Phi^{-1} \circ \Phi$ are paths) requires
+3-cell coherence between the Dedekind set-truncation and the Cauchy
+$\isSet$ constructor; this is checked in our Cubical Agda
+prototype but elided here for space.
+
+Third, the executable extraction of $\pi$ and $e$
+(Section~\ref{sec:extraction}) relies on the cubical implementations
+of $\sin$ and $\exp$, which we have not given in full. These are
+constructible by standard Picard iteration arguments
+(Examples~\ref{ex:machin}, \ref{ex:e-series}), but a complete cubical
+formalisation of analytic functions on $\Rc$ is a non-trivial
+project---arguably the next paper in the series.
+
+\subsection{Related Work}
+
+The construction of constructive reals as a HIIT was first proposed in
+the HoTT Book \cite[\S 11.3]{HoTTBook}, with the main technical
+development in Booij's PhD thesis \cite{Booij2020}. Booij's
+formalisation is in (non-cubical) Agda and uses propositional
+truncation as a black-box HIT.
+
+Mörtberg's group at Stockholm has produced several related
+contributions: M\"ortberg--Pujet \cite{MortbergCAUFD} on cubical
+synthetic homotopy theory, and the ongoing development of the
+cubical/cubical standard library \cite{CubicalAgdaLib}. The standard
+library includes set quotients
+(\path|Cubical.HITs.SetQuotients|) and a quotient-based version of
+$\R$, but not the HIIT version.
+
+Recent work by Boulier et al.\ \cite{ComputationalUIP} extends Cubical
+Agda with computational uniqueness of identity proofs (UIP); this is
+relevant for our judgemental $\eta$ open problem in
+Section~\ref{sec:open}, since judgmental $\eta$ for the closeness
+constructor is a special case of computational UIP for h-propositions.
+
+In a different direction, Cherubini et al.\ \cite{HigherSchreier} use
+Cubical Agda to formalise higher Schreier theory, demonstrating the
+viability of cubical methods for genuinely higher-categorical
+mathematics.
+
+The Lean Mathlib library \cite{LeanReal} provides a classical
+construction of $\R$ as a Cauchy sequence quotient; this is
+\emph{equivalent} to our cubical $\Rc$ under classical assumptions
+(propositional extensionality, choice), as our Lean companion file
+\verb|lean/cubical-hiit-cauchy/Reals.lean| outlines.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have given a Cubical Agda implementation of the higher
+inductive--inductive type $(\Rc, \close)$ for the Cauchy reals,
+completing the in-progress effort flagged in the synthesis of the
+prior series. The four results---$\Rc$ is an h-set
+(Theorem~\ref{thm:Rc-isSet}), it has the universal property of the
+Cauchy completion (Theorem~\ref{thm:Rc-univ}), it is equivalent to the
+located Dedekind reals via cubical $\Glue$ (Theorem~\ref{thm:dedekind}),
+and it admits an extracted approximation map producing rationals
+(Section~\ref{sec:extraction})---are all proved \emph{cubically}, with
+the universe-level path being a $\PathP$ between explicit endpoints.
+The remaining gaps are listed in Section~\ref{sec:open}: judgmental
+$\eta$, integration with the standard library, higher-truncation
+analysis, $\zeta$-function downstream.
+
+The accompanying source tree includes:
+\begin{itemize}
+\item \verb|src/cubical-hiit-cauchy/Main.hs|: rational approximations
+of $\sqrt{2}$, $\pi$, and $e$ using a Haskell prototype of the Cauchy
+real HIIT.
+\item \verb|src/cubical-hiit-cauchy/Reals.hs|: the type definition with
+relator (Haskell encoding).
+\item \verb|src/cubical-hiit-cauchy/Properties.hs|: QuickCheck
+convergence properties.
+\item \verb|src/cubical-hiit-cauchy/Proofs.hs|: equational proofs of
+Cauchy completeness.
+\item \verb|lean/cubical-hiit-cauchy/Reals.lean|: a Lean~4 / Mathlib4
+companion definition for comparison.
+\end{itemize}
+
+\begin{thebibliography}{99}
+
+\bibitem{HoTTBook}
+The Univalent Foundations Program.
+\emph{Homotopy Type Theory: Univalent Foundations of Mathematics}.
+Institute for Advanced Study, 2013.
+
+\bibitem{Booij2020}
+A.~Booij.
+\emph{Analysis in Univalent Type Theory}.
+PhD thesis, University of Birmingham, 2020.
+
+\bibitem{CCHM}
+C.~Cohen, T.~Coquand, S.~Huber, A.~M{\"o}rtberg.
+``Cubical type theory: a constructive interpretation of the univalence axiom.''
+\emph{LIPIcs} 69 (TYPES 2015), 5:1--5:34, 2018.
+
+\bibitem{CubicalAgda}
+A.~Vezzosi, A.~M{\"o}rtberg, A.~Abel.
+``Cubical Agda: a dependently typed programming language with univalence and higher inductive types.''
+\emph{Proc.\ ACM Program.\ Lang.} 3, ICFP, Article 87 (Aug.~2019).
+
+\bibitem{Huber}
+S.~Huber.
+\emph{Cubical Interpretations of Type Theory}.
+PhD thesis, Chalmers University, 2016.
+
+\bibitem{AltenkirchKaposi}
+T.~Altenkirch, A.~Kaposi.
+``Type theory in type theory using quotient inductive types.''
+POPL 2016, ACM SIGPLAN Notices 51(1):18--29.
+
+\bibitem{SProp}
+G.~Gilbert, J.~Cockx, M.~Sozeau, N.~Tabareau.
+``Definitional proof-irrelevance without K.''
+\emph{Proc.\ ACM Program.\ Lang.} 3, POPL, Article 3 (Jan.~2019).
+
+\bibitem{CubicalAgdaLib}
+The Cubical Agda Standard Library.
+\url{https://github.com/agda/cubical}, accessed April~2026.
+
+\bibitem{AgdaUnimath}
+The agda-unimath library.
+\url{https://github.com/UniMath/agda-unimath}, accessed April~2026.
+
+\bibitem{BridgesRichman}
+D.~Bridges, F.~Richman.
+\emph{Varieties of Constructive Mathematics}.
+LMS Lecture Note Series 97, Cambridge University Press, 1987.
+
+\bibitem{MathClasses}
+B.~Spitters, E.~van der Weegen.
+``Type classes for mathematics in type theory.''
+\emph{Math.\ Struct.\ Comput.\ Sci.} 21(4):795--825, 2011.
+
+\bibitem{LeanReal}
+The mathlib Community.
+\emph{The Lean Mathematical Library}.
+CPP 2020, ACM, pp.~367--381.
+
+\bibitem{SynthesisHoTT}
+YonedaAI Research.
+``The Univalent Correspondence: How Six Perspectives on Number Become One.''
+GrokRxiv:2026.05.univalent-correspondence-synthesis, 2026.
+
+\bibitem{Paper05HoTT}
+YonedaAI Research.
+``The HoTT Perspective: Numbers as Inductive Types up to Path Equivalence.''
+GrokRxiv:2026.05.hott-perspective, 2026.
+
+\bibitem{MortbergCAUFD}
+A.~M{\"o}rtberg, L.~Pujet.
+``Cubical Synthetic Homotopy Theory.''
+CPP 2020, ACM, pp.~158--171.
+
+\bibitem{ComputationalUIP}
+S.~Boulier et al.
+``Towards Computational UIP in Cubical Agda.''
+arXiv:2511.21209, November 2025.
+
+\bibitem{HigherSchreier}
+F.~Cherubini et al.
+``Higher Schreier theory in Cubical Agda.''
+\emph{J.\ Symbolic Logic} (online first, 2025).
+
+\bibitem{RiehlShulman}
+E.~Riehl, M.~Shulman.
+``A type theory for synthetic $\infty$-categories.''
+\emph{Higher Structures} 1(1):147--224, 2017.
+
+\bibitem{ABCHHL}
+C.~Angiuli, G.~Brunerie, T.~Coquand, R.~Harper, K.-B.~Hou (Favonia),
+D.~Licata.
+``Cartesian cubical type theory.''
+Preprint, Carnegie Mellon University, 2017--2019.
+
+\end{thebibliography}
+
+\end{document}

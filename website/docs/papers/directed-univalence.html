@@ -1,0 +1,445 @@
+<h1 data-number="1" id="sec:intro"><span class="header-section-number">1</span> Introduction</h1>
+<p>Univalence is the structural principle that distinguishes homotopy type theory from intensional Martin–Löf type theory. Its statement, <span class="math display">\[\mathsf{ua}: (A \simeq B) \xrightarrow{\;\;\simeq\;\;} (A =_{\mathcal{U}} B),\]</span> internalises Mac Lane’s slogan <em>isomorphic objects are equal</em> into the type theory itself <span class="citation" data-cites="HoTTBook Voevodsky"></span>. Once one accepts univalence, virtually every homotopy-theoretic and category-theoretic phenomenon admits a natural type-theoretic expression: equivalences become identities, transport along an equivalence is automatic, and the structure identity principle becomes a theorem rather than a methodological wish.</p>
+<p>Yet univalence as stated lives in a fundamentally <em>symmetric</em> world. The identity type <span class="math inline">\(A =_{\mathcal{U}} B\)</span> is a groupoid: it has inverses. This reflects a basic fact about the type-theoretic universe: every type, in HoTT, is treated as an <span class="math inline">\(\infty\)</span>-groupoid. Categories proper — where morphisms can be non-invertible — do not admit a clean internal description in HoTT without artefacts.</p>
+<p>Directed type theory aims to repair this asymmetry by introducing a directed analogue of the path type, often written <span class="math inline">\(\mathsf{Hom}_A(a,b)\)</span>, which need not be invertible. The objective is a synthetic theory of <span class="math inline">\((\infty,1)\)</span>-categories analogous to the way HoTT serves as a synthetic theory of <span class="math inline">\(\infty\)</span>-groupoids. Riehl and Shulman’s 2017 paper <span class="citation" data-cites="RiehlShulman"></span> introduces simplicial type theory (<span class="math inline">\(\mathbf{STT}\)</span>) as such a foundation. The fundamental new ingredient is a strict interval <span class="math inline">\(\mathbf{2}\)</span> with two distinct endpoints <span class="math inline">\(0,1 : \mathbf{2}\)</span> and a sub-type-system of <em>topes</em> (propositions over the cube of intervals) that lets one write <em>extension types</em> of the form <span class="math display">\[\langle \prod_{t : \mathbf{2}} A(t) \mid \Phi \mapsto a \rangle,\]</span> the type of dependent functions on <span class="math inline">\(\mathbf{2}\)</span> that on the tope <span class="math inline">\(\Phi\)</span> agree definitionally with a prescribed partial function <span class="math inline">\(a\)</span>. Hom-types are then defined as extension types out of <span class="math inline">\(\mathbf{2}\)</span>.</p>
+<p>Within <span class="math inline">\(\mathbf{STT}\)</span> there is no <em>a priori</em> guarantee that an arbitrary type <span class="math inline">\(A\)</span> describes an <span class="math inline">\((\infty,1)\)</span>-category — only that it has a mapping space structure. Two predicates <span class="math inline">\(\mathsf{isSegal}(A)\)</span> (composition of hom-types) and <span class="math inline">\(\mathsf{isRezk}(A)\)</span> (equivalences are identities) cut out the types of interest, the Rezk types, which model complete Segal spaces and hence <span class="math inline">\((\infty,1)\)</span>-categories.</p>
+<p>The natural question is then: <em>is there a directed analogue of univalence?</em> If <span class="math inline">\(\mathcal{S}\)</span> is some directed universe of types, is the hom-type <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A,B)\)</span> equivalent to the type of functions <span class="math inline">\(\mathsf{Fun}(A,B) := A \to B\)</span>? Riehl–Shulman prove a partial result: a covariant family <span class="math inline">\(P : A \to \mathcal{U}\)</span> is classified by a functor <span class="math inline">\(A \to \mathcal{S}_{\mathsf{disc}}\)</span> into the <em>discrete</em> sub-universe, and the data of the family is recovered up to equivalence from the functor. This is directed univalence <em>for covariant families</em> but not for the universe at large.</p>
+<p>For seven years, the question of whether the directed universe itself satisfies a directed univalence principle was open. Gratzer, Weinberger and Buchholtz (2024) settle the question for the discrete sub-universe: they introduce a system of modalities adequate to express both the directed universe and the symmetric universe of <span class="math inline">\(\infty\)</span>-groupoids inside it, and prove <span class="math display">\[\mathsf{dua}_{\mathcal{S}} : \mathsf{Hom}_{\mathcal{S}}(A,B) \;\simeq\; \mathsf{Fun}(A,B),\]</span> where <span class="math inline">\(\mathcal{S}\)</span> is the universe of discrete types <span class="citation" data-cites="GWB2024"></span>. They name the resulting system <em>triangulated type theory</em> (<span class="math inline">\(\mathbf{TTT}\)</span>), reflecting the appearance of a triangle of modalities <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span> analogous to Schreiber–Shulman cohesion.</p>
+<p>This paper has four aims:</p>
+<ol>
+<li><p>Give a self-contained, structured account of <span class="math inline">\(\mathbf{STT}\)</span> (Section <a href="#sec:rs" data-reference-type="ref" data-reference="sec:rs">3</a>) and partial directed univalence (Section <a href="#sec:partial" data-reference-type="ref" data-reference="sec:partial">4</a>).</p></li>
+<li><p>Present the Gratzer–Weinberger–Buchholtz construction (Section <a href="#sec:gwb" data-reference-type="ref" data-reference="sec:gwb">5</a>) and isolate exactly what is and is not proved.</p></li>
+<li><p>Formulate four candidate <em>complete</em> directed univalence principles (Section <a href="#sec:complete" data-reference-type="ref" data-reference="sec:complete">6</a>) and analyse the obstructions.</p></li>
+<li><p>Connect directed univalence to higher inductive types, <span class="math inline">\((\infty,1)\)</span>-natural number objects, and synthetic representation theory (Section <a href="#sec:hit" data-reference-type="ref" data-reference="sec:hit">7</a>).</p></li>
+</ol>
+<p>We accompany the exposition with formal sketches in Haskell (under <code>src/</code>) and Lean 4 (under <code>lean/</code>) that mechanise the relevant equivalences for the discrete fragment and lay out the directed universe API. The Haskell modules are not Lean proofs — they implement <em>toy</em> models that exhibit the algebraic content (covariant fibrations as <span class="math inline">\(A \to \mathcal{S}\)</span> functors, hom-types as Day convolutions on a <span class="math inline">\(\mathbf{2}\)</span>-action) so that the conceptual content can be machine-checked even if foundationally weakened. Lean 4 sketches use postulates where appropriate.</p>
+<p>Open problems are collected in Section <a href="#sec:open" data-reference-type="ref" data-reference="sec:open">9</a>. We list four: extension to non-discrete universes, <span class="math inline">\((\infty,1)\)</span>-Cat as a primitive type, internal language theorems for cocartesian fibrations, and the connection to Langlands.</p>
+<h4 data-number="1.0.0.1" id="conventions."><span class="header-section-number">1.0.0.1</span> Conventions.</h4>
+<p>We write <span class="math inline">\(\mathcal{U}\)</span> for an ambient (symmetric) universe; <span class="math inline">\(\mathcal{S}\)</span> for a directed sub-universe; <span class="math inline">\(A : \mathcal{U}\)</span> or <span class="math inline">\(A : \mathcal{S}\)</span> for a type/object; <span class="math inline">\(a, b : A\)</span> for terms. The directed interval is <span class="math inline">\(\mathbf{2}= \{0 \le 1\}\)</span>. Hom-types are written <span class="math inline">\(\mathsf{Hom}_A(a,b)\)</span> and identity types <span class="math inline">\(a =_A b\)</span>. We use <span class="math inline">\(f \simeq g\)</span> for the type of equivalences. Throughout, <span class="math inline">\(\mathbf{STT}\)</span> refers to Riehl–Shulman 2017 simplicial type theory, <span class="math inline">\(\mathbf{TTT}\)</span> to Gratzer–Weinberger–Buchholtz 2024 triangulated type theory.</p>
+<h1 data-number="2" id="sec:background"><span class="header-section-number">2</span> Background: Symmetric Univalence and Directed Motivation</h1>
+<h2 data-number="2.1" id="voevodskys-univalence-axiom"><span class="header-section-number">2.1</span> Voevodsky’s univalence axiom</h2>
+<p>We recall the symmetric statement, both for orientation and to highlight what <em>breaks</em> when one passes to the directed setting.</p>
+<div id="def:equiv" class="definition">
+<p><strong>Definition 1</strong> (Equivalence).  For <span class="math inline">\(A, B : \mathcal{U}\)</span>, an <em>equivalence</em> is a function <span class="math inline">\(f : A \to B\)</span> together with a witness that the fibre <span class="math inline">\(\sum_{x : A} f(x) =_B y\)</span> is contractible for every <span class="math inline">\(y : B\)</span>. We write <span class="math inline">\(A \simeq B\)</span> for the type of equivalences.</p>
+</div>
+<div id="def:idtoeqv" class="definition">
+<p><strong>Definition 2</strong> (<span class="math inline">\(\mathsf{idtoeqv}\)</span>).  For each <span class="math inline">\(A, B : \mathcal{U}\)</span>, the path induction principle defines a map <span class="math display">\[\mathsf{idtoeqv}_{A,B} : (A =_{\mathcal{U}} B) \to (A \simeq B)\]</span> sending <span class="math inline">\(\mathsf{refl}_A\)</span> to the identity equivalence <span class="math inline">\(\mathsf{id}_A : A \simeq A\)</span>.</p>
+</div>
+<div id="thm:univalence" class="theorem">
+<p><strong>Theorem 3</strong> (Voevodsky’s univalence axiom).  <em>For every <span class="math inline">\(A, B : \mathcal{U}\)</span> the function <span class="math inline">\(\mathsf{idtoeqv}_{A,B}\)</span> is itself an equivalence.</em></p>
+</div>
+<p>The axiom yields its inverse <span class="math inline">\(\mathsf{ua}: (A \simeq B) \to (A =_{\mathcal{U}} B)\)</span> and the computation <span class="math inline">\(\mathsf{idtoeqv}\circ \mathsf{ua}\sim \mathsf{id}\)</span>. Operationally, every equivalence delivers a path in the universe, and transport along this path acts as the equivalence.</p>
+<h4 data-number="2.1.0.1" id="what-is-symmetric."><span class="header-section-number">2.1.0.1</span> What is symmetric.</h4>
+<p>Two structural features of <span class="math inline">\(A =_{\mathcal{U}} B\)</span> make it manifestly <em>symmetric</em>:</p>
+<ol>
+<li><p>It has <em>inverses</em>: if <span class="math inline">\(p : A =_{\mathcal{U}} B\)</span> then <span class="math inline">\(p^{-1}: B =_{\mathcal{U}} A\)</span>.</p></li>
+<li><p>It is <em>recursive</em>: <span class="math inline">\(\mathsf{idtoeqv}\)</span> may be defined by path induction, which is symmetric in <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>.</p></li>
+</ol>
+<p>Both features are absent in the directed setting we wish to formalise.</p>
+<h2 data-number="2.2" id="what-directed-should-mean"><span class="header-section-number">2.2</span> What “directed” should mean</h2>
+<p>A directed type theory ought to admit, for each type <span class="math inline">\(A\)</span> and pair of terms <span class="math inline">\(a, b : A\)</span>, a hom-type <span class="math display">\[\mathsf{Hom}_A(a, b) : \mathcal{U},\]</span> together with composition <span class="math display">\[\circ : \mathsf{Hom}_A(b,c) \times \mathsf{Hom}_A(a,b) \;\longrightarrow\; \mathsf{Hom}_A(a,c)\]</span> and identities <span class="math inline">\(\mathsf{id}_a : \mathsf{Hom}_A(a,a)\)</span>, satisfying associativity and unit laws <em>up to higher coherent homotopy</em>. Crucially, <span class="math inline">\(\mathsf{Hom}_A(a,b)\)</span> should not in general carry inverses: if it did, the theory would collapse back to a symmetric one.</p>
+<p>We can articulate desiderata.</p>
+<ol>
+<li><p><em>Hom is non-invertible.</em> The composition is not in general invertible.</p></li>
+<li><p><em>Functoriality.</em> Functions <span class="math inline">\(f : A \to B\)</span> act on hom-types: <span class="math display">\[f_*: \mathsf{Hom}_A(a,b) \;\longrightarrow\; \mathsf{Hom}_B(f(a),f(b)).\]</span></p></li>
+<li><p><em>Equivalences are identities.</em> For appropriately structured types, an invertible morphism in <span class="math inline">\(\mathsf{Hom}_A(a,b)\)</span> should yield an identity <span class="math inline">\(a =_A b\)</span>.</p></li>
+<li><p><em>Synthetic <span class="math inline">\((\infty,1)\)</span>-category theory.</em> The Yoneda lemma, adjoint functors, Kan extensions, and limits/colimits should be expressible <em>synthetically</em> on top of these primitives.</p></li>
+<li><p><em>Directed univalence.</em> The universe should reflect its own hom-structure: hom in the universe = function type.</p></li>
+</ol>
+<p>(D1)–(D4) are addressed by Riehl–Shulman and the body of subsequent work <span class="citation" data-cites="RiehlShulman Buchholtz Cisinski KavvosWeaver"></span>. (D5) is the topic of this paper.</p>
+<h2 data-number="2.3" id="infty1-categorical-motivation"><span class="header-section-number">2.3</span> <span class="math inline">\((\infty,1)\)</span>-categorical motivation</h2>
+<p>There is a clean semantic picture explaining why directed univalence is hard. In HoTT, the universe <span class="math inline">\(\mathcal{U}\)</span> is interpreted as an object classifier in an <span class="math inline">\((\infty,1)\)</span>-topos: <span class="math inline">\(\mathcal{U}\)</span> classifies small bundles up to fibrewise equivalence. Univalence is the corresponding internal statement: equivalences of bundles are paths in <span class="math inline">\(\mathcal{U}\)</span>.</p>
+<p>The directed analogue would have a universe <span class="math inline">\(\mathcal{S}\)</span> classifying bundles <em>up to map</em>, not just equivalence. In an <span class="math inline">\((\infty,1)\)</span>-topos <span class="math inline">\(\mathcal{X}\)</span>, the natural such classifier is the cocartesian fibration of the <span class="math inline">\((\infty,1)\)</span>-category <span class="math inline">\(\mathcal{X}_{/-}\)</span> over <span class="math inline">\(\mathcal{X}\)</span> itself. But this is no longer a single object: it is a structured presentable <span class="math inline">\((\infty,1)\)</span>-category. The naive analogue — “a small object in <span class="math inline">\(\mathcal{X}\)</span> that classifies maps” — requires <em>at least</em> a handle on <span class="math inline">\(\mathcal{X}\)</span> as an <span class="math inline">\((\infty,1)\)</span>-category internal to <span class="math inline">\(\mathcal{X}\)</span>, a strictly stronger demand than internal <span class="math inline">\(\infty\)</span>-groupoids.</p>
+<p>This is the structural reason a complete directed univalence principle is hard: it forces the type theory to internalise its own large <span class="math inline">\((\infty,1)\)</span>-categorical structure, not merely its <span class="math inline">\(\infty\)</span>-groupoidal one.</p>
+<h1 data-number="3" id="sec:rs"><span class="header-section-number">3</span> Riehl–Shulman Simplicial Type Theory</h1>
+<h2 data-number="3.1" id="topes-cubes-extension-types"><span class="header-section-number">3.1</span> Topes, cubes, extension types</h2>
+<p><span class="math inline">\(\mathbf{STT}\)</span> is a three-layer system: a homotopy type theory; a strict cube layer with the directed interval <span class="math inline">\(\mathbf{2}= \{0 \le 1\}\)</span>; and a tope layer of decidable propositions over the cube. We sketch each layer.</p>
+<div id="def:cube" class="definition">
+<p><strong>Definition 4</strong> (Cube).  A <em>cube</em> is built inductively from a primitive directed interval <span class="math inline">\(\mathbf{2}\)</span>, the unit cube <span class="math inline">\(\mathbf{1}\)</span>, and finite products. Cubes are denoted <span class="math inline">\(I, J, K\)</span>.</p>
+</div>
+<div id="def:tope" class="definition">
+<p><strong>Definition 5</strong> (Tope).  A <em>tope</em> on a cube <span class="math inline">\(I\)</span> is a polynomial inequality in the coordinates of <span class="math inline">\(I\)</span>, closed under <span class="math inline">\(\top\)</span>, <span class="math inline">\(\bot\)</span>, <span class="math inline">\(\wedge\)</span>, <span class="math inline">\(\vee\)</span>. Topes form a distributive lattice. The standard examples on <span class="math inline">\(\mathbf{2}\)</span> are <span class="math inline">\(\{0\}\)</span>, <span class="math inline">\(\{1\}\)</span>, <span class="math inline">\(\{0 \le t\}\)</span>, <span class="math inline">\(\{t \le 1\}\)</span>.</p>
+</div>
+<div id="def:exttype" class="definition">
+<p><strong>Definition 6</strong> (Extension type).  Given a cube <span class="math inline">\(I\)</span>, a tope <span class="math inline">\(\Phi\)</span> on <span class="math inline">\(I\)</span>, a type family <span class="math inline">\(A : I \to \mathcal{U}\)</span>, and a partial term <span class="math inline">\(a : \prod_{t : \Phi} A(t)\)</span> defined on <span class="math inline">\(\Phi\)</span>, the <em>extension type</em> <span class="math display">\[\big\langle \prod_{t : I} A(t) \;\big|\; \Phi \mapsto a \big\rangle\]</span> is the type of dependent functions <span class="math inline">\(f : \prod_{t : I} A(t)\)</span> such that for <span class="math inline">\(t : \Phi\)</span>, <span class="math inline">\(f(t) \equiv a(t)\)</span> judgmentally.</p>
+</div>
+<div class="remark">
+<p><em>Remark 7</em>.  Extension types provide a uniform mechanism for <em>strict boundary conditions</em>: the value of <span class="math inline">\(f\)</span> on the tope <span class="math inline">\(\Phi\)</span> is fixed up to definitional equality. This is what lets STT speak about, e.g., morphisms with prescribed source and target.</p>
+</div>
+<h2 data-number="3.2" id="hom-types-and-segal-types"><span class="header-section-number">3.2</span> Hom-types and Segal types</h2>
+<div id="def:hom" class="definition">
+<p><strong>Definition 8</strong> (Hom-type).  Let <span class="math inline">\(A : \mathcal{U}\)</span> and <span class="math inline">\(a, b : A\)</span>. The <em>hom-type</em> is the extension type <span class="math display">\[\mathsf{Hom}_A(a,b) := \big\langle \prod_{t : \mathbf{2}} A \;\big|\; \{0\} \mapsto a, \{1\} \mapsto b \big\rangle.\]</span></p>
+</div>
+<p>So a morphism from <span class="math inline">\(a\)</span> to <span class="math inline">\(b\)</span> is a function <span class="math inline">\(\mathbf{2}\to A\)</span> taking <span class="math inline">\(0\)</span> to <span class="math inline">\(a\)</span> and <span class="math inline">\(1\)</span> to <span class="math inline">\(b\)</span>. The directed interval is <em>ordered</em>, hence so is the hom-type.</p>
+<div id="def:segal" class="definition">
+<p><strong>Definition 9</strong> (Segal predicate).  A type <span class="math inline">\(A\)</span> is <em>Segal</em>, written <span class="math inline">\(\mathsf{isSegal}(A)\)</span>, if the canonical map <span class="math display">\[\mathsf{Hom}_A(a,b) \times \mathsf{Hom}_A(b,c) \to \Big\langle \prod_{(t,s) : \Lambda^2_1} A \;\big|\; (a, \cdot, c) \Big\rangle\]</span> into the type of <span class="math inline">\(\Lambda^2_1\)</span>-fillers is an equivalence, where <span class="math inline">\(\Lambda^2_1\)</span> is the inner horn of the standard 2-simplex — concretely, the sub-cube of the unit square <span class="math inline">\(\mathbf{2}\times \mathbf{2}\)</span> given by the tope <span class="math inline">\(\{ (t,s) \mid t \le s \}\)</span> minus its long edge from <span class="math inline">\((0,0)\)</span> to <span class="math inline">\((1,1)\)</span>, equivalently the shape generated by the two boundary edges <span class="math inline">\((t,0)\)</span> and <span class="math inline">\((1,s)\)</span> <span class="citation" data-cites="RiehlShulman"></span>. In particular, every pair of composable morphisms admits a unique-up-to-coherent-homotopy composite.</p>
+</div>
+<p>Segal types are the STT version of Segal complete spaces. Composition is then a definable operation: <span class="math display">\[\circ : \mathsf{Hom}_A(b,c) \times \mathsf{Hom}_A(a,b) \to \mathsf{Hom}_A(a,c)\]</span> when <span class="math inline">\(\mathsf{isSegal}(A)\)</span>.</p>
+<div id="def:rezk" class="definition">
+<p><strong>Definition 10</strong> (Rezk predicate).  A Segal type <span class="math inline">\(A\)</span> is <em>Rezk</em> if the canonical map <span class="math display">\[(a =_A b) \to \mathsf{Iso}_A(a,b)\]</span> is an equivalence, where <span class="math inline">\(\mathsf{Iso}_A(a,b) \subset \mathsf{Hom}_A(a,b)\)</span> is the sub-type of two-sidedly invertible morphisms. (This is internal univalence on <span class="math inline">\(A\)</span>.)</p>
+</div>
+<div id="thm:rs-semantic" class="theorem">
+<p><strong>Theorem 11</strong> (Riehl–Shulman, semantic).  <em>Rezk types in <span class="math inline">\(\mathbf{STT}\)</span> correspond, in the semantic interpretation in bisimplicial sets, to complete Segal spaces, and hence to <span class="math inline">\((\infty,1)\)</span>-categories.</em></p>
+</div>
+<h2 data-number="3.3" id="discrete-types"><span class="header-section-number">3.3</span> Discrete types</h2>
+<div id="def:discrete" class="definition">
+<p><strong>Definition 12</strong> (Discrete type).  A type <span class="math inline">\(A\)</span> is <em>discrete</em>, written <span class="math inline">\(\mathsf{isDiscrete}(A)\)</span>, if for every <span class="math inline">\(a, b : A\)</span> the canonical map <span class="math display">\[(a =_A b) \to \mathsf{Hom}_A(a,b)\]</span> is an equivalence; equivalently, every morphism in <span class="math inline">\(A\)</span> is invertible. Discrete types are the STT counterpart of <span class="math inline">\(\infty\)</span>-groupoids.</p>
+</div>
+<div id="ex:discrete-types" class="example">
+<p><strong>Example 13</strong>.  The natural numbers <span class="math inline">\(\mathbb{N}\)</span> are discrete in <span class="math inline">\(\mathbf{STT}\)</span> (they carry no non-trivial 1-cells). More generally, every type imported from a model of HoTT into <span class="math inline">\(\mathbf{STT}\)</span> via the discrete inclusion is discrete.</p>
+</div>
+<h2 data-number="3.4" id="synthetic-yoneda-lemma"><span class="header-section-number">3.4</span> Synthetic Yoneda lemma</h2>
+<p>A high point of <span class="citation" data-cites="RiehlShulman"></span> is a synthetic Yoneda lemma. We state it informally.</p>
+<div id="thm:yoneda" class="theorem">
+<p><strong>Theorem 14</strong> (Synthetic Yoneda, RS Thm 9.1).  <em>Let <span class="math inline">\(A\)</span> be a Segal type and <span class="math inline">\(\mathcal{S}\)</span> the universe of discrete types. Then for any covariant functor <span class="math inline">\(F : A \to \mathcal{S}\)</span> and any <span class="math inline">\(a : A\)</span>, evaluation at <span class="math inline">\(\mathsf{id}_a\)</span> gives an equivalence <span class="math display">\[\Big( \prod_{x : A} \mathsf{Hom}_A(a, x) \to F(x) \Big) \;\simeq\; F(a).\]</span></em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Both sides are recovered from the dependent product structure on <span class="math inline">\(A\)</span> and the universal property of the representable <span class="math inline">\(\mathsf{Hom}_A(a,-)\)</span>. Detailed proof: see <span class="citation" data-cites="RiehlShulman"></span>. ◻</p>
+</div>
+<p>This is the engine that drives much of synthetic <span class="math inline">\((\infty,1)\)</span>-category theory in <span class="math inline">\(\mathbf{STT}\)</span>.</p>
+<h1 data-number="4" id="sec:partial"><span class="header-section-number">4</span> Partial Directed Univalence (Riehl–Shulman 2017)</h1>
+<h2 data-number="4.1" id="covariant-fibrations"><span class="header-section-number">4.1</span> Covariant fibrations</h2>
+<div id="def:covariant" class="definition">
+<p><strong>Definition 15</strong> (Covariant fibration).  Let <span class="math inline">\(A : \mathcal{U}\)</span> be a Segal type. A type family <span class="math inline">\(P : A \to \mathcal{U}\)</span> is <em>covariant</em> if for each <span class="math inline">\(\alpha : \mathsf{Hom}_A(a,b)\)</span> and each <span class="math inline">\(u : P(a)\)</span> there is a chosen lift <span class="math inline">\(\alpha_*(u) : P(b)\)</span>, depending functorially on <span class="math inline">\(\alpha\)</span>.</p>
+</div>
+<p>In semantic terms, covariant families correspond to <em>left fibrations</em>: functors <span class="math inline">\(A \to \mathcal{S}\)</span> classified by a particular kind of straightening.</p>
+<div id="thm:straightening" class="theorem">
+<p><strong>Theorem 16</strong> (Straightening, partial directed univalence for covariant families).  <em>For a Rezk type <span class="math inline">\(A\)</span>, the following types are equivalent:</em></p>
+<ol>
+<li><p><em>Covariant type families <span class="math inline">\(P : A \to \mathcal{U}\)</span> valued in discrete types.</em></p></li>
+<li><p><em>Functors <span class="math inline">\(A \to \mathcal{S}_{\mathsf{disc}}\)</span>, where <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span> is the universe of discrete types.</em></p></li>
+</ol>
+</div>
+<p>This is <em>directed univalence for covariant fibrations valued in discrete types</em>: the universe <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span> classifies covariant families, in exact analogy with <span class="math inline">\(\mathcal{U}\)</span> classifying type families up to equivalence.</p>
+<h2 data-number="4.2" id="what-is-partial-about-it"><span class="header-section-number">4.2</span> What is partial about it</h2>
+<p>Theorem <a href="#thm:straightening" data-reference-type="ref" data-reference="thm:straightening">16</a> stops short of asserting <span class="math display">\[\mathsf{Hom}_{\mathcal{S}}(A, B) \;\simeq\; \mathsf{Fun}(A, B)\]</span> for the universe <span class="math inline">\(\mathcal{S}\)</span> <em>itself</em> treated as a Segal type. Two reasons.</p>
+<h4 data-number="4.2.0.1" id="the-universe-is-not-internally-segal."><span class="header-section-number">4.2.0.1</span> (1) The universe is not internally Segal.</h4>
+<p>In <span class="math inline">\(\mathbf{STT}\)</span> as set up by Riehl–Shulman, the discrete universe <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span> is given as a sub-type of <span class="math inline">\(\mathcal{U}\)</span>, but its hom-type <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}_{\mathsf{disc}}}(A,B)\)</span> is not directly described. The straightening theorem describes covariant <em>maps into</em> <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span>, not the hom-type <em>within</em> <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span>.</p>
+<h4 data-number="4.2.0.2" id="modal-pieces-are-missing."><span class="header-section-number">4.2.0.2</span> (2) Modal pieces are missing.</h4>
+<p>To formulate “<span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>” coherently, one needs to mediate between the directed setting (where the universe carries non-trivial morphisms) and the symmetric setting (where it carries only equivalences). This is precisely the function of the modal apparatus of Gratzer–Weinberger–Buchholtz, which is absent from <span class="citation" data-cites="RiehlShulman"></span>.</p>
+<h2 data-number="4.3" id="limitations-made-formal"><span class="header-section-number">4.3</span> Limitations made formal</h2>
+<div id="prop:limitations" class="proposition">
+<p><strong>Proposition 17</strong> (Limitations of <span class="math inline">\(\mathbf{STT}\)</span>).  <em>In Riehl–Shulman simplicial type theory:</em></p>
+<ol>
+<li><p><em>There is a directed straightening for covariant families into the discrete universe (Theorem <a href="#thm:straightening" data-reference-type="ref" data-reference="thm:straightening">16</a>).</em></p></li>
+<li><p><em>There is <em>no internally definable</em> hom-type for the discrete universe <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span> qua object of the universe <span class="math inline">\(\mathcal{U}\)</span> that satisfies <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}_{\mathsf{disc}}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>.</em></p></li>
+<li><p><em>There is no Segal-completion theorem for <span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span> producing a Segal-type version with the desired hom.</em></p></li>
+</ol>
+</div>
+<p>These limitations motivate the modal extension we now describe.</p>
+<h1 data-number="5" id="sec:gwb"><span class="header-section-number">5</span> Triangulated Type Theory<br />
+(Gratzer–Weinberger–Buchholtz 2024)</h1>
+<h2 data-number="5.1" id="modal-layer"><span class="header-section-number">5.1</span> Modal layer</h2>
+<p>The crucial new ingredient in <span class="citation" data-cites="GWB2024"></span> is a system of modalities. We describe four.</p>
+<div id="def:modalities" class="definition">
+<p><strong>Definition 18</strong> (The four modalities).  <span class="math inline">\(\mathbf{TTT}\)</span> extends <span class="math inline">\(\mathbf{STT}\)</span> with modalities:</p>
+<ol>
+<li><p><span class="math inline">\(\flat\)</span> “crisp” / “discrete-discrete”: forces a type to be discrete and only depends on globally defined data.</p></li>
+<li><p><span class="math inline">\(\sharp\)</span> “codiscrete”: right adjoint to <span class="math inline">\(\flat\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathsf{Disc}\)</span>: the modality whose modal types are the discrete types.</p></li>
+<li><p><span class="math inline">\({(-)}^{\mathrm{op}}\)</span>: the opposite modality reversing direction.</p></li>
+</ol>
+<p>With <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span> a triangle of cohesion-like modalities, and <span class="math inline">\({(-)}^{\mathrm{op}}\)</span> as duality.</p>
+</div>
+<div class="remark">
+<p><em>Remark 19</em>.  The <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span> adjunction is structurally identical to the cohesive triple in Schreiber–Shulman cohesion. The new aspect is the interaction with <span class="math inline">\({(-)}^{\mathrm{op}}\)</span>, which has no analogue in cohesive HoTT.</p>
+</div>
+<h2 data-number="5.2" id="the-discrete-universe-mathcals"><span class="header-section-number">5.2</span> The discrete universe <span class="math inline">\(\mathcal{S}\)</span></h2>
+<div id="def:disc-universe" class="definition">
+<p><strong>Definition 20</strong> (Discrete universe).  The <em>discrete universe</em> <span class="math inline">\(\mathcal{S}\)</span> in <span class="math inline">\(\mathbf{TTT}\)</span> is the type of <span class="math inline">\(\mathsf{Disc}\)</span>-modal types: <span class="math inline">\(\mathcal{S} := \sum_{A : \mathcal{U}} \mathsf{isDiscrete}(A)\)</span>, with universe structure inherited from <span class="math inline">\(\mathcal{U}\)</span>.</p>
+</div>
+<div id="thm:s-segal" class="theorem">
+<p><strong>Theorem 21</strong> (GWB, <span class="math inline">\(\mathcal{S}\)</span> is Segal).  <em>The discrete universe <span class="math inline">\(\mathcal{S}\)</span> is a Segal type in <span class="math inline">\(\mathbf{TTT}\)</span>. The hom-type <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A, B)\)</span> is well-defined as an extension type out of <span class="math inline">\(\mathbf{2}\)</span> valued in <span class="math inline">\(\mathcal{S}\)</span>.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof outline.</em> The proof uses the modal layer to control how the family <span class="math inline">\(A : \mathbf{2}\to \mathcal{S}\)</span> behaves at the endpoints. Key step: the dependent product over <span class="math inline">\(\mathbf{2}\)</span> in <span class="math inline">\(\mathcal{S}\)</span> exists because the discreteness predicate is preserved by extension types, which is established via the <span class="math inline">\(\flat\)</span> modality. See <span class="citation" data-cites="GWB2024"></span>. ◻</p>
+</div>
+<h2 data-number="5.3" id="the-directed-univalence-theorem"><span class="header-section-number">5.3</span> The directed univalence theorem</h2>
+<div id="thm:dua-s" class="theorem">
+<p><strong>Theorem 22</strong> (Directed univalence in <span class="math inline">\(\mathbf{TTT}\)</span>, GWB Thm 8.1).  <em>For all <span class="math inline">\(A, B : \mathcal{S}\)</span>, the canonical map <span class="math display">\[\mathsf{funtohom}_{A,B} : \mathsf{Fun}(A,B) \;\longrightarrow\; \mathsf{Hom}_{\mathcal{S}}(A,B)\]</span> is an equivalence. Concretely, every directed morphism in the universe of discrete types is uniquely (up to coherent homotopy) the type-theoretic action of a function.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> The proof has three parts.</p>
+<ol>
+<li><p><em>Define <span class="math inline">\(\mathsf{funtohom}\)</span>.</em> Given <span class="math inline">\(f : A \to B\)</span>, define the family <span class="math inline">\(A_f : \mathbf{2}\to \mathcal{S}\)</span> by <span class="math inline">\(A_f(0) := A\)</span>, <span class="math inline">\(A_f(1) := B\)</span>, <span class="math inline">\(A_f(t) := \mathsf{cofib}(f, t)\)</span>, where <span class="math inline">\(\mathsf{cofib}(f, t)\)</span> denotes a standard cofibrant path-object construction interpolating between <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> along <span class="math inline">\(f\)</span> (concretely, the homotopy pushout of <span class="math inline">\(f\)</span> with the trivial map at parameter <span class="math inline">\(t\)</span>). The <span class="math inline">\(\mathsf{Disc}\)</span> modality ensures <span class="math inline">\(A_f(t)\)</span> stays discrete for <span class="math inline">\(t \in (0,1)\)</span>.</p></li>
+<li><p><em>Inverse construction.</em> Given <span class="math inline">\(\alpha : \mathsf{Hom}_{\mathcal{S}}(A,B)\)</span>, extract the function <span class="math inline">\(\alpha^\flat : A \to B\)</span> via the <span class="math inline">\(\flat\)</span> modality applied at the endpoint <span class="math inline">\(\{1\}\)</span>.</p></li>
+<li><p><em>Coherence.</em> Composition <span class="math inline">\(\mathsf{funtohom}\circ \flat = \mathsf{id}\)</span> and <span class="math inline">\(\flat \circ \mathsf{funtohom}= \mathsf{id}\)</span> both follow from the universal property of extension types and the Beck–Chevalley conditions for <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span>.</p></li>
+</ol>
+<p>See <span class="citation" data-cites="GWB2024"></span> for full details. ◻</p>
+</div>
+<div id="cor:yoneda-s" class="corollary">
+<p><strong>Corollary 23</strong> (Yoneda for <span class="math inline">\(\mathcal{S}\)</span>).  <em>Every covariant functor <span class="math inline">\(F : \mathcal{S} \to \mathcal{S}\)</span> is naturally equivalent to <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(F^\flat(\mathbf{1}), -)\)</span> for a uniquely determined object <span class="math inline">\(F^\flat(\mathbf{1}) : \mathcal{S}\)</span>.</em></p>
+</div>
+<div class="remark">
+<p><em>Remark 24</em>.  Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> is a complete directed univalence statement for the discrete fragment. It is “triangulated” in the sense that its formulation requires the triangle <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span>.</p>
+</div>
+<h2 data-number="5.4" id="worked-examples-in-the-discrete-universe"><span class="header-section-number">5.4</span> Worked examples in the discrete universe</h2>
+<p>We illustrate Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> with three small examples that occupy the discrete universe <span class="math inline">\(\mathcal{S}\)</span>.</p>
+<div id="ex:fin-hom" class="example">
+<p><strong>Example 25</strong> (Hom in <span class="math inline">\(\mathcal{S}\)</span> between finite types).  Let <span class="math inline">\(A := \mathbf{2} = \{0,1\}\)</span> and <span class="math inline">\(B := \mathbf{3} = \{0,1,2\}\)</span>, both discrete. Then <span class="math inline">\(\mathsf{Fun}(A, B) = B^A\)</span> has <span class="math inline">\(9\)</span> elements. Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> asserts <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>, so the hom-type from <span class="math inline">\(A\)</span> to <span class="math inline">\(B\)</span> in <span class="math inline">\(\mathcal{S}\)</span> has, up to homotopy, exactly nine path-components, each indexed by a function <span class="math inline">\(\mathbf{2} \to \mathbf{3}\)</span>.</p>
+</div>
+<div id="ex:nn-hom" class="example">
+<p><strong>Example 26</strong> (Hom from <span class="math inline">\(\mathbb{N}\)</span> to <span class="math inline">\(\mathbb{N}\)</span> in <span class="math inline">\(\mathcal{S}\)</span>).  Let <span class="math inline">\(A = B = \mathbb{N}\)</span>. Then <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(\mathbb{N}, \mathbb{N}) \simeq\mathbb{N}\to \mathbb{N}\)</span>, an uncountable type. Each function <span class="math inline">\(f : \mathbb{N}\to \mathbb{N}\)</span> corresponds to a unique directed morphism, e.g. the successor function gives a canonical morphism <span class="math inline">\(\mathsf{succ}_* : \mathbb{N}\to \mathbb{N}\)</span> in <span class="math inline">\(\mathcal{S}\)</span>.</p>
+</div>
+<div id="ex:composition" class="example">
+<p><strong>Example 27</strong> (Composition agrees with composition).  Functoriality of <span class="math inline">\(\mathsf{funtohom}\)</span> ensures <span class="math inline">\(\mathsf{funtohom}_{A,C}(g \circ f) = \mathsf{funtohom}_{B,C}(g) \circ \mathsf{funtohom}_{A,B}(f)\)</span>. So composition in <span class="math inline">\(\mathcal{S}\)</span> models composition of functions exactly. This is the property that earns <span class="math inline">\(\mathcal{S}\)</span> the name “the synthetic universe of discrete types”.</p>
+</div>
+<div id="rem:naturality" class="remark">
+<p><em>Remark 28</em> (Naturality).  The map <span class="math inline">\(\mathsf{funtohom}\)</span> is natural in both arguments: pre- and post-composition with a function <span class="math inline">\(f : A&#39; \to A\)</span>, <span class="math inline">\(g : B \to B&#39;\)</span> commute with the equivalences. This is what allows <span class="math inline">\(\mathcal{S}\)</span> to be regarded as an internally-defined Segal type whose morphisms reproduce the functions of the ambient HoTT.</p>
+</div>
+<h2 data-number="5.5" id="comparison-to-the-symmetric-universe"><span class="header-section-number">5.5</span> Comparison to the symmetric universe</h2>
+<p>It is instructive to compare Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> with Voevodsky’s univalence (Theorem <a href="#thm:univalence" data-reference-type="ref" data-reference="thm:univalence">3</a>).</p>
+<ul>
+<li><p><em>Voevodsky:</em> <span class="math inline">\(\mathsf{Id}_{\mathcal{U}}(A,B) \simeq(A \simeq B)\)</span>. Identifications in the universe correspond to equivalences of types.</p></li>
+<li><p><em>GWB:</em> <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>. Directed morphisms in the universe of discrete types correspond to functions of types.</p></li>
+</ul>
+<p>In a sense, GWB is structurally simpler: <span class="math inline">\(\mathsf{Fun}(A,B)\)</span> is the standard function type, while <span class="math inline">\(A \simeq B\)</span> requires the entire equivalence apparatus. But GWB only applies to the <em>discrete</em> sub-universe, so the principle is local. The challenge of extending it (Section <a href="#sec:complete" data-reference-type="ref" data-reference="sec:complete">6</a>) is to find a richer universe in which non-equivalence functions still correspond to directed morphisms.</p>
+<h2 data-number="5.6" id="implementation-status-in-rzk"><span class="header-section-number">5.6</span> Implementation status in rzk</h2>
+<p>The rzk proof assistant <span class="citation" data-cites="rzk"></span> implements simplicial type theory with topes and extension types. It does <em>not</em> (as of 2026) implement triangulated modalities or prove directed univalence. Bubenik et al. are pursuing a triangulated extension; partial formalisations of the GWB theorem are in progress.</p>
+<p>The Haskell module <code>Hom.hs</code> accompanying this paper exhibits a toy form of <span class="math inline">\(\mathsf{funtohom}\)</span> for the discrete universe in a Hask-like setting. The Lean 4 file <code>Directed.lean</code> postulates Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> as an axiom and derives small consequences.</p>
+<h2 data-number="5.7" id="what-is-and-is-not-proved"><span class="header-section-number">5.7</span> What is and is not proved</h2>
+<div id="prop:scope-gwb" class="proposition">
+<p><strong>Proposition 29</strong> (Scope of GWB).  <em>Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> establishes directed univalence for the discrete universe <span class="math inline">\(\mathcal{S}\)</span>. It does <em>not</em> establish:</em></p>
+<ol>
+<li><p><em>Directed univalence for any non-discrete sub-universe of <span class="math inline">\(\mathcal{U}\)</span>.</em></p></li>
+<li><p><em>A directed analogue of Voevodsky univalence for the universe <span class="math inline">\(\mathcal{U}\)</span> itself.</em></p></li>
+<li><p><em>A universe of <span class="math inline">\((\infty,1)\)</span>-categories (Rezk types) with hom-types behaving as functors.</em></p></li>
+</ol>
+</div>
+<h1 data-number="6" id="sec:complete"><span class="header-section-number">6</span> Toward a Complete Principle</h1>
+<p>We now formulate four increasingly strong candidate principles and analyse what each proof would require.</p>
+<h2 data-number="6.1" id="four-candidates"><span class="header-section-number">6.1</span> Four candidates</h2>
+<div id="def:cand-i" class="definition">
+<p><strong>Definition 30</strong> (Candidate I: Discrete directed univalence).  <em>Candidate I.</em> For the discrete universe <span class="math inline">\(\mathcal{S}\)</span>, <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>.</p>
+<p><strong>Status:</strong> Proven (Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a>, GWB 2024).</p>
+</div>
+<div id="def:cand-ii" class="definition">
+<p><strong>Definition 31</strong> (Candidate II: Segal directed univalence).  <em>Candidate II.</em> For the universe <span class="math inline">\(\mathcal{S}_{\mathsf{Seg}}\)</span> of Segal types, <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}_{\mathsf{Seg}}}(A,B) \simeq\mathsf{SegFun}(A,B)\)</span>, where <span class="math inline">\(\mathsf{SegFun}\)</span> is the type of functors preserving Segal structure (= ordinary functions, since composition is uniquely determined).</p>
+<p><strong>Status:</strong> Open. Conjectured.</p>
+</div>
+<div id="def:cand-iii" class="definition">
+<p><strong>Definition 32</strong> (Candidate III: Rezk directed univalence).  <em>Candidate III.</em> For the universe <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> of Rezk types, <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}_{\mathsf{Rezk}}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>.</p>
+<p><strong>Status:</strong> Open. The principal target.</p>
+</div>
+<div id="def:cand-iv" class="definition">
+<p><strong>Definition 33</strong> (Candidate IV: Universal directed univalence).  <em>Candidate IV.</em> For the entire universe <span class="math inline">\(\mathcal{U}\)</span>, equipped with the directed structure inherited from extension types out of <span class="math inline">\(\mathbf{2}\)</span>, <span class="math inline">\(\mathsf{Hom}_{\mathcal{U}}(A,B) \simeq\mathsf{Fun}(A,B)\)</span>.</p>
+<p><strong>Status:</strong> Open. Likely requires a 2-level theory.</p>
+</div>
+<h2 data-number="6.2" id="layered-programme"><span class="header-section-number">6.2</span> Layered programme</h2>
+<div id="conj:layered" class="conjecture">
+<p><em>Conjecture 34</em> (Layered directed univalence).  There is a tower of universes <span class="math display">\[\mathcal{S}_{\mathsf{disc}} \subset \mathcal{S}_{\mathsf{Rezk}} \subset \mathcal{S}_{\mathsf{Seg}} \subset \mathcal{U}\]</span> such that each level satisfies a directed univalence principle of its own kind, with the inclusions being conservative.</p>
+</div>
+<p>We articulate a layered <em>programme</em> as follows. Let <span class="math inline">\(L_n\)</span> denote a universe at layer <span class="math inline">\(n\)</span>. Then:</p>
+<ul>
+<li><p><span class="math inline">\(L_0 = \mathcal{S}_{\mathsf{disc}}\)</span>: classical directed univalence (Candidate I).</p></li>
+<li><p><span class="math inline">\(L_1 = \mathcal{S}_{\mathsf{Seg}}\)</span>: Segal directed univalence (Candidate II); morphisms are Segal functors.</p></li>
+<li><p><span class="math inline">\(L_2 = \mathcal{S}_{\mathsf{Rezk}}\)</span>: Rezk directed univalence (Candidate III); morphisms are functors of <span class="math inline">\((\infty,1)\)</span>-categories.</p></li>
+<li><p><span class="math inline">\(L_3 = \mathcal{U}\)</span>: universal directed univalence (Candidate IV); requires reflective sub-universe technology.</p></li>
+</ul>
+<h2 data-number="6.3" id="obstructions-to-candidates-iiiv"><span class="header-section-number">6.3</span> Obstructions to Candidates II–IV</h2>
+<div id="prop:opp-coh" class="proposition">
+<p><strong>Proposition 35</strong> (Obstruction: opposite-type coherence).  <em>Candidates II–IV require a coherent theory of opposite types <span class="math inline">\(A^{\mathrm{op}}\)</span>. The opposite type construction in <span class="math inline">\(\mathbf{STT}\)</span> is well-defined, but its compatibility with the universe structure is subtle: <span class="math inline">\({(-)}^{\mathrm{op}}\)</span> is a non-trivial involution on <span class="math inline">\(\mathcal{U}\)</span> that interacts non-trivially with <span class="math inline">\(\mathsf{Hom}\)</span>.</em></p>
+</div>
+<div id="prop:modal-dep" class="proposition">
+<p><strong>Proposition 36</strong> (Obstruction: modal dependence).  <em>Candidates II–IV likely require a modal layer richer than <span class="math inline">\(\flat \dashv \mathsf{Disc}\dashv \sharp\)</span>. In particular, the modality picking out Rezk types is not in general a left or right adjoint to either <span class="math inline">\(\flat\)</span> or <span class="math inline">\(\mathsf{Disc}\)</span>, so cannot be expressed in cohesion-like form.</em></p>
+</div>
+<div id="prop:large" class="proposition">
+<p><strong>Proposition 37</strong> (Obstruction: large vs. small).  <em>Candidate IV in its naive form is inconsistent: <span class="math inline">\(\mathcal{U}\)</span> cannot internalise its own “large” <span class="math inline">\((\infty,1)\)</span>-categorical structure. A 2-level approach (à la Annenkov–Capriotti–Kraus–Sattler) appears necessary, with a strict inner universe and a homotopical outer one.</em></p>
+</div>
+<h2 data-number="6.4" id="sketch-of-a-proof-attempt-for-candidate-iii"><span class="header-section-number">6.4</span> Sketch of a proof attempt for Candidate III</h2>
+<p>We sketch what a proof of Candidate III would look like, identifying the gaps.</p>
+<ol>
+<li><p>Define the universe <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> as the sub-type of <span class="math inline">\(\mathcal{U}\)</span> on Rezk types: <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}} := \sum_{A : \mathcal{U}} \mathsf{isRezk}(A)\)</span>.</p></li>
+<li><p>Show <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> is Segal in <span class="math inline">\(\mathbf{TTT}\)</span>. This is plausibly an extension of Theorem <a href="#thm:s-segal" data-reference-type="ref" data-reference="thm:s-segal">21</a> but requires that <span class="math inline">\(\mathsf{isRezk}\)</span> commute with extension types out of <span class="math inline">\(\mathbf{2}\)</span>, which is non-trivial.</p></li>
+<li><p>Show <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> is in fact Rezk (so that “equivalences in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> are identities”). Equivalences in this context are functors that are essentially surjective and fully faithful in the synthetic sense.</p></li>
+<li><p>Construct <span class="math inline">\(\mathsf{funtohom}: \mathsf{Fun}(A,B) \to \mathsf{Hom}_{\mathcal{S}_{\mathsf{Rezk}}}(A,B)\)</span>. Functions between Rezk types are functors of <span class="math inline">\((\infty,1)\)</span>-categories.</p></li>
+<li><p>Construct an inverse using a twisted modality <span class="math inline">\(\mathsf{Disc}^{\mathsf{Rezk}}\)</span> that picks out Rezk types as a localisation of <span class="math inline">\(\mathbf{STT}\)</span>.</p></li>
+</ol>
+<p>Step 5 is the principal technical gap. The modality <span class="math inline">\(\mathsf{Disc}^{\mathsf{Rezk}}\)</span> does not exist in published <span class="math inline">\(\mathbf{TTT}\)</span>.</p>
+<div id="q:rezk-modality" class="question">
+<p><em>Question 38</em>.  Does there exist an extension of <span class="math inline">\(\mathbf{TTT}\)</span> with a modality <span class="math inline">\(\mathsf{Disc}^{\mathsf{Rezk}}\)</span> such that:</p>
+<ol>
+<li><p>Modal types are exactly Rezk types.</p></li>
+<li><p>The triangle <span class="math inline">\(\flat \dashv \mathsf{Disc}^{\mathsf{Rezk}} \dashv \sharp_{\mathsf{Rezk}}\)</span> extends the discrete cohesion.</p></li>
+<li><p><span class="math inline">\(\mathsf{funtohom}\)</span> is an equivalence?</p></li>
+</ol>
+</div>
+<h2 data-number="6.5" id="the-cisinskinguyen-line-of-work"><span class="header-section-number">6.5</span> The Cisinski–Nguyen line of work</h2>
+<p>A complementary semantic line of work is due to Cisinski and Nguyen <span class="citation" data-cites="CisinskiNguyen"></span>, who construct a <em>universal cocartesian fibration</em> for the <span class="math inline">\((\infty,1)\)</span>-topos of presheaves of spaces. In categorical terms, this is the directed analogue of an object classifier: it is a cocartesian fibration <span class="math inline">\(\mathcal{U}^{\to} \to \mathcal{U}\)</span> whose fibre over <span class="math inline">\(A : \mathcal{U}\)</span> is essentially the slice <span class="math inline">\(\mathcal{U}_{/A}\)</span>.</p>
+<p>Translated into the directed type theory programme, Cisinski–Nguyen suggests a <em>semantic</em> sub-universe of <span class="math inline">\(\mathcal{U}\)</span> on which the directed-univalence statement should hold: <span class="math display">\[\mathsf{Hom}_{\mathcal{U}^{\to}}(A, B) \;\simeq\; \mathcal{U}(A, B) = \mathsf{Fun}(A, B).\]</span> The question is whether this sub-universe can be characterised <em>syntactically</em> in a directed type theory, and in particular whether the modal apparatus of <span class="math inline">\(\mathbf{TTT}\)</span> extends to it.</p>
+<div id="conj:cn-internal" class="conjecture">
+<p><em>Conjecture 39</em> (Conjectural Cisinski–Nguyen internal language).  There exists an extension of <span class="math inline">\(\mathbf{TTT}\)</span> in which the universal cocartesian fibration is internally definable, and Candidate III (Theorem <a href="#def:cand-iii" data-reference-type="ref" data-reference="def:cand-iii">32</a>) holds for the resulting universe of types.</p>
+</div>
+<div class="remark">
+<p><em>Remark 40</em>.  Even if Conjecture <a href="#conj:cn-internal" data-reference-type="ref" data-reference="conj:cn-internal">39</a> is true, proving it likely requires non-trivial extensions to the modal layer: at minimum, modalities for the slice <span class="math inline">\(\mathcal{U}_{/A}\)</span> uniformly in <span class="math inline">\(A\)</span> are needed.</p>
+</div>
+<h2 data-number="6.6" id="cubical-comparison"><span class="header-section-number">6.6</span> Cubical comparison</h2>
+<div id="rem:cubical" class="remark">
+<p><em>Remark 41</em> (Cubical analogue).  Voevodsky univalence is a postulate in Book HoTT but a <em>theorem</em> in cubical type theory (CCHM, Cohen–Coquand–Huber–Mörtberg) due to Glue types. The analogous question for the directed setting is open: is there a cubical-flavoured presentation of <span class="math inline">\(\mathbf{TTT}\)</span> (or its successors) in which directed univalence is constructive? Cisinski has suggested fragments <span class="citation" data-cites="Cisinski"></span>; the rzk proof assistant aims at a computational interpretation <span class="citation" data-cites="rzk"></span>. The Weaver–Licata bicubical-set model <span class="citation" data-cites="KavvosWeaver"></span> provides a constructive directed univalence for a particular fragment of bicubical type theory, indicating that a fully computational directed univalence is achievable in restricted settings.</p>
+</div>
+<h2 data-number="6.7" id="an-alternative-axiomatic-approach"><span class="header-section-number">6.7</span> An alternative axiomatic approach</h2>
+<p>Rather than seeking a syntactic-by-construction proof, one can take Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a> as a model and <em>postulate</em> a version of directed univalence at each layer. Concretely:</p>
+<ol>
+<li><p>Add to <span class="math inline">\(\mathbf{TTT}\)</span> a constant <span class="math inline">\(\mathsf{dua}_{\mathsf{Rezk}} : \prod_{A,B : \mathcal{S}_{\mathsf{Rezk}}} \mathsf{Fun}(A, B) \to \mathsf{Hom}_{\mathcal{S}_{\mathsf{Rezk}}}(A,B)\)</span>.</p></li>
+<li><p>Add an axiom that <span class="math inline">\(\mathsf{dua}_{\mathsf{Rezk}}\)</span> is an equivalence.</p></li>
+<li><p>Verify in standard models (bisimplicial sets, marked simplicial sets, <span class="math inline">\(\infty\)</span>-toposes) that the postulated principle is sound.</p></li>
+</ol>
+<p>This is the directed analogue of taking Voevodsky’s univalence as an axiom rather than deriving it from cubical methods. It establishes consistency with prevailing semantic models but leaves the syntactic story incomplete.</p>
+<div id="prop:axiomatic-sound" class="proposition">
+<p><strong>Proposition 42</strong> (Conjectural soundness of axiomatic directed univalence).  <em>The axiomatic approach above is sound in any <span class="math inline">\((\infty,1)\)</span>-topos <span class="math inline">\(\mathcal{X}\)</span> that admits a small object classifier and is bicartesian.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof outline.</em> Such an <span class="math inline">\(\mathcal{X}\)</span> admits a sub-<span class="math inline">\((\infty,1)\)</span>-category of internal Rezk objects. The hom-spaces in this sub-category are by construction the function-types of the underlying <span class="math inline">\(\infty\)</span>-topos. Soundness then follows from the universality of the construction. ◻</p>
+</div>
+<h2 data-number="6.8" id="summary-table"><span class="header-section-number">6.8</span> Summary table</h2>
+<div class="center">
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>Universe</strong></th>
+<th style="text-align: left;"><strong>Variant</strong></th>
+<th style="text-align: left;"><strong>Status</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathcal{U}\)</span></td>
+<td style="text-align: left;">symmetric</td>
+<td style="text-align: left;">Voevodsky univalence (theorem in cubical)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathcal{S}_{\mathsf{disc}}\)</span></td>
+<td style="text-align: left;">directed, discrete</td>
+<td style="text-align: left;">GWB 2024 (Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathcal{S}_{\mathsf{Seg}}\)</span></td>
+<td style="text-align: left;">directed, Segal</td>
+<td style="text-align: left;">Open (Cand. II)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span></td>
+<td style="text-align: left;">directed, Rezk</td>
+<td style="text-align: left;">Open (Cand. III, principal)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><span class="math inline">\(\mathcal{U}_{\mathsf{dir}}\)</span></td>
+<td style="text-align: left;">directed, all types</td>
+<td style="text-align: left;">Open (Cand. IV, requires 2-level)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 data-number="7" id="sec:hit"><span class="header-section-number">7</span> Connections to <span class="math inline">\((\infty,1)\)</span>-Natural Number Objects and HITs</h1>
+<h2 data-number="7.1" id="natural-number-objects-in-directed-type-theory"><span class="header-section-number">7.1</span> Natural number objects in directed type theory</h2>
+<p>In ordinary HoTT, the natural numbers <span class="math inline">\(\mathbb{N}\)</span> are characterised by an initiality universal property: <span class="math inline">\((\mathbb{N}, 0, \mathsf{succ})\)</span> is initial in the type of pointed endo-types. This characterisation generalises directly to the discrete sub-universe of <span class="math inline">\(\mathbf{TTT}\)</span>: <span class="math inline">\(\mathbb{N}\)</span> is a type in <span class="math inline">\(\mathcal{S}\)</span> and is initial.</p>
+<div id="prop:nno-disc" class="proposition">
+<p><strong>Proposition 43</strong> (NNO in discrete directed type theory).  <em>In <span class="math inline">\(\mathbf{TTT}\)</span>, the natural numbers <span class="math inline">\(\mathbb{N}: \mathcal{S}\)</span> are characterised up to equivalence by initiality: <span class="math display">\[\mathsf{isContr}\Big( \sum_{f : \mathbb{N}\to A} f(0) =_A a_0, \;\text{compatible with succ} \Big)\]</span> for any pointed endo-discrete-type <span class="math inline">\((A, a_0, s)\)</span>. Directed univalence (Theorem <a href="#thm:dua-s" data-reference-type="ref" data-reference="thm:dua-s">22</a>) then identifies these initiality witnesses with directed morphisms in <span class="math inline">\(\mathcal{S}\)</span>.</em></p>
+</div>
+<h2 data-number="7.2" id="higher-inductive-types-and-directed-univalence"><span class="header-section-number">7.2</span> Higher inductive types and directed univalence</h2>
+<p>A higher inductive type (HIT) like <span class="math inline">\(S^1\)</span> has constructors and <em>path constructors</em> producing identifications. In the directed setting one wants <em>directed-path constructors</em>: a type with constructors and prescribed hom-types, defined synthetically.</p>
+<div id="def:dhit" class="definition">
+<p><strong>Definition 44</strong> (Directed HIT).  A <em>directed higher inductive type</em> is a type generated by point constructors plus directed-edge constructors valued in <span class="math inline">\(\mathsf{Hom}\)</span>-types.</p>
+</div>
+<div id="ex:walking-arrow" class="example">
+<p><strong>Example 45</strong> (Walking arrow).  The simplest directed HIT is the <em>walking arrow</em> <span class="math inline">\(\mathbf{2}\)</span> itself: two points <span class="math inline">\(0, 1\)</span> and a generator <span class="math inline">\(\sigma : \mathsf{Hom}_{\mathbf{2}}(0,1)\)</span>.</p>
+</div>
+<div id="ex:walking-square" class="example">
+<p><strong>Example 46</strong> (Walking commutative square).  Four points <span class="math inline">\(00, 01, 10, 11\)</span>, four directed edges, and a 2-cell witnessing commutativity. Models the <span class="math inline">\(\Delta^1 \times \Delta^1\)</span> shape.</p>
+</div>
+<h2 data-number="7.3" id="synthetic-representation-theory"><span class="header-section-number">7.3</span> Synthetic representation theory</h2>
+<p>Directed univalence connects to representation theory through the slogan: <em>representations are functors</em>. A representation of a group <span class="math inline">\(G\)</span> on a vector space is a functor <span class="math inline">\(BG \to \mathsf{Vect}\)</span>, where <span class="math inline">\(BG\)</span> is the classifying type of <span class="math inline">\(G\)</span>. In a hypothetical full directed type theory:</p>
+<div id="def:rep" class="definition">
+<p><strong>Definition 47</strong> (Synthetic representation).  A <em>synthetic representation</em> of a Rezk-type group <span class="math inline">\(G\)</span> is a directed morphism <span class="math inline">\(BG \to \mathsf{Vect}\)</span> in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span>. Here, as in classical higher category theory, the group <span class="math inline">\(G\)</span> is presented through its <em>delooping</em> <span class="math inline">\(BG\)</span> — the one-object Rezk-type whose endomorphism hom-type is <span class="math inline">\(G\)</span> itself; representations are then functors out of this delooping. Sub-representations are directed monomorphisms in this sense.</p>
+</div>
+<div id="rem:langlands-distant" class="remark">
+<p><em>Remark 48</em>.  Eventually, automorphic representations (functors <span class="math inline">\(\mathrm{GL}(n, \mathbb{A}) \to \infty\text{-Grpd}\)</span> for <span class="math inline">\(\mathbb{A}\)</span> adelic) would be morphisms in a directed universe. This is highly speculative and depends on Candidate III.</p>
+</div>
+<h2 data-number="7.4" id="synthetic-adjunctions-and-kan-extensions"><span class="header-section-number">7.4</span> Synthetic adjunctions and Kan extensions</h2>
+<p>Directed univalence enables a direct treatment of adjunctions in synthetic <span class="math inline">\((\infty,1)\)</span>-category theory. In the GWB setting, an adjunction <span class="math inline">\(F \dashv G : A \to B\)</span> between objects of the directed universe of Rezk types becomes a single piece of data in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span>:</p>
+<div id="def:synth-adj" class="definition">
+<p><strong>Definition 49</strong> (Synthetic adjunction).  An <em>adjunction</em> between Rezk-types <span class="math inline">\(A, B : \mathcal{S}_{\mathsf{Rezk}}\)</span> consists of a pair <span class="math inline">\(F : A \to B\)</span>, <span class="math inline">\(G : B \to A\)</span> together with directed natural transformations <span class="math display">\[\eta : \mathsf{id}_A \Rightarrow G \circ F, \qquad \varepsilon : F \circ G \Rightarrow \mathsf{id}_B\]</span> satisfying the standard triangle identities. By Candidate III, the data is equivalent to a single object in a derived directed universe of adjunctions.</p>
+</div>
+<div id="rem:kan-ext" class="remark">
+<p><em>Remark 50</em>.  Right Kan extension <span class="math inline">\(\mathsf{Ran}_p F\)</span> along <span class="math inline">\(p : C \to D\)</span> would similarly be a directed morphism in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> rather than a global postulate. The whole package of Mac Lane–Lurie <span class="math inline">\((\infty,1)\)</span>-category theory becomes type-theoretically internal.</p>
+</div>
+<h2 data-number="7.5" id="stability-under-base-change"><span class="header-section-number">7.5</span> Stability under base change</h2>
+<p>A subtle but important property of complete directed univalence is its behaviour under base change. If <span class="math inline">\(f : C \to D\)</span> is a directed morphism in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span>, the induced functor <span class="math inline">\(f^* : \mathcal{S}_{\mathsf{Rezk}}/D \to \mathcal{S}_{\mathsf{Rezk}}/C\)</span> should preserve directed-univalent structure.</p>
+<div id="prop:base-change" class="proposition">
+<p><strong>Proposition 51</strong> (Base-change stability, conjectural).  <em>Assume Candidate III. Then for every directed morphism <span class="math inline">\(f : C \to D\)</span> in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span>, the pullback <span class="math inline">\(f^*\)</span> commutes with <span class="math inline">\(\mathsf{funtohom}\)</span> up to coherent equivalence.</em></p>
+</div>
+<div class="proof">
+<p><em>Proof sketch.</em> Pullback in <span class="math inline">\(\mathcal{S}_{\mathsf{Rezk}}\)</span> corresponds semantically to pullback of cocartesian fibrations, which is functorial. The functoriality lifts <span class="math inline">\(\mathsf{funtohom}\)</span> to a natural equivalence between fibres. ◻</p>
+</div>
+<h2 data-number="7.6" id="comparison-to-formalisations-coq-hott-lean-mathlib-cubical-agda-rzk"><span class="header-section-number">7.6</span> Comparison to formalisations: Coq-HoTT, Lean-mathlib, Cubical Agda, rzk</h2>
+<ul>
+<li><p>Coq-HoTT and Lean-mathlib formalise symmetric univalence as a postulate.</p></li>
+<li><p>Cubical Agda makes symmetric univalence <em>computational</em>.</p></li>
+<li><p>The experimental proof assistant rzk <span class="citation" data-cites="rzk"></span> implements <span class="math inline">\(\mathbf{STT}\)</span> with topes and extension types; it does <em>not</em> yet implement triangulated modalities or prove directed univalence.</p></li>
+</ul>
+<h1 data-number="8" id="sec:discussion"><span class="header-section-number">8</span> Discussion</h1>
+<h2 data-number="8.1" id="why-is-directed-univalence-so-hard"><span class="header-section-number">8.1</span> Why is directed univalence so hard?</h2>
+<p>We can summarise the difficulty in three points.</p>
+<ol>
+<li><p><em>Asymmetry of hom.</em> The hom-type <span class="math inline">\(\mathsf{Hom}_A(a,b)\)</span> is asymmetric in <span class="math inline">\((a,b)\)</span>, while the identity type <span class="math inline">\(a =_A b\)</span> is symmetric. Many path-induction-based arguments fail directly.</p></li>
+<li><p><em>Modal dependence.</em> Even the discrete fragment requires modalities to mediate between symmetric and directed worlds. Non-discrete fragments will likely need richer modal apparatus.</p></li>
+<li><p><em>Size issue.</em> The universe is a large object. A directed structure on it would package its <span class="math inline">\((\infty,1)\)</span>-categorical morphisms internally — a strictly stronger demand than packaging <span class="math inline">\(\infty\)</span>-groupoidal equivalences.</p></li>
+</ol>
+<h2 data-number="8.2" id="what-would-change-if-candidate-iii-were-proven"><span class="header-section-number">8.2</span> What would change if Candidate III were proven?</h2>
+<ol>
+<li><p>Synthetic <span class="math inline">\((\infty,1)\)</span>-category theory in <span class="math inline">\(\mathbf{STT}\)</span>/<span class="math inline">\(\mathbf{TTT}\)</span> would gain a <em>universe-theoretic</em> foundation, not just a Yoneda-based one.</p></li>
+<li><p>Functors <span class="math inline">\(A \to B\)</span> between Rezk types would automatically be morphisms in a Rezk universe, enabling direct manipulation of categories of categories.</p></li>
+<li><p>Adjunctions would internalise: an adjunction <span class="math inline">\(F \dashv G\)</span> would correspond to a single object in <span class="math inline">\(\mathsf{Adj}(\mathcal{S}_{\mathsf{Rezk}})\)</span>, accessible through directed transport.</p></li>
+<li><p>Formalisation in a directed proof assistant (extension of rzk) would become tractable.</p></li>
+</ol>
+<h2 data-number="8.3" id="what-would-change-if-candidate-iv-were-proven"><span class="header-section-number">8.3</span> What would change if Candidate IV were proven?</h2>
+<p>Candidate IV is qualitatively stronger. If proven (likely in a 2-level theory):</p>
+<ol>
+<li><p>The universe itself would be both an <span class="math inline">\(\infty\)</span>-groupoid and an <span class="math inline">\((\infty,1)\)</span>-category — with the structures coherently related.</p></li>
+<li><p>Univalence and directed univalence would be compatible.</p></li>
+<li><p>Higher directed univalence (for <span class="math inline">\((\infty, n)\)</span>-categories) could be tackled inductively.</p></li>
+</ol>
+<h2 data-number="8.4" id="limitations-of-this-paper"><span class="header-section-number">8.4</span> Limitations of this paper</h2>
+<p>This paper is expository and programmatic. We do not prove a new directed univalence theorem. The accompanying Haskell and Lean code formalise the discrete fragment of <span class="math inline">\(\mathbf{TTT}\)</span> in a toy model (Haskell) and as a postulate-based sketch (Lean), and exhibit the algebraic content. We hope these provide a productive substrate for future work.</p>
+<h1 data-number="9" id="sec:open"><span class="header-section-number">9</span> Open Problems</h1>
+<p>We list four explicit open problems.</p>
+<div id="q:rezk" class="question">
+<p><em>Question 52</em> (Rezk directed univalence).  Prove or disprove Candidate III: <span class="math inline">\(\mathsf{Hom}_{\mathcal{S}_{\mathsf{Rezk}}}(A, B) \simeq\mathsf{Fun}(A, B)\)</span> for all Rezk types <span class="math inline">\(A, B\)</span>.</p>
+</div>
+<div id="q:icat" class="question">
+<p><em>Question 53</em> (<span class="math inline">\((\infty,1)\)</span>-Cat as a primitive type).  Is there an extension of <span class="math inline">\(\mathbf{TTT}\)</span> with a primitive type <span class="math inline">\(\mathsf{Cat}_{\infty,1}\)</span> of <span class="math inline">\((\infty,1)\)</span>-categories, satisfying its own directed univalence?</p>
+</div>
+<div id="q:cocart" class="question">
+<p><em>Question 54</em> (Internal language of cocartesian fibrations).  Develop the internal language of cocartesian fibrations in <span class="math inline">\(\mathbf{TTT}\)</span>, in the spirit of Cisinski–Nguyen <span class="citation" data-cites="CisinskiNguyen"></span>.</p>
+</div>
+<div id="q:langlands" class="question">
+<p><em>Question 55</em> (Directed Langlands).  Reformulate automorphic representations as directed morphisms <span class="math inline">\(\mathrm{GL}(n, \mathbb{A}) \to \infty\text{-Grpd}\)</span> in a fully directed type theory.</p>
+</div>
+<h1 data-number="10" id="sec:conclusion"><span class="header-section-number">10</span> Conclusion</h1>
+<p>Directed univalence has come a long way since Riehl–Shulman 2017. Their original framework gave us simplicial type theory with an internalised hom-type and a partial straightening theorem for covariant fibrations. Gratzer–Weinberger–Buchholtz 2024 introduced the modal apparatus needed to internalise directed structure on the universe, and proved the first complete directed univalence theorem for the universe of discrete types.</p>
+<p>The complete principle remains a research target. The path forward is layered: extend the modality structure to capture Segal-ness and Rezk-ness, prove successively stronger directed univalence statements at each layer, and ultimately reach a 2-level account where the universe carries both directed and undirected structure coherently. The reward, if it can be obtained, is a synthetic foundation for <span class="math inline">\((\infty,1)\)</span>-category theory in which functors are directed morphisms in the universe — an <em>ipso facto</em> foundation for synthetic representation theory and beyond.</p>
+<p>We close with a final observation. The classical univalence axiom internalised the slogan “isomorphic objects are equal”. A complete directed univalence axiom would internalise the slogan “functors are arrows in the universe of categories”. These are both deeply structuralist principles. The latter, if it can be proved, would unify the structuralist viewpoints of Lawvere, Awodey, and Voevodsky into a single foundational system in which the universe is itself a category.</p>
+<h1 class="unnumbered" id="acknowledgments">Acknowledgments</h1>
+<p>This is a derivative exposition; original results are due to Emily Riehl, Michael Shulman, Daniel Gratzer, Jonathan Weinberger, and Ulrik Buchholtz. We thank these authors for the foundational work surveyed here.</p>
+<div class="thebibliography">
+<p><span>99</span></p>
+<p>The Univalent Foundations Program. <em>Homotopy Type Theory: Univalent Foundations of Mathematics</em>. Institute for Advanced Study, 2013.</p>
+<p>V. Voevodsky. <em>The univalence axiom</em>. Talks and lecture notes, 2010–2014.</p>
+<p>E. Riehl and M. Shulman. “A type theory for synthetic <span class="math inline">\(\infty\)</span>-categories.” <em>Higher Structures</em> 1(1):147–224, 2017. arXiv:1705.07442.</p>
+<p>D. Gratzer, J. Weinberger, and U. Buchholtz. “Directed univalence in simplicial homotopy type theory.” arXiv:2407.09146, 2024.</p>
+<p>U. Buchholtz. <em>Higher structures in homotopy type theory</em>. Habilitation, TU Darmstadt, 2019.</p>
+<p>E. Riehl. “Synthetic perspectives on spaces and categories.” Survey article, in preparation (2025); preprint announced on the author’s webpage.</p>
+<p>D.-C. Cisinski. <em>Higher categories and homotopical algebra</em>. Cambridge Studies in Advanced Mathematics 180, 2019.</p>
+<p>D.-C. Cisinski and H.-K. Nguyen. “The universal cocartesian fibration.” arXiv:2210.08945, 2022.</p>
+<p>G. A. Kavvos and M. Weaver. “On directed type theory.” Ongoing work, 2024–2025; cf. M. Weaver and D. Licata, “A Constructive Model of Directed Univalence in Bicubical Sets,” <em>LICS 2020</em>.</p>
+<p>M. Shulman. “All <span class="math inline">\((\infty,1)\)</span>-toposes have strict univalent universes.” arXiv:1904.07004, 2019.</p>
+<p>N. Bubenik et al. <em>rzk: an experimental proof assistant for synthetic <span class="math inline">\(\infty\)</span>-category theory</em>. <a href="https://rzk-lang.github.io/rzk/" class="uri">https://rzk-lang.github.io/rzk/</a>, accessed 2026.</p>
+<p>J. Lurie. <em>Higher Topos Theory</em>. Annals of Mathematics Studies 170, Princeton, 2009.</p>
+<p>D. Annenkov, P. Capriotti, N. Kraus, and C. Sattler. “Two-level type theory and applications.” <em>Math. Struct. Comput. Sci.</em> 33(8), 2023.</p>
+<p>P. Lumsdaine and M. Shulman. “Semantics of higher inductive types.” arXiv:1705.07088, 2017.</p>
+<p>D. R. Licata and M. Shulman. “Calculating the fundamental group of the circle in homotopy type theory.” <em>LICS 2013</em>, pp. 223–232.</p>
+<p>A. Joyal. “Quasi-categories and Kan complexes.” <em>J. Pure Appl. Algebra</em> 175(1):207–222, 2002.</p>
+<p>C. Rezk. “A model for the homotopy theory of homotopy theory.” <em>Trans. AMS</em> 353(3):973–1007, 2001.</p>
+<p>P. R. North. “Towards a directed homotopy type theory.” <em>ENTCS</em> 347, 2019.</p>
+<p>S. Awodey. “Structuralism, invariance, and univalence.” <em>Phil. Math.</em> 22(1), 2014.</p>
+</div>

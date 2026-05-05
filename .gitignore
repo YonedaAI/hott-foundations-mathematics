@@ -1,0 +1,25 @@
+# Build artifacts
+*.aux
+*.log
+*.toc
+*.out
+*.bbl
+*.blg
+*.nav
+*.snm
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Haskell build
+*.hi
+*.o
+src/*/test
+src/*/props
+
+# OS
+.DS_Store
+
+# Vercel
+.vercel
